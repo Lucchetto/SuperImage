@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
@@ -17,13 +18,13 @@ import kotlinx.coroutines.launch
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.TensorFlowLite
-import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
+import java.io.File
 import java.io.FileInputStream
-import java.nio.ByteBuffer
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
-import kotlin.random.Random
+import java.util.UUID
+import kotlin.math.roundToInt
 import kotlin.system.measureNanoTime
 
 
@@ -64,8 +65,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         )
         val inputTensor = tensor(bitmap)
         val outputBufferTensor = TensorBuffer.createFixedSize(intArrayOf(1, 3, 256, 256), DataType.FLOAT32)
+        bitmap.recycle()
 
         interpreter.run(inputTensor.buffer, outputBufferTensor.buffer)
+
+        getOutputImageFile("${UUID.randomUUID()}.png")?.outputStream()?.use {
+            tensorToBitmap(outputBufferTensor).compress(Bitmap.CompressFormat.PNG, 100, it)
+        }
     }
 
     private fun tensor(bitmap: Bitmap): TensorBuffer {
@@ -82,6 +88,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 it.putFloat((blueStartIndex + index) * Float.SIZE_BYTES, intColourToFloat(Color.blue(pixel)))
             }
             it.rewind()
+
         }
 
         return tensor
@@ -89,17 +96,38 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun intColourToFloat(colour: Int): Float = colour / 255f
 
-    private fun generateRandomFloatMatrix(width: Int, height: Int): Array<FloatArray> {
-        val random = Random(0)
-        val matrix = Array(height) { y ->
-            val row = FloatArray(width)
-            (0 until width).forEach { x ->
-                row[x] = random.nextFloat()
-            }
-            row
+    private fun floatColourToInt(colour: Float): Int = (colour * 255f).roundToInt()
+
+    private fun tensorToBitmap(tensorBuffer: TensorBuffer): Bitmap {
+        val channels = tensorBuffer.shape[1]
+        val height = tensorBuffer.shape[2]
+        val width = tensorBuffer.shape[3]
+
+        if (channels != 3) {
+            throw IllegalStateException("TensorBuffer must contain RGB image ! Image with $channels channels found instead")
         }
 
-        return matrix
+        val channelMatrixSize = width * height
+        val pixels = IntArray(channelMatrixSize)
+        val greenStartIndex = 1 * channelMatrixSize
+        val blueStartIndex = 2 * channelMatrixSize
+        tensorBuffer.buffer.let {
+            (0 until channelMatrixSize).forEach { index ->
+                val red = it.getFloat(index * Float.SIZE_BYTES)
+                val green = it.getFloat((index + greenStartIndex) * Float.SIZE_BYTES)
+                val blue = it.getFloat((index + blueStartIndex) * Float.SIZE_BYTES)
+                val colour: Int =
+                    255 and 0xff shl 24 or
+                            (floatColourToInt(red) and 0xff shl 16) or
+                            (floatColourToInt(green) and 0xff shl 8) or
+                            (floatColourToInt(blue) and 0xff)
+                pixels[index] = colour
+            }
+        }
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
+            setPixels(pixels, 0, width, 0, 0, width, height)
+        }
+        return bitmap
     }
 
     private fun loadModelFile(assetManager: AssetManager, modelPath: String): MappedByteBuffer {
@@ -111,7 +139,36 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 
+    private fun getOutputImageFile(fileName: String): File? {
+        val file = File(getOutputFolder(), fileName)
+        if (file.exists()) {
+            if (!file.delete()) {
+                return null
+            }
+        }
+        return if (file.createNewFile()) {
+            file
+        } else {
+            null
+        }
+    }
+
     companion object {
+
+        private const val OUTPUT_SUBDIRECTORY = "TFRealESRGAN"
+
+        private fun getOutputFolder(): File {
+            val picturesFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+            val outputFolder = File(picturesFolder, OUTPUT_SUBDIRECTORY)
+            if (!outputFolder.isDirectory) {
+                // File with same name of output folder, nuke it
+                if (outputFolder.exists()) {
+                    outputFolder.delete()
+                }
+                outputFolder.mkdir()
+            }
+            return outputFolder
+        }
 
         private fun loadImageFromUri(contentResolver: ContentResolver, uri: Uri): Bitmap? = try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
