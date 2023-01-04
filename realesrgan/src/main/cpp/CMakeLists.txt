@@ -28,7 +28,8 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        realesrgan.cpp)
+        realesrgan.cpp
+        realesrgan_jni.cpp)
 
 add_library(lib_tensorflowlite SHARED IMPORTED)
 set_target_properties(lib_tensorflowlite PROPERTIES IMPORTED_LOCATION
