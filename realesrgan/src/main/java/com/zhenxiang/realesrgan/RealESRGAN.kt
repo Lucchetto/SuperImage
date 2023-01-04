@@ -9,7 +9,7 @@ class RealESRGAN {
         modelData: MappedByteBuffer,
         scale: Int,
         inputImage: IntArray
-    ): ByteBuffer?
+    ): IntArray?
 
     companion object {
         // Used to load the 'realesrgan' library on application startup.

@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <memory>
 
 #include "tensorflow/lite/c/c_api.h"
@@ -76,10 +77,12 @@ const output_image* run_inference(const void* model_data, const long model_size,
     // Extract the output tensor data
     const TfLiteTensor* output_tensor =
             TfLiteInterpreterGetOutputTensor(interpreter, 0);
-    float output_buffer[REALESRGAN_OUTPUT_IMAGE_TENSOR_SIZE];
+    const int output_tensor_pixels = REALESRGAN_INPUT_IMAGE_PIXELS * pow(scale, 2);
+    const int output_tensor_size = output_tensor_pixels * REALESRGAN_IMAGE_CHANNELS;
+    float output_buffer[output_tensor_size];
     status = TfLiteTensorCopyToBuffer(
             output_tensor, output_buffer,
-            REALESRGAN_OUTPUT_IMAGE_TENSOR_SIZE * sizeof(float));
+            output_tensor_size * sizeof(float));
     if (status != kTfLiteOk) {
         LOGE("Something went wrong when copying output tensor to output buffer");
         TfLiteInterpreterDelete(interpreter);
@@ -88,26 +91,24 @@ const output_image* run_inference(const void* model_data, const long model_size,
     }
 
     // Postprocess the output from TFLite
-    int* clipped_output = (int *) malloc(sizeof(int) * REALESRGAN_OUTPUT_IMAGE_PIXELS);
-    auto rgb_colors = std::make_unique<int[]>(REALESRGAN_IMAGE_CHANNELS);
-    for (int i = 0; i < REALESRGAN_OUTPUT_IMAGE_PIXELS; i++) {
+    int pixel_channels[REALESRGAN_IMAGE_CHANNELS];
+    int* output_image_pixels = (int *) malloc(sizeof(int) * output_tensor_pixels);
+    for (int i = 0; i < output_tensor_pixels; i++) {
         for (int j = 0; j < REALESRGAN_IMAGE_CHANNELS; j++) {
-            clipped_output[j] = std::max<float>(
-                    0, std::min<float>(255, output_buffer[i + j * REALESRGAN_OUTPUT_IMAGE_PIXELS] * 255));
+            pixel_channels[j] = std::max<float>(
+                    0, std::min<float>(255, output_buffer[i + j * output_tensor_pixels] * 255));
         }
         // When we have RGB values, we pack them into a single pixel.
         // Alpha is set to 255.
-        rgb_colors[i] = (255u & 0xff) << 24 | (clipped_output[0] & 0xff) << 16 |
-                        (clipped_output[1] & 0xff) << 8 |
-                        (clipped_output[2] & 0xff);
+        output_image_pixels[i] = (255u & 0xff) << 24 | (pixel_channels[0] & 0xff) << 16 |
+                                 (pixel_channels[1] & 0xff) << 8 |
+                                 (pixel_channels[2] & 0xff);
     }
 
     // Cleanup
-    TfLiteInterpreterDelete(interpreter);
-    TfLiteInterpreterOptionsDelete(options);
 
     return new output_image {
-            .data = clipped_output,
-            .size = REALESRGAN_OUTPUT_IMAGE_PIXELS
+            .data = output_image_pixels,
+            .size = output_tensor_pixels
     };
 }

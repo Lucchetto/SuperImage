@@ -13,6 +13,7 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.zhenxiang.realesrgan.RealESRGAN
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.tensorflow.lite.DataType
@@ -28,6 +29,10 @@ import kotlin.math.roundToInt
 import kotlin.system.measureNanoTime
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val realESRGAN by lazy {
+        RealESRGAN()
+    }
 
     fun load(imageUri: Uri) {
         val croppedBitmap = loadImageFromUri(getApplication<Application>().contentResolver, imageUri)?.let {
@@ -52,48 +57,29 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun inference(bitmap: Bitmap) {
-        TensorFlowLite.init()
 
-        val options = Interpreter.Options().apply {
-            useNNAPI = true
-        }
-        val interpreter = Interpreter(
+        val outputImage = realESRGAN.runUpscaling(
             loadModelFile(getApplication<Application>().assets, "realesrgan-x4plus.tflite"),
-            options
+            4,
+            getPixels(bitmap)
         )
-        val inputTensor = tensor(bitmap)
-        val outputBufferTensor = TensorBuffer.createFixedSize(intArrayOf(1, 3, 256, 256), DataType.FLOAT32)
-        bitmap.recycle()
 
-        getOutputImageFile("${UUID.randomUUID()}.png")?.outputStream()?.use {
-            tensorToBitmap(inputTensor).compress(Bitmap.CompressFormat.PNG, 100, it)
-        }
-
-        interpreter.run(inputTensor.buffer, outputBufferTensor.buffer)
-
-        getOutputImageFile("${UUID.randomUUID()}.png")?.outputStream()?.use {
-            tensorToBitmap(outputBufferTensor).compress(Bitmap.CompressFormat.PNG, 100, it)
+        outputImage?.let {
+            getOutputImageFile("${UUID.randomUUID()}.png")?.outputStream()?.use { os ->
+                // TODO: remove hardcoded output size
+                val outputBitmap = Bitmap.createBitmap(bitmap.width * 4, bitmap.height * 4, Bitmap.Config.ARGB_8888).apply {
+                    setPixels(it, 0, width, 0, 0, width, height)
+                }
+                outputBitmap.compress(Bitmap.CompressFormat.PNG, 100, os)
+            }
         }
     }
 
-    private fun tensor(bitmap: Bitmap): TensorBuffer {
+    private fun getPixels(bitmap: Bitmap): IntArray {
         val pixels = IntArray(bitmap.width * bitmap.height)
         bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
 
-        val tensor = TensorBuffer.createFixedSize(intArrayOf(1, 3, bitmap.height, bitmap.width), DataType.FLOAT32)
-        val greenStartIndex = 1 * pixels.size
-        val blueStartIndex = 2 * pixels.size
-        tensor.buffer.let {
-            pixels.forEachIndexed { index, pixel ->
-                it.putFloat(index * Float.SIZE_BYTES, intColourToFloat(Color.red(pixel)))
-                it.putFloat((greenStartIndex + index) * Float.SIZE_BYTES, intColourToFloat(Color.green(pixel)))
-                it.putFloat((blueStartIndex + index) * Float.SIZE_BYTES, intColourToFloat(Color.blue(pixel)))
-            }
-            it.rewind()
-
-        }
-
-        return tensor
+        return pixels
     }
 
     private fun intColourToFloat(colour: Int): Float = colour / 255f

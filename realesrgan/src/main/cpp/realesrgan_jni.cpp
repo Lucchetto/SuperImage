@@ -3,7 +3,7 @@
 
 #include "realesrgan.h"
 
-extern "C" JNIEXPORT jobject JNICALL
+extern "C" JNIEXPORT jintArray JNICALL
 Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
         JNIEnv *env,
         jobject /* thiz */,
@@ -23,6 +23,10 @@ Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
     if (!output_image) {
         return nullptr;
     } else {
-        return env->NewDirectByteBuffer((void *) output_image->data, output_image->size);
+        jintArray output_image_jarray = env->NewIntArray(output_image->size);
+        env->SetIntArrayRegion(output_image_jarray, 0, output_image->size, output_image->data);
+
+        delete output_image;
+        return output_image_jarray;
     }
 }
