@@ -27,13 +27,11 @@ import java.util.UUID
 import kotlin.math.roundToInt
 import kotlin.system.measureNanoTime
 
-
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     fun load(imageUri: Uri) {
         val croppedBitmap = loadImageFromUri(getApplication<Application>().contentResolver, imageUri)?.let {
             val cropped = Bitmap.createBitmap(it, 0, 0, 64, 64)
-            it.recycle()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && cropped.config == Bitmap.Config.HARDWARE) {
                 // We can't get pixels from hardware bitmap, so convert it to software first
                 val software = cropped.copy(Bitmap.Config.ARGB_8888, false)
@@ -66,6 +64,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val inputTensor = tensor(bitmap)
         val outputBufferTensor = TensorBuffer.createFixedSize(intArrayOf(1, 3, 256, 256), DataType.FLOAT32)
         bitmap.recycle()
+
+        getOutputImageFile("${UUID.randomUUID()}.png")?.outputStream()?.use {
+            tensorToBitmap(inputTensor).compress(Bitmap.CompressFormat.PNG, 100, it)
+        }
 
         interpreter.run(inputTensor.buffer, outputBufferTensor.buffer)
 
@@ -116,11 +118,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 val red = it.getFloat(index * Float.SIZE_BYTES)
                 val green = it.getFloat((index + greenStartIndex) * Float.SIZE_BYTES)
                 val blue = it.getFloat((index + blueStartIndex) * Float.SIZE_BYTES)
-                val colour: Int =
-                    255 and 0xff shl 24 or
-                            (floatColourToInt(red) and 0xff shl 16) or
-                            (floatColourToInt(green) and 0xff shl 8) or
-                            (floatColourToInt(blue) and 0xff)
+                val colour = Color.rgb(red, green, blue)
                 pixels[index] = colour
             }
         }

@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.zhenxiang.tfrealesrgan"
-        minSdk 24
+        minSdk 27
         targetSdk 32
         versionCode 1
         versionName "1.0"
