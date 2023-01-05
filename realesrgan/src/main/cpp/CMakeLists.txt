@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION 3.18.1)
 # Declares and names the project.
 project("realesrgan")
 
+set(EIGEN_UNSUPPORTED_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/eigen/unsupported")
 set(TFLITE_LIBPATH "${CMAKE_CURRENT_SOURCE_DIR}/tensorflowlite/jni")
 set(TFLITE_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/tensorflowlite/headers")
 set(TFLITE_GPU_LIBPATH "${CMAKE_CURRENT_SOURCE_DIR}/tensorflowlite-gpu/jni")
@@ -51,6 +52,8 @@ find_library( # Sets the name of the path variable.
         # Specifies the name of the NDK library that
         # you want CMake to locate.
         log)
+
+include_directories(${EIGEN_UNSUPPORTED_INCLUDE})
 
 include_directories(${TFLITE_INCLUDE})
 target_include_directories(realesrgan PRIVATE

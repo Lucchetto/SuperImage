@@ -7,12 +7,9 @@
 
 #include <android/log.h>
 
-#define REALESRGAN_IMAGE_CHANNELS 3
+#include "Eigen/CXX11/Tensor"
 
-#define REALESRGAN_INPUT_IMAGE_WIDTH 64
-#define REALESRGAN_INPUT_IMAGE_HEIGHT 64
-#define REALESRGAN_INPUT_IMAGE_PIXELS REALESRGAN_INPUT_IMAGE_WIDTH * REALESRGAN_INPUT_IMAGE_HEIGHT
-#define REALESRGAN_INPUT_IMAGE_TENSOR_SIZE REALESRGAN_INPUT_IMAGE_PIXELS * REALESRGAN_IMAGE_CHANNELS
+#define REALESRGAN_IMAGE_CHANNELS 3
 
 #define LOG_TAG "RealESRGAN"
 #define LOGI(...) \
@@ -20,17 +17,14 @@
 #define LOGE(...) \
   ((void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__))
 
-struct input_image_t {
-    const int width;
-    const int height;
-    int* data;
-};
-
 struct output_image_t {
     int* data;
     const int size;
 };
 
-const output_image_t* run_inference(const void* model_data, const long model_size, int scale, const input_image_t input_image);
+const output_image_t* run_inference(const void* model_data,
+                                    const long model_size,
+                                    int scale,
+                                    const Eigen::TensorMap<Eigen::Tensor<int, 2>> input_image);
 
 #endif //TFREALESRGAN_REALESRGAN_H

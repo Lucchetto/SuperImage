@@ -13,7 +13,11 @@
 
 #include "realesrgan.h"
 
-const output_image_t* run_inference(const void* model_data, const long model_size, int scale, const input_image_t input_image) {
+const output_image_t* run_inference(
+        const void* model_data,
+        const long model_size,
+        int scale,
+        const Eigen::TensorMap<Eigen::Tensor<int, 2>> input_image) {
 
     // Load the model
     TfLiteModel* model = TfLiteModelCreate(model_data, model_size);
@@ -55,24 +59,26 @@ const output_image_t* run_inference(const void* model_data, const long model_siz
         TfLiteModelDelete(model);
         return nullptr;
     }
-    TfLiteTensor* input_tensor = TfLiteInterpreterGetInputTensor(interpreter, 0);
+    TfLiteTensor* model_input_tensor = TfLiteInterpreterGetInputTensor(interpreter, 0);
+
+    // Treat tensor as an one-dimensional array for simplicity
+    const int input_image_size = input_image.size();
+    const int* input_image_data = input_image.data();
 
     // Convert input image RGB int array to float array
     // with tensor shape [1, REALESRGAN_IMAGE_CHANNELS, REALESRGAN_INPUT_IMAGE_HEIGHT, REALESRGAN_INPUT_IMAGE_WIDTH]
-    float input_buffer[REALESRGAN_INPUT_IMAGE_TENSOR_SIZE];
-    int green_start_index = REALESRGAN_INPUT_IMAGE_PIXELS;
-    int blue_start_index = REALESRGAN_INPUT_IMAGE_PIXELS * 2;
-    for (int i = 0; i < REALESRGAN_INPUT_IMAGE_PIXELS; i++) {
+    float input_buffer[input_image_size * REALESRGAN_IMAGE_CHANNELS];
+    int green_start_index = input_image_size;
+    int blue_start_index = input_image_size * 2;
+    for (int i = 0; i < input_image_size; i++) {
         // Alpha is ignored
-        input_buffer[i] = (float)((input_image.data[i] >> 16) & 0xff) / 255.0;
-        input_buffer[i + green_start_index] = (float)((input_image.data[i] >> 8) & 0xff) / 255.0;
-        input_buffer[i + blue_start_index] = (float)((input_image.data[i]) & 0xff) / 255.0;
+        input_buffer[i] = (float)((input_image_data[i] >> 16) & 0xff) / 255.0;
+        input_buffer[i + green_start_index] = (float)((input_image_data[i] >> 8) & 0xff) / 255.0;
+        input_buffer[i + blue_start_index] = (float)((input_image_data[i]) & 0xff) / 255.0;
     }
 
     // Feed input into model
-    status = TfLiteTensorCopyFromBuffer(
-            input_tensor, input_buffer,
-            REALESRGAN_INPUT_IMAGE_TENSOR_SIZE * sizeof(float));
+    status = TfLiteTensorCopyFromBuffer(model_input_tensor, input_buffer, sizeof(input_buffer));
     if (status != kTfLiteOk) {
         LOGE("Something went wrong when copying input buffer to input tensor");
         TfLiteInterpreterDelete(interpreter);
@@ -96,7 +102,7 @@ const output_image_t* run_inference(const void* model_data, const long model_siz
     // Extract the output tensor data
     const TfLiteTensor* output_tensor =
             TfLiteInterpreterGetOutputTensor(interpreter, 0);
-    const int output_tensor_pixels = REALESRGAN_INPUT_IMAGE_PIXELS * pow(scale, 2);
+    const int output_tensor_pixels = input_image_size * pow(scale, 2);
     const int output_tensor_size = output_tensor_pixels * REALESRGAN_IMAGE_CHANNELS;
     float output_buffer[output_tensor_size];
     status = TfLiteTensorCopyToBuffer(
