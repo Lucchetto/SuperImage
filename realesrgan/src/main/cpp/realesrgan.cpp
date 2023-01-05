@@ -15,7 +15,7 @@
 const output_image* run_inference(const void* model_data, const long model_size, int scale, const int* input_image) {
 
     // Load the model
-    const TfLiteModel* model = TfLiteModelCreate(model_data, model_size);
+    TfLiteModel* model = TfLiteModelCreate(model_data, model_size);
     if (!model) {
         LOGE("Failed to create TFLite model");
         return nullptr;
@@ -29,6 +29,7 @@ const output_image* run_inference(const void* model_data, const long model_size,
     if (!interpreter) {
         LOGE("Failed to create TFLite interpreter");
         TfLiteInterpreterOptionsDelete(options);
+        TfLiteModelDelete(model);
         return nullptr;
     }
 
@@ -38,6 +39,7 @@ const output_image* run_inference(const void* model_data, const long model_size,
         LOGE("Something went wrong when allocating tensors");
         TfLiteInterpreterDelete(interpreter);
         TfLiteInterpreterOptionsDelete(options);
+        TfLiteModelDelete(model);
         return nullptr;
     }
     TfLiteTensor* input_tensor = TfLiteInterpreterGetInputTensor(interpreter, 0);
@@ -62,6 +64,7 @@ const output_image* run_inference(const void* model_data, const long model_size,
         LOGE("Something went wrong when copying input buffer to input tensor");
         TfLiteInterpreterDelete(interpreter);
         TfLiteInterpreterOptionsDelete(options);
+        TfLiteModelDelete(model);
         return nullptr;
     }
 
@@ -71,6 +74,7 @@ const output_image* run_inference(const void* model_data, const long model_size,
         LOGE("Something went wrong when running the TFLite model");
         TfLiteInterpreterDelete(interpreter);
         TfLiteInterpreterOptionsDelete(options);
+        TfLiteModelDelete(model);
         return nullptr;
     }
 
@@ -87,6 +91,7 @@ const output_image* run_inference(const void* model_data, const long model_size,
         LOGE("Something went wrong when copying output tensor to output buffer");
         TfLiteInterpreterDelete(interpreter);
         TfLiteInterpreterOptionsDelete(options);
+        TfLiteModelDelete(model);
         return nullptr;
     }
 
@@ -106,6 +111,9 @@ const output_image* run_inference(const void* model_data, const long model_size,
     }
 
     // Cleanup
+    TfLiteInterpreterDelete(interpreter);
+    TfLiteInterpreterOptionsDelete(options);
+    TfLiteModelDelete(model);
 
     return new output_image {
             .data = output_image_pixels,

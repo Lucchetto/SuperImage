@@ -26,6 +26,7 @@ Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
         jintArray output_image_jarray = env->NewIntArray(output_image->size);
         env->SetIntArrayRegion(output_image_jarray, 0, output_image->size, output_image->data);
 
+        free(output_image->data);
         delete output_image;
         return output_image_jarray;
     }

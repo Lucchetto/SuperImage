@@ -58,11 +58,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private suspend fun inference(bitmap: Bitmap) {
 
-        val outputImage = realESRGAN.runUpscaling(
-            loadModelFile(getApplication<Application>().assets, "realesrgan-x4plus.tflite"),
-            4,
-            getPixels(bitmap)
-        )
+        val modelBuffer = loadModelFile(getApplication<Application>().assets, "realesrgan-x4plus.tflite")
+        val outputImage = realESRGAN.runUpscaling(modelBuffer, 4, getPixels(bitmap))
+        bitmap.recycle()
 
         outputImage?.let {
             getOutputImageFile("${UUID.randomUUID()}.png")?.outputStream()?.use { os ->
@@ -71,6 +69,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     setPixels(it, 0, width, 0, 0, width, height)
                 }
                 outputBitmap.compress(Bitmap.CompressFormat.PNG, 100, os)
+                outputBitmap.recycle()
             }
         }
     }
@@ -80,38 +79,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
 
         return pixels
-    }
-
-    private fun intColourToFloat(colour: Int): Float = colour / 255f
-
-    private fun floatColourToInt(colour: Float): Int = (colour * 255f).roundToInt()
-
-    private fun tensorToBitmap(tensorBuffer: TensorBuffer): Bitmap {
-        val channels = tensorBuffer.shape[1]
-        val height = tensorBuffer.shape[2]
-        val width = tensorBuffer.shape[3]
-
-        if (channels != 3) {
-            throw IllegalStateException("TensorBuffer must contain RGB image ! Image with $channels channels found instead")
-        }
-
-        val channelMatrixSize = width * height
-        val pixels = IntArray(channelMatrixSize)
-        val greenStartIndex = 1 * channelMatrixSize
-        val blueStartIndex = 2 * channelMatrixSize
-        tensorBuffer.buffer.let {
-            (0 until channelMatrixSize).forEach { index ->
-                val red = it.getFloat(index * Float.SIZE_BYTES)
-                val green = it.getFloat((index + greenStartIndex) * Float.SIZE_BYTES)
-                val blue = it.getFloat((index + blueStartIndex) * Float.SIZE_BYTES)
-                val colour = Color.rgb(red, green, blue)
-                pixels[index] = colour
-            }
-        }
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
-            setPixels(pixels, 0, width, 0, 0, width, height)
-        }
-        return bitmap
     }
 
     private fun loadModelFile(assetManager: AssetManager, modelPath: String): MappedByteBuffer {
