@@ -58,7 +58,16 @@ int* process_tiles(
                     final_column_tile ? (height - y) : tile_size,
                     final_row_tile ? (width - x) : tile_size
             };
-            const Eigen::Tensor<int, 2> tile = image_tensor.slice(offsets, extents);
+            Eigen::Tensor<int, 2> tile;
+            if (final_row_tile || final_column_tile) {
+                // Pad sliced tensor to fit tile_size for model input
+                Eigen::array<Eigen::Pair<int, int>, 2> padding;
+                padding[0] = Eigen::Pair<int, int>(0, tile_size - extents[0]);
+                padding[1] = Eigen::Pair<int, int>(0, tile_size - extents[1]);
+                tile = image_tensor.slice(offsets, extents).pad(padding);
+            } else {
+                tile = image_tensor.slice(offsets, extents);
+            }
             const float_ptr_array model_input = tile_to_float_array(tile);
 
             // Feed input into model
@@ -93,9 +102,11 @@ int* process_tiles(
                 return nullptr;
             }
 
-            LOGI("Test");
+            //LOGI("Test");
         }
     }
+
+    return nullptr;
 }
 
 const output_image_t* run_inference(
