@@ -9,6 +9,7 @@
 
 #include "tensorflow/lite/c/c_api.h"
 #include "tensorflow/lite/c/c_api_experimental.h"
+#include "tensorflow/lite/delegates/nnapi/nnapi_delegate_c_api.h"
 
 #include "realesrgan.h"
 
@@ -23,12 +24,23 @@ const output_image_t* run_inference(const void* model_data, const long model_siz
 
     // Create the interpreter options
     TfLiteInterpreterOptions* options = TfLiteInterpreterOptionsCreate();
-    TfLiteInterpreterOptionsSetUseNNAPI(options, true);
+    TfLiteNnapiDelegateOptions nnapi_options = TfLiteNnapiDelegateOptionsDefault();
+    nnapi_options.allow_fp16 = true;
+    nnapi_options.execution_preference = TfLiteNnapiDelegateOptions::kSustainedSpeed;
+    TfLiteDelegate* nnapi_delegate = TfLiteNnapiDelegateCreate(&nnapi_options);
+    if (!nnapi_delegate) {
+        LOGE("Failed to create NNAPI delegate");
+        TfLiteInterpreterOptionsDelete(options);
+        TfLiteModelDelete(model);
+        return nullptr;
+    }
 
+    TfLiteInterpreterOptionsAddDelegate(options, nnapi_delegate);
     TfLiteInterpreter* interpreter = TfLiteInterpreterCreate(model, options);
     if (!interpreter) {
         LOGE("Failed to create TFLite interpreter");
         TfLiteInterpreterOptionsDelete(options);
+        TfLiteNnapiDelegateDelete(nnapi_delegate);
         TfLiteModelDelete(model);
         return nullptr;
     }
@@ -39,6 +51,7 @@ const output_image_t* run_inference(const void* model_data, const long model_siz
         LOGE("Something went wrong when allocating tensors");
         TfLiteInterpreterDelete(interpreter);
         TfLiteInterpreterOptionsDelete(options);
+        TfLiteNnapiDelegateDelete(nnapi_delegate);
         TfLiteModelDelete(model);
         return nullptr;
     }
@@ -64,6 +77,7 @@ const output_image_t* run_inference(const void* model_data, const long model_siz
         LOGE("Something went wrong when copying input buffer to input tensor");
         TfLiteInterpreterDelete(interpreter);
         TfLiteInterpreterOptionsDelete(options);
+        TfLiteNnapiDelegateDelete(nnapi_delegate);
         TfLiteModelDelete(model);
         return nullptr;
     }
@@ -74,6 +88,7 @@ const output_image_t* run_inference(const void* model_data, const long model_siz
         LOGE("Something went wrong when running the TFLite model");
         TfLiteInterpreterDelete(interpreter);
         TfLiteInterpreterOptionsDelete(options);
+        TfLiteNnapiDelegateDelete(nnapi_delegate);
         TfLiteModelDelete(model);
         return nullptr;
     }
@@ -91,6 +106,7 @@ const output_image_t* run_inference(const void* model_data, const long model_siz
         LOGE("Something went wrong when copying output tensor to output buffer");
         TfLiteInterpreterDelete(interpreter);
         TfLiteInterpreterOptionsDelete(options);
+        TfLiteNnapiDelegateDelete(nnapi_delegate);
         TfLiteModelDelete(model);
         return nullptr;
     }
@@ -113,6 +129,7 @@ const output_image_t* run_inference(const void* model_data, const long model_siz
     // Cleanup
     TfLiteInterpreterDelete(interpreter);
     TfLiteInterpreterOptionsDelete(options);
+    TfLiteNnapiDelegateDelete(nnapi_delegate);
     TfLiteModelDelete(model);
 
     return new output_image_t {

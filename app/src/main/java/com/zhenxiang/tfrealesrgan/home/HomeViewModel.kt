@@ -60,7 +60,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
         val modelBuffer = loadModelFile(getApplication<Application>().assets, "realesrgan-x4plus.tflite")
         val outputImage = realESRGAN.runUpscaling(modelBuffer, 4, getPixels(bitmap), bitmap.width, bitmap.height)
-        bitmap.recycle()
 
         outputImage?.let {
             getOutputImageFile("${UUID.randomUUID()}.png")?.outputStream()?.use { os ->
@@ -72,6 +71,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 outputBitmap.recycle()
             }
         }
+        bitmap.recycle()
     }
 
     private fun getPixels(bitmap: Bitmap): IntArray {
