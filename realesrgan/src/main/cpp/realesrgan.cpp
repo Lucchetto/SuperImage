@@ -12,7 +12,7 @@
 
 #include "realesrgan.h"
 
-const output_image* run_inference(const void* model_data, const long model_size, int scale, const int* input_image) {
+const output_image_t* run_inference(const void* model_data, const long model_size, int scale, const input_image_t input_image) {
 
     // Load the model
     TfLiteModel* model = TfLiteModelCreate(model_data, model_size);
@@ -51,9 +51,9 @@ const output_image* run_inference(const void* model_data, const long model_size,
     int blue_start_index = REALESRGAN_INPUT_IMAGE_PIXELS * 2;
     for (int i = 0; i < REALESRGAN_INPUT_IMAGE_PIXELS; i++) {
         // Alpha is ignored
-        input_buffer[i] = (float)((input_image[i] >> 16) & 0xff) / 255.0;
-        input_buffer[i + green_start_index] = (float)((input_image[i] >> 8) & 0xff) / 255.0;
-        input_buffer[i + blue_start_index] = (float)((input_image[i]) & 0xff) / 255.0;
+        input_buffer[i] = (float)((input_image.data[i] >> 16) & 0xff) / 255.0;
+        input_buffer[i + green_start_index] = (float)((input_image.data[i] >> 8) & 0xff) / 255.0;
+        input_buffer[i + blue_start_index] = (float)((input_image.data[i]) & 0xff) / 255.0;
     }
 
     // Feed input into model
@@ -115,7 +115,7 @@ const output_image* run_inference(const void* model_data, const long model_size,
     TfLiteInterpreterOptionsDelete(options);
     TfLiteModelDelete(model);
 
-    return new output_image {
+    return new output_image_t {
             .data = output_image_pixels,
             .size = output_tensor_pixels
     };

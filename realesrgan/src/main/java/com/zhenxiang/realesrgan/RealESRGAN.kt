@@ -1,6 +1,5 @@
 package com.zhenxiang.realesrgan
 
-import java.nio.ByteBuffer
 import java.nio.MappedByteBuffer
 
 class RealESRGAN {
@@ -8,7 +7,9 @@ class RealESRGAN {
     external fun runUpscaling(
         modelData: MappedByteBuffer,
         scale: Int,
-        inputImage: IntArray
+        inputImage: IntArray,
+        inputImageWidth: Int,
+        inputImageHeight: Int,
     ): IntArray?
 
     companion object {

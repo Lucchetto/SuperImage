@@ -59,7 +59,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private suspend fun inference(bitmap: Bitmap) {
 
         val modelBuffer = loadModelFile(getApplication<Application>().assets, "realesrgan-x4plus.tflite")
-        val outputImage = realESRGAN.runUpscaling(modelBuffer, 4, getPixels(bitmap))
+        val outputImage = realESRGAN.runUpscaling(modelBuffer, 4, getPixels(bitmap), bitmap.width, bitmap.height)
         bitmap.recycle()
 
         outputImage?.let {

@@ -20,11 +20,17 @@
 #define LOGE(...) \
   ((void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__))
 
-struct output_image {
+struct input_image_t {
+    const int width;
+    const int height;
+    int* data;
+};
+
+struct output_image_t {
     int* data;
     const int size;
 };
 
-const output_image* run_inference(const void* model_data, const long model_size, int scale, const int* input_image);
+const output_image_t* run_inference(const void* model_data, const long model_size, int scale, const input_image_t input_image);
 
 #endif //TFREALESRGAN_REALESRGAN_H
