@@ -39,11 +39,8 @@ float_ptr_array tile_to_float_array(const Eigen::MatrixXi& tile) {
 }
 
 std::pair<int, int> calculate_tile_padding(const int position, const int axis_size, const int tile_size, const int padding) {
-    if (position == 0) {
-        // First tile of axis
-        return std::pair<int, int> {0, padding};
-    } else if (position + tile_size >= axis_size) {
-        // Last tile of axis
+    if (position + tile_size >= axis_size || position == tile_size) {
+        // Last tile or second tile of axis
         return std::pair<int, int> {padding, 0};
     } else {
         // Tiles in between
@@ -66,18 +63,20 @@ int* process_tiles(
     const int width = image_matrix.rows();
 
     int y = 0;
+    std::pair<int, int> y_paddings {0, 0};
     while (y < height) {
-        const std::pair<int, int> y_paddings = calculate_tile_padding(y, height, tile_size, padding);
         int x = 0;
+        std::pair<int, int> x_paddings {0, 0};
+        const bool final_column = is_final_tile_in_axis(y_paddings);
 
         while (x < width) {
-            const std::pair<int, int> x_paddings = calculate_tile_padding(x, width, tile_size, padding);
+            const bool final_row = is_final_tile_in_axis(x_paddings);
 
             Eigen::MatrixXi tile = image_matrix.block(
                     x,
                     y,
-                    is_final_tile_in_axis(x_paddings) ? (width - x) : tile_size,
-                    is_final_tile_in_axis(y_paddings) ? (height - y) : tile_size);
+                    final_row ? (width - x) : tile_size,
+                    final_column ? (height - y) : tile_size);
             tile.resize(tile_size, tile_size);
 
             const float_ptr_array model_input = tile_to_float_array(tile);
@@ -120,10 +119,14 @@ int* process_tiles(
                     output_tile_size,
                     output_tile_size);
 
+            // Recalculate padding and position of next tile in row
             x += tile_size - (x_paddings.first + x_paddings.second);
+            x_paddings = calculate_tile_padding(x, width, tile_size, padding);
         }
 
+        // Recalculate padding and position of next column's tiles
         y += tile_size - (y_paddings.first + y_paddings.second);
+        y_paddings = calculate_tile_padding(y, height, tile_size, padding);
     }
 
     return nullptr;
