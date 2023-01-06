@@ -11,6 +11,8 @@
 #include "tensorflow/lite/c/c_api_experimental.h"
 #include "tensorflow/lite/delegates/nnapi/nnapi_delegate_c_api.h"
 
+#include "unsupported/Eigen/CXX11/Tensor"
+
 #include "realesrgan.h"
 
 float_ptr_array tile_to_float_array(const Eigen::MatrixXi& tile) {
@@ -100,7 +102,8 @@ int* process_tiles(
             free(model_input.data);
 
             // Extract the output tensor data
-            const size_t output_tensor_pixels = tile.size() * pow(scale, 2);
+            const int output_tile_size = tile_size * scale;
+            const size_t output_tensor_pixels = output_tile_size * output_tile_size;
             const size_t output_tensor_size = output_tensor_pixels * REALESRGAN_IMAGE_CHANNELS;
             float output_buffer[output_tensor_size];
             if (TfLiteTensorCopyToBuffer(
@@ -110,6 +113,12 @@ int* process_tiles(
                 LOGE("Something went wrong when copying output tensor to output buffer");
                 return nullptr;
             }
+
+            Eigen::TensorMap<Eigen::Tensor<float, 3>> output_tile(
+                    output_buffer,
+                    REALESRGAN_IMAGE_CHANNELS,
+                    output_tile_size,
+                    output_tile_size);
 
             x += tile_size - (x_paddings.first + x_paddings.second);
         }

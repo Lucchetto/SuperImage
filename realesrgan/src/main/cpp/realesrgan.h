@@ -7,7 +7,7 @@
 
 #include <android/log.h>
 
-#include "Eigen/Eigen"
+#include "Eigen/Core"
 
 #define REALESRGAN_IMAGE_CHANNELS 3
 #define REALESRGAN_INPUT_TILE_SIZE 64
