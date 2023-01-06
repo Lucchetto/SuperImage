@@ -40,13 +40,17 @@ std::pair<int, int> calculate_tile_padding(const int position, const int axis_si
     if (position == 0) {
         // First tile of axis
         return std::pair<int, int> {0, padding};
-    } else if (position + tile_size - padding >= axis_size) {
+    } else if (position + tile_size >= axis_size) {
         // Last tile of axis
         return std::pair<int, int> {padding, 0};
     } else {
         // Tiles in between
         return std::pair<int, int> {padding, padding};
     }
+}
+
+bool is_final_tile_in_axis(const std::pair<int, int> paddings) {
+    return paddings.second == 0;
 }
 
 int* process_tiles(
@@ -67,8 +71,12 @@ int* process_tiles(
         while (x < width) {
             const std::pair<int, int> x_paddings = calculate_tile_padding(x, width, tile_size, padding);
 
-            Eigen::MatrixXi tile = image_matrix.block(x, y, tile_size, tile_size);
-            tile.resize(64, 64);
+            Eigen::MatrixXi tile = image_matrix.block(
+                    x,
+                    y,
+                    is_final_tile_in_axis(x_paddings) ? (width - x) : tile_size,
+                    is_final_tile_in_axis(y_paddings) ? (height - y) : tile_size);
+            tile.resize(tile_size, tile_size);
 
             const float_ptr_array model_input = tile_to_float_array(tile);
 
