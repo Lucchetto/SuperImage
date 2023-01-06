@@ -61,16 +61,16 @@ int* process_tiles(
 
     const int height = image_matrix.cols();
     const int width = image_matrix.rows();
+    TfLiteTensor* input_tensor = TfLiteInterpreterGetInputTensor(interpreter, 0);
+    const TfLiteTensor* output_tensor = TfLiteInterpreterGetOutputTensor(interpreter, 0);
 
     int y = 0;
-    std::pair<int, int> y_paddings {0, 0};
     while (y < height) {
+        const bool final_column = (y + tile_size > height);
         int x = 0;
-        std::pair<int, int> x_paddings {0, 0};
-        const bool final_column = is_final_tile_in_axis(y_paddings);
 
         while (x < width) {
-            const bool final_row = is_final_tile_in_axis(x_paddings);
+            const bool final_row = (x + tile_size > width);
 
             Eigen::MatrixXi tile = image_matrix.block(
                     x,
@@ -83,7 +83,7 @@ int* process_tiles(
 
             // Feed input into model
             if (TfLiteTensorCopyFromBuffer(
-                    TfLiteInterpreterGetInputTensor(interpreter, 0),
+                    input_tensor,
                     model_input.data,
                     model_input.size * sizeof(float)) != kTfLiteOk) {
                 LOGE("Something went wrong when copying input buffer to input tensor");
@@ -106,7 +106,7 @@ int* process_tiles(
             const size_t output_tensor_size = output_tensor_pixels * REALESRGAN_IMAGE_CHANNELS;
             float output_buffer[output_tensor_size];
             if (TfLiteTensorCopyToBuffer(
-                    TfLiteInterpreterGetOutputTensor(interpreter, 0),
+                    output_tensor,
                     output_buffer,
                     output_tensor_size * sizeof(float)) != kTfLiteOk) {
                 LOGE("Something went wrong when copying output tensor to output buffer");
@@ -119,14 +119,19 @@ int* process_tiles(
                     output_tile_size,
                     output_tile_size);
 
+
             // Recalculate padding and position of next tile in row
-            x += tile_size - (x_paddings.first + x_paddings.second);
-            x_paddings = calculate_tile_padding(x, width, tile_size, padding);
+            if (final_row) {
+                x = 0;
+            } else {
+                x += tile_size;
+            }
         }
 
         // Recalculate padding and position of next column's tiles
-        y += tile_size - (y_paddings.first + y_paddings.second);
-        y_paddings = calculate_tile_padding(y, height, tile_size, padding);
+        if (!final_column) {
+            y += tile_size;
+        }
     }
 
     return nullptr;
