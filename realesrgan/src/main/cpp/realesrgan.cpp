@@ -36,35 +36,40 @@ float_ptr_array tile_to_float_array(const Eigen::MatrixXi& tile) {
     };
 }
 
+std::pair<int, int> calculate_tile_padding(const int position, const int axis_size, const int tile_size, const int padding) {
+    if (position == 0) {
+        // First tile of axis
+        return std::pair<int, int> {0, padding};
+    } else if (position + tile_size - padding >= axis_size) {
+        // Last tile of axis
+        return std::pair<int, int> {padding, 0};
+    } else {
+        // Tiles in between
+        return std::pair<int, int> {padding, padding};
+    }
+}
+
 int* process_tiles(
         TfLiteInterpreter* interpreter,
         const Eigen::MatrixXi& image_matrix,
         const int scale,
         const int tile_size,
-        const int pre_padding) {
+        const int padding) {
 
     const int height = image_matrix.cols();
     const int width = image_matrix.rows();
-    const int offset_step = tile_size - pre_padding;
 
-    for (int y = 0; y < height; y += offset_step) {
-        for (int x = 0; x < width; x += offset_step) {
+    int y = 0;
+    while (y < height) {
+        const std::pair<int, int> y_paddings = calculate_tile_padding(y, height, tile_size, padding);
+        int x = 0;
 
-            const bool final_row_tile = x + offset_step > width;
-            const bool final_column_tile = y + offset_step > height;
+        while (x < width) {
+            const std::pair<int, int> x_paddings = calculate_tile_padding(x, width, tile_size, padding);
 
-            Eigen::MatrixXi tile;
+            Eigen::MatrixXi tile = image_matrix.block(x, y, tile_size, tile_size);
+            tile.resize(64, 64);
 
-            if (final_row_tile || final_column_tile) {
-                tile = image_matrix.block(
-                        x,
-                        y,
-                        final_row_tile ? (width - x) : tile_size,
-                        final_column_tile ? (height - y) : tile_size);
-                tile.resize(64, 64);
-            } else {
-                tile = image_matrix.block(x, y, tile_size, tile_size);
-            }
             const float_ptr_array model_input = tile_to_float_array(tile);
 
             // Feed input into model
@@ -98,8 +103,10 @@ int* process_tiles(
                 return nullptr;
             }
 
-            //LOGI("Test");
+            x += tile_size - (x_paddings.first + x_paddings.second);
         }
+
+        y += tile_size - (y_paddings.first + y_paddings.second);
     }
 
     return nullptr;
