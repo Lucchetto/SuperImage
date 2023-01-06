@@ -102,34 +102,46 @@ int* process_tiles(
 
             // Extract the output tensor data
             const int output_tile_size = tile_size * scale;
-            const size_t output_tensor_pixels = output_tile_size * output_tile_size;
-            const size_t output_tensor_size = output_tensor_pixels * REALESRGAN_IMAGE_CHANNELS;
-            float output_buffer[output_tensor_size];
+            const size_t output_tile_pixels = output_tile_size * output_tile_size;
+            Eigen::Tensor<float, 3> output_tile(REALESRGAN_IMAGE_CHANNELS, output_tile_size, output_tile_size);
+            const float* output_tile_data = output_tile.data();
             if (TfLiteTensorCopyToBuffer(
                     output_tensor,
-                    output_buffer,
-                    output_tensor_size * sizeof(float)) != kTfLiteOk) {
+                    output_tile.data(),
+                    output_tile.size() * sizeof(float)) != kTfLiteOk) {
                 LOGE("Something went wrong when copying output tensor to output buffer");
                 return nullptr;
             }
 
-            Eigen::TensorMap<Eigen::Tensor<float, 3>> output_tile(
-                    output_buffer,
-                    REALESRGAN_IMAGE_CHANNELS,
-                    output_tile_size,
-                    output_tile_size);
+            // Postprocess the output from TFLite
+            int pixel_channels[REALESRGAN_IMAGE_CHANNELS];
+            int output_tile_rgb[output_tile_pixels];
+            for (int i = 0; i < output_tile_pixels; i++) {
+                for (int j = 0; j < REALESRGAN_IMAGE_CHANNELS; j++) {
+                    pixel_channels[j] = std::max<float>(
+                            0, std::min<float>(255, output_tile_data[i + j * output_tile_pixels] * 255));
+                }
+                // When we have RGB values, we pack them into output_tile single pixel.
+                // Alpha is set to 255.
+                output_tile_rgb[i] = (255u & 0xff) << 24 | (pixel_channels[0] & 0xff) << 16 |
+                                     (pixel_channels[1] & 0xff) << 8 |
+                                     (pixel_channels[2] & 0xff);
+            }
 
+            Eigen::Map<Eigen::MatrixXi> input_image(output_tile_rgb, output_tile_size, output_tile_size);
 
             // Recalculate padding and position of next tile in row
             if (final_row) {
-                x = 0;
+                break;
             } else {
                 x += tile_size;
             }
         }
 
         // Recalculate padding and position of next column's tiles
-        if (!final_column) {
+        if (final_column) {
+            break;
+        } else {
             y += tile_size;
         }
     }
