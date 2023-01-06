@@ -7,7 +7,7 @@
 
 #include <android/log.h>
 
-#include "Eigen/CXX11/Tensor"
+#include "Eigen/Eigen"
 
 #define REALESRGAN_IMAGE_CHANNELS 3
 #define REALESRGAN_INPUT_TILE_SIZE 64
@@ -36,6 +36,6 @@ struct output_image_t {
 const output_image_t* run_inference(const void* model_data,
                                     const long model_size,
                                     int scale,
-                                    const Eigen::TensorMap<Eigen::Tensor<int, 2>> input_image);
+                                    const Eigen::MatrixXi& input_image);
 
 #endif //TFREALESRGAN_REALESRGAN_H

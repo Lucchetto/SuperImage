@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.18.1)
 # Declares and names the project.
 project("realesrgan")
 
-set(EIGEN_UNSUPPORTED_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/eigen/unsupported")
+set(EIGEN_UNSUPPORTED_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/eigen")
 set(TFLITE_LIBPATH "${CMAKE_CURRENT_SOURCE_DIR}/tensorflowlite/jni")
 set(TFLITE_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/tensorflowlite/headers")
 set(TFLITE_GPU_LIBPATH "${CMAKE_CURRENT_SOURCE_DIR}/tensorflowlite-gpu/jni")

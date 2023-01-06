@@ -16,10 +16,10 @@ Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
     const void *model_data = static_cast<void *>(env->GetDirectBufferAddress(model_buffer));
     const jlong model_size_bytes = env->GetDirectBufferCapacity(model_buffer);
 
-    Eigen::TensorMap<Eigen::Tensor<int, 2>> input_image(
+    Eigen::Map<Eigen::MatrixXi> input_image = Eigen::MatrixXi::Map(
             env->GetIntArrayElements(input_image_jarray, nullptr),
-            input_image_height,
-            input_image_width);
+            input_image_width,
+            input_image_height);
 
     const auto output_image = run_inference(model_data, model_size_bytes, scale, input_image);
 

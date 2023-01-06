@@ -13,14 +13,14 @@
 
 #include "realesrgan.h"
 
-float_ptr_array tile_to_float_array(const Eigen::Tensor<int, 2>& tile) {
+float_ptr_array tile_to_float_array(const Eigen::MatrixXi& tile) {
 
     // Convert input image RGB int array to float array
     // with tensor shape [1, REALESRGAN_IMAGE_CHANNELS, tile height, tile width]
     const int tile_size = tile.size();
     const int* tile_data = tile.data();
-    const size_t tensor_size = tile_size * REALESRGAN_IMAGE_CHANNELS;
-    const auto float_buffer = (float *) malloc(sizeof(float) * tensor_size);
+    const size_t float_buffer_size = tile_size * REALESRGAN_IMAGE_CHANNELS;
+    const auto float_buffer = (float *) malloc(sizeof(float) * float_buffer_size);
     const int green_start_index = tile_size;
     const int blue_start_index = tile_size * 2;
     for (int i = 0; i < tile_size; i++) {
@@ -32,41 +32,38 @@ float_ptr_array tile_to_float_array(const Eigen::Tensor<int, 2>& tile) {
 
     return float_ptr_array {
         .data = float_buffer,
-        .size = tensor_size,
+        .size = float_buffer_size,
     };
 }
 
 int* process_tiles(
         TfLiteInterpreter* interpreter,
-        const Eigen::TensorMap<Eigen::Tensor<int, 2>> image_tensor,
+        const Eigen::MatrixXi& image_matrix,
         const int scale,
         const int tile_size,
         const int pre_padding) {
 
-    const int height = image_tensor.dimension(0);
-    const int width = image_tensor.dimension(1);
+    const int height = image_matrix.cols();
+    const int width = image_matrix.rows();
     const int offset_step = tile_size - pre_padding;
 
     for (int y = 0; y < height; y += offset_step) {
         for (int x = 0; x < width; x += offset_step) {
-            const Eigen::array<Eigen::Index, 2> offsets = {y, x};
 
             const bool final_row_tile = x + offset_step > width;
             const bool final_column_tile = y + offset_step > height;
 
-            const Eigen::array<Eigen::Index, 2> extents = {
-                    final_column_tile ? (height - y) : tile_size,
-                    final_row_tile ? (width - x) : tile_size
-            };
-            Eigen::Tensor<int, 2> tile;
+            Eigen::MatrixXi tile;
+
             if (final_row_tile || final_column_tile) {
-                // Pad sliced tensor to fit tile_size for model input
-                Eigen::array<Eigen::Pair<int, int>, 2> padding;
-                padding[0] = Eigen::Pair<int, int>(0, tile_size - extents[0]);
-                padding[1] = Eigen::Pair<int, int>(0, tile_size - extents[1]);
-                tile = image_tensor.slice(offsets, extents).pad(padding);
+                tile = image_matrix.block(
+                        x,
+                        y,
+                        final_row_tile ? (width - x) : tile_size,
+                        final_column_tile ? (height - y) : tile_size);
+                tile.resize(64, 64);
             } else {
-                tile = image_tensor.slice(offsets, extents);
+                tile = image_matrix.block(x, y, tile_size, tile_size);
             }
             const float_ptr_array model_input = tile_to_float_array(tile);
 
@@ -98,7 +95,6 @@ int* process_tiles(
                     output_buffer,
                     output_tensor_size * sizeof(float)) != kTfLiteOk) {
                 LOGE("Something went wrong when copying output tensor to output buffer");
-                free(model_input.data);
                 return nullptr;
             }
 
@@ -113,7 +109,7 @@ const output_image_t* run_inference(
         const void* model_data,
         const long model_size,
         int scale,
-        const Eigen::TensorMap<Eigen::Tensor<int, 2>> input_image) {
+        const Eigen::MatrixXi& input_image) {
 
     // Load the model
     TfLiteModel* model = TfLiteModelCreate(model_data, model_size);
@@ -160,9 +156,7 @@ const output_image_t* run_inference(
 
     TfLiteTensor* model_input_tensor = TfLiteInterpreterGetInputTensor(interpreter, 0);
 
-    const Eigen::array<Eigen::Index, 2> offsets = {64, 64};
-    const Eigen::array<Eigen::Index, 2> extents = {64, 64};
-    const Eigen::Tensor<int, 2> cropped = input_image.slice(offsets, extents);
+    const Eigen::MatrixXi cropped = input_image.block(0, 0, REALESRGAN_INPUT_TILE_SIZE, REALESRGAN_INPUT_TILE_SIZE);
     // Treat tensor as an one-dimensional array for simplicity
     const int input_image_size = cropped.size();
     const int* input_image_data = cropped.data();
