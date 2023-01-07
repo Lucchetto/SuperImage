@@ -104,7 +104,7 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
 
             // Extract the output tensor data
             const int output_tile_size = tile_size * scale;
-            Eigen::Tensor<float, 3> output_tile(REALESRGAN_IMAGE_CHANNELS, output_tile_size, output_tile_size);
+            Eigen::Tensor<float, 3, Eigen::RowMajor> output_tile(REALESRGAN_IMAGE_CHANNELS, output_tile_size, output_tile_size);
             if (TfLiteTensorCopyToBuffer(
                     output_tensor,
                     output_tile.data(),
@@ -113,19 +113,19 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
                 return nullptr;
             }
 
-            Eigen::Tensor<float, 3> cropped_output_tile;
+            Eigen::Tensor<float, 3, Eigen::RowMajor> cropped_output_tile;
             if (incomplete_x || incomplete_y) {
                 // Slice off the part of tile that's already present in previous tile
                 const int scaled_y_from_end = incomplete_y ? y_from_end * scale : output_tile_size;
                 const int scaled_x_from_end = incomplete_x ? x_from_end * scale : output_tile_size;
                 Eigen::array<Eigen::Index, 3> offsets = {
                         0,
-                        output_tile_size - scaled_y_from_end,
-                        output_tile_size - scaled_x_from_end};
+                        output_tile_size - scaled_x_from_end,
+                        output_tile_size - scaled_y_from_end};
                 Eigen::array<Eigen::Index, 3> extents = {
                         REALESRGAN_IMAGE_CHANNELS,
-                        scaled_y_from_end,
-                        scaled_x_from_end};
+                        scaled_x_from_end,
+                        scaled_y_from_end};
                 cropped_output_tile = output_tile.slice(offsets, extents);
             } else {
                 cropped_output_tile = output_tile;
@@ -150,8 +150,8 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
 
             Eigen::Map<Eigen::MatrixXi> tile_rgb_matrix(
                     output_tile_rgb,
-                    cropped_output_tile.dimension(1),
-                    cropped_output_tile.dimension(2));
+                    cropped_output_tile.dimension(2),
+                    cropped_output_tile.dimension(1));
 
             output_image_matrix->block(
                     y * scale,
