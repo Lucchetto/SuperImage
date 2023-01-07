@@ -18,8 +18,8 @@ Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
 
     Eigen::Map<Eigen::MatrixXi> input_image = Eigen::MatrixXi::Map(
             env->GetIntArrayElements(input_image_jarray, nullptr),
-            input_image_width,
-            input_image_height);
+            input_image_height,
+            input_image_width);
 
     const auto output_image = run_inference(model_data, model_size_bytes, scale, input_image);
 
