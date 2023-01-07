@@ -66,18 +66,19 @@ int* process_tiles(
 
     int y = 0;
     while (y < height) {
-        const bool final_column = (y + tile_size > height);
+        const int y_from_end = height - y;
+        const bool incomplete_column = y_from_end < tile_size;
         int x = 0;
 
         while (x < width) {
-            const bool final_row = (x + tile_size > width);
+            const int x_from_end = width - x;
+            const bool incomplete_row = x_from_end < tile_size;
 
             Eigen::MatrixXi tile = image_matrix.block(
-                    x,
-                    y,
-                    final_row ? (width - x) : tile_size,
-                    final_column ? (height - y) : tile_size);
-            tile.resize(tile_size, tile_size);
+                    incomplete_row ? (width - tile_size) : x,
+                    incomplete_column ? (height - tile_size) : y,
+                    tile_size,
+                    tile_size);
 
             const float_ptr_array model_input = tile_to_float_array(tile);
 
@@ -102,9 +103,7 @@ int* process_tiles(
 
             // Extract the output tensor data
             const int output_tile_size = tile_size * scale;
-            const size_t output_tile_pixels = output_tile_size * output_tile_size;
             Eigen::Tensor<float, 3> output_tile(REALESRGAN_IMAGE_CHANNELS, output_tile_size, output_tile_size);
-            const float* output_tile_data = output_tile.data();
             if (TfLiteTensorCopyToBuffer(
                     output_tensor,
                     output_tile.data(),
@@ -113,7 +112,21 @@ int* process_tiles(
                 return nullptr;
             }
 
+            Eigen::Tensor<float, 3> cropped_output_tile;
+            if (incomplete_row || incomplete_column) {
+                // Slice off the part of tile that's already present in previous tile
+                const int scaled_y_from_end = incomplete_column ? y_from_end * scale : output_tile_size;
+                const int scaled_x_from_end = incomplete_row ? x_from_end * scale : output_tile_size;
+                Eigen::array<Eigen::Index, 3> offsets = {0, output_tile_size - scaled_y_from_end, output_tile_size - scaled_x_from_end};
+                Eigen::array<Eigen::Index, 3> extents = {REALESRGAN_IMAGE_CHANNELS, scaled_y_from_end, scaled_x_from_end};
+                cropped_output_tile = output_tile.slice(offsets, extents);
+            } else {
+                cropped_output_tile = output_tile;
+            }
+
             // Postprocess the output from TFLite
+            const float* output_tile_data = cropped_output_tile.data();
+            const size_t output_tile_pixels = cropped_output_tile.size() / REALESRGAN_IMAGE_CHANNELS;
             int pixel_channels[REALESRGAN_IMAGE_CHANNELS];
             int output_tile_rgb[output_tile_pixels];
             for (int i = 0; i < output_tile_pixels; i++) {
@@ -131,7 +144,7 @@ int* process_tiles(
             Eigen::Map<Eigen::MatrixXi> input_image(output_tile_rgb, output_tile_size, output_tile_size);
 
             // Recalculate padding and position of next tile in row
-            if (final_row) {
+            if (incomplete_row) {
                 break;
             } else {
                 x += tile_size;
@@ -139,7 +152,7 @@ int* process_tiles(
         }
 
         // Recalculate padding and position of next column's tiles
-        if (final_column) {
+        if (incomplete_column) {
             break;
         } else {
             y += tile_size;
