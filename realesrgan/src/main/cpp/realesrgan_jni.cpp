@@ -16,7 +16,7 @@ Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
     const void *model_data = static_cast<void *>(env->GetDirectBufferAddress(model_buffer));
     const jlong model_size_bytes = env->GetDirectBufferCapacity(model_buffer);
 
-    Eigen::Map<Eigen::MatrixXi> input_image = Eigen::MatrixXi::Map(
+    Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> input_image(
             env->GetIntArrayElements(input_image_jarray, nullptr),
             input_image_height,
             input_image_width);

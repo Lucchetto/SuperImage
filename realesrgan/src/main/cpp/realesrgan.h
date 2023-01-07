@@ -28,7 +28,7 @@ struct float_ptr_array {
     size_t size;
 };
 
-const Eigen::MatrixXi* run_inference(const void* model_data,
+const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_inference(const void* model_data,
                                     const long model_size,
                                     int scale,
                                     const Eigen::MatrixXi& input_image);

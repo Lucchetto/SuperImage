@@ -52,7 +52,7 @@ bool is_final_tile_in_axis(const std::pair<int, int> paddings) {
     return paddings.second == 0;
 }
 
-Eigen::MatrixXi* process_tiles(
+Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_tiles(
         TfLiteInterpreter* interpreter,
         const Eigen::MatrixXi& image_matrix,
         const int scale,
@@ -61,23 +61,23 @@ Eigen::MatrixXi* process_tiles(
 
     const int height = image_matrix.rows();
     const int width = image_matrix.cols();
-    const auto output_image_matrix = new Eigen::MatrixXi(height * scale, width * scale);
+    const auto output_image_matrix = new Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(height * scale, width * scale);
     TfLiteTensor* input_tensor = TfLiteInterpreterGetInputTensor(interpreter, 0);
     const TfLiteTensor* output_tensor = TfLiteInterpreterGetOutputTensor(interpreter, 0);
 
     int y = 0;
     while (y < height) {
         const int y_from_end = height - y;
-        const bool incomplete_row = y_from_end < tile_size;
+        const bool incomplete_y = y_from_end < tile_size;
         int x = 0;
 
         while (x < width) {
             const int x_from_end = width - x;
-            const bool incomplete_column = x_from_end < tile_size;
+            const bool incomplete_x = x_from_end < tile_size;
 
             Eigen::MatrixXi tile = image_matrix.block(
-                    incomplete_row ? (height - tile_size) : y,
-                    incomplete_column ? (width - tile_size) : x,
+                    incomplete_y ? (height - tile_size) : y,
+                    incomplete_x ? (width - tile_size) : x,
                     tile_size,
                     tile_size);
 
@@ -114,10 +114,10 @@ Eigen::MatrixXi* process_tiles(
             }
 
             Eigen::Tensor<float, 3> cropped_output_tile;
-            if (incomplete_column || incomplete_row) {
+            if (incomplete_x || incomplete_y) {
                 // Slice off the part of tile that's already present in previous tile
-                const int scaled_y_from_end = incomplete_row ? y_from_end * scale : output_tile_size;
-                const int scaled_x_from_end = incomplete_column ? x_from_end * scale : output_tile_size;
+                const int scaled_y_from_end = incomplete_y ? y_from_end * scale : output_tile_size;
+                const int scaled_x_from_end = incomplete_x ? x_from_end * scale : output_tile_size;
                 Eigen::array<Eigen::Index, 3> offsets = {
                         0,
                         output_tile_size - scaled_y_from_end,
@@ -160,7 +160,7 @@ Eigen::MatrixXi* process_tiles(
                     tile_rgb_matrix.cols()) = tile_rgb_matrix;
 
             // Recalculate padding and position of next tile in row
-            if (incomplete_column) {
+            if (incomplete_x) {
                 break;
             } else {
                 x += tile_size;
@@ -168,7 +168,7 @@ Eigen::MatrixXi* process_tiles(
         }
 
         // Recalculate padding and position of next column's tiles
-        if (incomplete_row) {
+        if (incomplete_y) {
             break;
         } else {
             y += tile_size;
@@ -178,7 +178,7 @@ Eigen::MatrixXi* process_tiles(
     return output_image_matrix;
 }
 
-const Eigen::MatrixXi* run_inference(
+const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_inference(
         const void* model_data,
         const long model_size,
         int scale,
@@ -225,7 +225,7 @@ const Eigen::MatrixXi* run_inference(
         return nullptr;
     }
 
-    const Eigen::MatrixXi* output_image = process_tiles(
+    const auto output_image = process_tiles(
             interpreter,
             input_image,
             scale,
