@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.ContentResolver
 import android.content.res.AssetManager
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -16,16 +15,11 @@ import androidx.lifecycle.viewModelScope
 import com.zhenxiang.realesrgan.RealESRGAN
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.tensorflow.lite.DataType
-import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.TensorFlowLite
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.io.File
 import java.io.FileInputStream
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.util.UUID
-import kotlin.math.roundToInt
 import kotlin.system.measureNanoTime
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
@@ -35,21 +29,15 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun load(imageUri: Uri) {
-        val croppedBitmap = loadImageFromUri(getApplication<Application>().contentResolver, imageUri)?.let {
-            val cropped = Bitmap.createBitmap(it, 0, 0, 64, 64)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && cropped.config == Bitmap.Config.HARDWARE) {
-                // We can't get pixels from hardware bitmap, so convert it to software first
-                val software = cropped.copy(Bitmap.Config.ARGB_8888, false)
-                cropped.recycle()
-                software
-            } else {
-                cropped
-            }
+        val bitmap = loadImageFromUri(getApplication<Application>().contentResolver, imageUri)?.let {
+            val softwareBitmap = it.copy(Bitmap.Config.ARGB_8888, false)
+            it.recycle()
+            softwareBitmap
         } ?: return
 
         viewModelScope.launch(Dispatchers.Default) {
             measureNanoTime {
-                inference(croppedBitmap)
+                inference(bitmap)
             }.also {
                 Log.d(null, "Execution took ${it / 1000 / 1000}ms")
             }
@@ -58,8 +46,15 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private suspend fun inference(bitmap: Bitmap) {
 
-        val modelBuffer = loadModelFile(getApplication<Application>().assets, "realesrgan-x4plus.tflite")
-        val outputImage = realESRGAN.runUpscaling(modelBuffer, 4, getPixels(bitmap), bitmap.width, bitmap.height)
+        val application = getApplication<Application>()
+        val modelBuffer = loadModelFile(application.assets, "realesrgan-x4plus.tflite")
+        val outputImage = realESRGAN.runUpscaling(
+            modelBuffer,
+            4,
+            getPixels(bitmap),
+            bitmap.width,
+            bitmap.height
+        )
 
         outputImage?.let {
             getOutputImageFile("${UUID.randomUUID()}.png")?.outputStream()?.use { os ->

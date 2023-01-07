@@ -28,12 +28,7 @@ struct float_ptr_array {
     size_t size;
 };
 
-struct output_image_t {
-    int* data;
-    const size_t size;
-};
-
-const output_image_t* run_inference(const void* model_data,
+const Eigen::MatrixXi* run_inference(const void* model_data,
                                     const long model_size,
                                     int scale,
                                     const Eigen::MatrixXi& input_image);

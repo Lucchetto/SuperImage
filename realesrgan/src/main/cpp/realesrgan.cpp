@@ -52,7 +52,7 @@ bool is_final_tile_in_axis(const std::pair<int, int> paddings) {
     return paddings.second == 0;
 }
 
-int* process_tiles(
+Eigen::MatrixXi* process_tiles(
         TfLiteInterpreter* interpreter,
         const Eigen::MatrixXi& image_matrix,
         const int scale,
@@ -61,6 +61,7 @@ int* process_tiles(
 
     const int height = image_matrix.rows();
     const int width = image_matrix.cols();
+    const auto output_image_matrix = new Eigen::MatrixXi(height * scale, width * scale);
     TfLiteTensor* input_tensor = TfLiteInterpreterGetInputTensor(interpreter, 0);
     const TfLiteTensor* output_tensor = TfLiteInterpreterGetOutputTensor(interpreter, 0);
 
@@ -152,6 +153,12 @@ int* process_tiles(
                     cropped_output_tile.dimension(1),
                     cropped_output_tile.dimension(2));
 
+            output_image_matrix->block(
+                    y * scale,
+                    x * scale,
+                    tile_rgb_matrix.rows(),
+                    tile_rgb_matrix.cols()) = tile_rgb_matrix;
+
             // Recalculate padding and position of next tile in row
             if (incomplete_column) {
                 break;
@@ -168,10 +175,10 @@ int* process_tiles(
         }
     }
 
-    return nullptr;
+    return output_image_matrix;
 }
 
-const output_image_t* run_inference(
+const Eigen::MatrixXi* run_inference(
         const void* model_data,
         const long model_size,
         int scale,
@@ -218,81 +225,12 @@ const output_image_t* run_inference(
         return nullptr;
     }
 
-    process_tiles(interpreter, input_image, scale, REALESRGAN_INPUT_TILE_SIZE, REALESRGAN_INPUT_TILE_PADDING);
-
-    TfLiteTensor* model_input_tensor = TfLiteInterpreterGetInputTensor(interpreter, 0);
-
-    const Eigen::MatrixXi cropped = input_image.block(0, 0, REALESRGAN_INPUT_TILE_SIZE, REALESRGAN_INPUT_TILE_SIZE);
-    // Treat tensor as an one-dimensional array for simplicity
-    const int input_image_size = cropped.size();
-    const int* input_image_data = cropped.data();
-
-    // Convert input image RGB int array to float array
-    // with tensor shape [1, REALESRGAN_IMAGE_CHANNELS, REALESRGAN_INPUT_IMAGE_HEIGHT, REALESRGAN_INPUT_IMAGE_WIDTH]
-    float input_buffer[input_image_size * REALESRGAN_IMAGE_CHANNELS];
-    int green_start_index = input_image_size;
-    int blue_start_index = input_image_size * 2;
-    for (int i = 0; i < input_image_size; i++) {
-        // Alpha is ignored
-        input_buffer[i] = (float)((input_image_data[i] >> 16) & 0xff) / 255.0;
-        input_buffer[i + green_start_index] = (float)((input_image_data[i] >> 8) & 0xff) / 255.0;
-        input_buffer[i + blue_start_index] = (float)((input_image_data[i]) & 0xff) / 255.0;
-    }
-
-    // Feed input into model
-    status = TfLiteTensorCopyFromBuffer(model_input_tensor, input_buffer, sizeof(input_buffer));
-    if (status != kTfLiteOk) {
-        LOGE("Something went wrong when copying input buffer to input tensor");
-        TfLiteInterpreterDelete(interpreter);
-        TfLiteInterpreterOptionsDelete(options);
-        TfLiteNnapiDelegateDelete(nnapi_delegate);
-        TfLiteModelDelete(model);
-        return nullptr;
-    }
-
-    // Run the interpreter
-    status = TfLiteInterpreterInvoke(interpreter);
-    if (status != kTfLiteOk) {
-        LOGE("Something went wrong when running the TFLite model");
-        TfLiteInterpreterDelete(interpreter);
-        TfLiteInterpreterOptionsDelete(options);
-        TfLiteNnapiDelegateDelete(nnapi_delegate);
-        TfLiteModelDelete(model);
-        return nullptr;
-    }
-
-    // Extract the output tensor data
-    const TfLiteTensor* output_tensor =
-            TfLiteInterpreterGetOutputTensor(interpreter, 0);
-    const size_t output_tensor_pixels = input_image_size * pow(scale, 2);
-    const size_t output_tensor_size = output_tensor_pixels * REALESRGAN_IMAGE_CHANNELS;
-    float output_buffer[output_tensor_size];
-    status = TfLiteTensorCopyToBuffer(
-            output_tensor, output_buffer,
-            output_tensor_size * sizeof(float));
-    if (status != kTfLiteOk) {
-        LOGE("Something went wrong when copying output tensor to output buffer");
-        TfLiteInterpreterDelete(interpreter);
-        TfLiteInterpreterOptionsDelete(options);
-        TfLiteNnapiDelegateDelete(nnapi_delegate);
-        TfLiteModelDelete(model);
-        return nullptr;
-    }
-
-    // Postprocess the output from TFLite
-    int pixel_channels[REALESRGAN_IMAGE_CHANNELS];
-    int* output_image_pixels = (int *) malloc(sizeof(int) * output_tensor_pixels);
-    for (int i = 0; i < output_tensor_pixels; i++) {
-        for (int j = 0; j < REALESRGAN_IMAGE_CHANNELS; j++) {
-            pixel_channels[j] = std::max<float>(
-                    0, std::min<float>(255, output_buffer[i + j * output_tensor_pixels] * 255));
-        }
-        // When we have RGB values, we pack them into a single pixel.
-        // Alpha is set to 255.
-        output_image_pixels[i] = (255u & 0xff) << 24 | (pixel_channels[0] & 0xff) << 16 |
-                                 (pixel_channels[1] & 0xff) << 8 |
-                                 (pixel_channels[2] & 0xff);
-    }
+    const Eigen::MatrixXi* output_image = process_tiles(
+            interpreter,
+            input_image,
+            scale,
+            REALESRGAN_INPUT_TILE_SIZE,
+            REALESRGAN_INPUT_TILE_PADDING);
 
     // Cleanup
     TfLiteInterpreterDelete(interpreter);
@@ -300,8 +238,5 @@ const output_image_t* run_inference(
     TfLiteNnapiDelegateDelete(nnapi_delegate);
     TfLiteModelDelete(model);
 
-    return new output_image_t {
-            .data = output_image_pixels,
-            .size = output_tensor_pixels
-    };
+    return output_image;
 }
