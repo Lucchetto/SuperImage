@@ -39,17 +39,17 @@ float_ptr_array tile_to_float_array(const Eigen::MatrixXi& tile) {
 }
 
 std::pair<int, int> calculate_tile_padding(const int position, const int axis_size, const int tile_size, const int padding) {
-    if (position + tile_size >= axis_size || position == tile_size) {
-        // Last tile or second tile of axis
+    if (position == 0) {
+        // First tile
+        return std::pair<int, int> {0, padding};
+    }
+    if (position + tile_size >= axis_size) {
+        // Last tile
         return std::pair<int, int> {padding, 0};
     } else {
         // Tiles in between
         return std::pair<int, int> {padding, padding};
     }
-}
-
-bool is_final_tile_in_axis(const std::pair<int, int> paddings) {
-    return paddings.second == 0;
 }
 
 Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_tiles(
@@ -69,11 +69,13 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
     while (y < height) {
         const int y_from_end = height - y;
         const bool incomplete_y = y_from_end < tile_size;
+        const std::pair<int, int> y_padding = calculate_tile_padding(y, height, tile_size, padding);
         int x = 0;
 
         while (x < width) {
             const int x_from_end = width - x;
             const bool incomplete_x = x_from_end < tile_size;
+            const std::pair<int, int> x_padding = calculate_tile_padding(x, width, tile_size, padding);
 
             Eigen::MatrixXi tile = image_matrix.block(
                     incomplete_y ? (height - tile_size) : y,
@@ -163,7 +165,7 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
             if (incomplete_x) {
                 break;
             } else {
-                x += tile_size;
+                x += tile_size - (x_padding.first + x_padding.second);
             }
         }
 
@@ -171,7 +173,7 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
         if (incomplete_y) {
             break;
         } else {
-            y += tile_size;
+            y += tile_size - (y_padding.first + y_padding.second);
         }
     }
 
