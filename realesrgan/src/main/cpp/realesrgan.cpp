@@ -59,8 +59,8 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
     interpreter->resizeTensor(interpreter_input, 1, REALESRGAN_IMAGE_CHANNELS, REALESRGAN_INPUT_TILE_SIZE, REALESRGAN_INPUT_TILE_SIZE);
     interpreter->resizeSession(session);
     MNN::Tensor* interpreter_output = interpreter->getSessionOutput(session, "1895");
-    MNN::Tensor input_tensor(interpreter_input, MNN::Tensor::TENSORFLOW);
-    MNN::Tensor output_tensor(interpreter_output, MNN::Tensor::TENSORFLOW);
+    MNN::Tensor input_tensor(interpreter_input, MNN::Tensor::CAFFE);
+    MNN::Tensor output_tensor(interpreter_output, MNN::Tensor::CAFFE);
     auto input_tensor_buffer = input_tensor.host<float>();
     auto output_tensor_buffer = output_tensor.host<float>();
 
