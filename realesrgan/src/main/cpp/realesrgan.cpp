@@ -54,18 +54,35 @@ Eigen::MatrixXi output_tensor_to_pixels_matrix(const Eigen::Tensor<float, 3, Eig
             tensor->dimension(1));
 }
 
-std::pair<int, int> calculate_tile_padding(const int position, const int axis_size, const int tile_size, const int padding) {
-    if (position + tile_size >= axis_size || position == tile_size) {
-        // Last tile or second tile of axis
-        return std::pair<int, int> {padding, 0};
+Eigen::Tensor<float, 3, Eigen::RowMajor> trim_tensor_padding(
+        const int scale,
+        const std::pair<int, int> x_padding,
+        const std::pair<int, int> y_padding,
+        const Eigen::TensorMap<Eigen::Tensor<float, 3, Eigen::RowMajor>>* tensor) {
+
+    Eigen::array<Eigen::Index, 3> offsets = {
+            0,
+            x_padding.first * scale,
+            y_padding.first * scale};
+    Eigen::array<Eigen::Index, 3> extents = {
+            tensor->dimension(0),
+            tensor->dimension(1) - x_padding.first * scale - x_padding.second * scale,
+            tensor->dimension(2) - y_padding.first * scale - y_padding.second * scale};
+
+    return tensor->slice(offsets, extents);
+}
+
+std::pair<int, int> calculate_axis_padding(const int position, const int axis_size, const int tile_size, const int padding) {
+    if (position == 0) {
+        // First tile
+        return std::pair<int, int> {0, padding};
+    } else if (axis_size - position <= tile_size - padding) {
+        // Final tile
+        return std::pair<int, int> {(tile_size - (axis_size - position)) + padding, 0};
     } else {
         // Tiles in between
         return std::pair<int, int> {padding, padding};
     }
-}
-
-bool is_final_tile_in_axis(const std::pair<int, int> paddings) {
-    return paddings.second == 0;
 }
 
 Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_tiles(
@@ -81,7 +98,7 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
     const auto output_image_matrix = new Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(height * scale, width * scale);
 
     MNN::Tensor* interpreter_input = interpreter->getSessionInput(session, "input.1");
-    interpreter->resizeTensor(interpreter_input, 1, REALESRGAN_IMAGE_CHANNELS, REALESRGAN_INPUT_TILE_SIZE, REALESRGAN_INPUT_TILE_SIZE);
+    interpreter->resizeTensor(interpreter_input, 1, REALESRGAN_IMAGE_CHANNELS, tile_size, tile_size);
     interpreter->resizeSession(session);
     MNN::Tensor* interpreter_output = interpreter->getSessionOutput(session, "1895");
     MNN::Tensor input_tensor(interpreter_input, MNN::Tensor::CAFFE);
@@ -94,10 +111,12 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
         const int y_from_end = height - y;
         const bool incomplete_y = y_from_end < tile_size;
         int x = 0;
+        std::pair<int, int> y_padding = calculate_axis_padding(y, height, tile_size, padding);
 
         while (x < width) {
             const int x_from_end = width - x;
             const bool incomplete_x = x_from_end < tile_size;
+            std::pair<int, int> x_padding = calculate_axis_padding(x, width, tile_size, padding);
 
             Eigen::MatrixXi tile = image_matrix.block(
                     incomplete_y ? (height - tile_size) : y,
@@ -119,25 +138,17 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
 
             // Read MNN tensor as Eigen tensor
             const int output_tile_size = tile_size * scale;
-            Eigen::TensorMap<Eigen::Tensor<float, 3, Eigen::RowMajor>> output_tile(output_tensor_buffer, REALESRGAN_IMAGE_CHANNELS, output_tile_size, output_tile_size);
+            const Eigen::TensorMap<Eigen::Tensor<float, 3, Eigen::RowMajor>> output_tile(
+                    output_tensor_buffer,
+                    REALESRGAN_IMAGE_CHANNELS,
+                    output_tile_size,
+                    output_tile_size);
 
-            Eigen::Tensor<float, 3, Eigen::RowMajor> cropped_output_tile;
-            if (incomplete_x || incomplete_y) {
-                // Slice off the part of tile that's already present in previous tile
-                const int scaled_y_from_end = incomplete_y ? y_from_end * scale : output_tile_size;
-                const int scaled_x_from_end = incomplete_x ? x_from_end * scale : output_tile_size;
-                Eigen::array<Eigen::Index, 3> offsets = {
-                        0,
-                        output_tile_size - scaled_x_from_end,
-                        output_tile_size - scaled_y_from_end};
-                Eigen::array<Eigen::Index, 3> extents = {
-                        REALESRGAN_IMAGE_CHANNELS,
-                        scaled_x_from_end,
-                        scaled_y_from_end};
-                cropped_output_tile = output_tile.slice(offsets, extents);
-            } else {
-                cropped_output_tile = output_tile;
-            }
+            const Eigen::Tensor<float, 3, Eigen::RowMajor> cropped_output_tile = trim_tensor_padding(
+                    scale,
+                    x_padding,
+                    y_padding,
+                    &output_tile);
 
             const Eigen::MatrixXi tile_rgb_matrix = output_tensor_to_pixels_matrix(&cropped_output_tile);
 
@@ -151,7 +162,7 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
             if (incomplete_x) {
                 break;
             } else {
-                x += tile_size;
+                x += tile_size - (x == 0 ? padding * 3 : padding * 2);
             }
         }
 
@@ -159,7 +170,7 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
         if (incomplete_y) {
             break;
         } else {
-            y += tile_size;
+            y += tile_size - (y == 0 ? padding * 3 : padding * 2);
         }
     }
 
