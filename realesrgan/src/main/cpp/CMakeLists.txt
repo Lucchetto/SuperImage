@@ -13,9 +13,7 @@ set(EIGEN_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/eigen")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
 set(CMAKE_CXX_STANDARD 14)
 
-option(MNN_NNAPI "" ON)
-option(MNN_BUILD_SHARED_LIBS "" OFF)
-option(MNN_SEP_BUILD "" OFF)
+option(MNN_VULKAN "" ON)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/MNN)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/MNN/include)

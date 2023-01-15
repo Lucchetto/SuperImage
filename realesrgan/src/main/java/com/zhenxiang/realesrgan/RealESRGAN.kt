@@ -13,6 +13,7 @@ class RealESRGAN {
     companion object {
         // Used to load the 'realesrgan' library on application startup.
         init {
+            System.loadLibrary("MNN_VK")
             System.loadLibrary("realesrgan")
         }
     }

@@ -180,7 +180,7 @@ const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_i
     backendConfig.power = MNN::BackendConfig::Power_High;
     backendConfig.precision = MNN::BackendConfig::Precision_Low;
     config.backendConfig = &backendConfig;
-    config.type = MNN_FORWARD_NN;
+    config.type = MNN_FORWARD_VULKAN;
 
     MNN::Session* session = interpreter->createSession(config);
 
