@@ -13,7 +13,7 @@
 
 #include "realesrgan.h"
 
-void tile_to_float_array(const Eigen::MatrixXi& tile, float* float_buffer) {
+void pixels_matrix_to_float_array(const Eigen::MatrixXi& tile, float* float_buffer) {
 
     // Convert input image RGB int array to float array
     // with tensor shape [1, REALESRGAN_IMAGE_CHANNELS, tile height, tile width]
@@ -27,6 +27,31 @@ void tile_to_float_array(const Eigen::MatrixXi& tile, float* float_buffer) {
         float_buffer[i + green_start_index] = (float)((tile_data[i] >> 8) & 0xff) / 255.0;
         float_buffer[i + blue_start_index] = (float)((tile_data[i]) & 0xff) / 255.0;
     }
+}
+
+Eigen::MatrixXi output_tensor_to_pixels_matrix(const Eigen::Tensor<float, 3, Eigen::RowMajor>* tensor) {
+
+    const float* tensor_data = tensor->data();
+    const size_t pixels_count = tensor->size() / REALESRGAN_IMAGE_CHANNELS;
+    int pixel_channels[REALESRGAN_IMAGE_CHANNELS];
+    int output_tile_rgb[pixels_count];
+    for (int i = 0; i < pixels_count; i++) {
+        for (int j = 0; j < REALESRGAN_IMAGE_CHANNELS; j++) {
+            pixel_channels[j] = std::max<float>(
+                    0, std::min<float>(255, tensor_data[i + j * pixels_count] * 255));
+        }
+
+        // When we have RGB values, we pack them into output_tile single pixel.
+        // Alpha is set to 255.
+        output_tile_rgb[i] = (255u & 0xff) << 24 | (pixel_channels[0] & 0xff) << 16 |
+                             (pixel_channels[1] & 0xff) << 8 |
+                             (pixel_channels[2] & 0xff);
+    }
+
+    return Eigen::Map<Eigen::MatrixXi>(
+            output_tile_rgb,
+            tensor->dimension(2),
+            tensor->dimension(1));
 }
 
 std::pair<int, int> calculate_tile_padding(const int position, const int axis_size, const int tile_size, const int padding) {
@@ -81,7 +106,7 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
                     tile_size);
 
             // Feed input into tensor
-            tile_to_float_array(tile, input_tensor_buffer);
+            pixels_matrix_to_float_array(tile, input_tensor_buffer);
 
             // Feed data to the interpreter
             interpreter_input->copyFromHostTensor(&input_tensor);
@@ -114,27 +139,7 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
                 cropped_output_tile = output_tile;
             }
 
-            // Postprocess the output from TFLite
-            const float* output_tile_data = cropped_output_tile.data();
-            const size_t output_tile_pixels = cropped_output_tile.size() / REALESRGAN_IMAGE_CHANNELS;
-            int pixel_channels[REALESRGAN_IMAGE_CHANNELS];
-            int output_tile_rgb[output_tile_pixels];
-            for (int i = 0; i < output_tile_pixels; i++) {
-                for (int j = 0; j < REALESRGAN_IMAGE_CHANNELS; j++) {
-                    pixel_channels[j] = std::max<float>(
-                            0, std::min<float>(255, output_tile_data[i + j * output_tile_pixels] * 255));
-                }
-                // When we have RGB values, we pack them into output_tile single pixel.
-                // Alpha is set to 255.
-                output_tile_rgb[i] = (255u & 0xff) << 24 | (pixel_channels[0] & 0xff) << 16 |
-                                     (pixel_channels[1] & 0xff) << 8 |
-                                     (pixel_channels[2] & 0xff);
-            }
-
-            Eigen::Map<Eigen::MatrixXi> tile_rgb_matrix(
-                    output_tile_rgb,
-                    cropped_output_tile.dimension(2),
-                    cropped_output_tile.dimension(1));
+            const Eigen::MatrixXi tile_rgb_matrix = output_tensor_to_pixels_matrix(&cropped_output_tile);
 
             output_image_matrix->block(
                     y * scale,
