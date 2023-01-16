@@ -76,9 +76,9 @@ std::pair<int, int> calculate_axis_padding(const int position, const int axis_si
     if (position == 0) {
         // First tile
         return std::pair<int, int> {0, padding};
-    } else if (axis_size - position <= tile_size - padding) {
+    } else if (axis_size - position - padding <= tile_size) {
         // Final tile
-        return std::pair<int, int> {(tile_size - (axis_size - position)) + padding, 0};
+        return std::pair<int, int> {(tile_size - (axis_size - position)), 0};
     } else {
         // Tiles in between
         return std::pair<int, int> {padding, padding};
@@ -107,22 +107,18 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
     auto output_tensor_buffer = output_tensor.host<float>();
 
     int y = 0;
-    while (y < height) {
-        const int y_from_end = height - y;
-        const bool incomplete_y = y_from_end < tile_size;
+    int last_row_height = 0;
+    while (true) {
         int x = 0;
         std::pair<int, int> y_padding = calculate_axis_padding(y, height, tile_size, padding);
+        y -= y_padding.first;
+        const bool final_y = y_padding.second == 0;
 
-        while (x < width) {
-            const int x_from_end = width - x;
-            const bool incomplete_x = x_from_end < tile_size;
+        while (true) {
             std::pair<int, int> x_padding = calculate_axis_padding(x, width, tile_size, padding);
+            const bool final_x = x_padding.second == 0;
 
-            Eigen::MatrixXi tile = image_matrix.block(
-                    incomplete_y ? (height - tile_size) : y,
-                    incomplete_x ? (width - tile_size) : x,
-                    tile_size,
-                    tile_size);
+            Eigen::MatrixXi tile = image_matrix.block(y - y_padding.first, x - x_padding.first, tile_size, tile_size);
 
             // Feed input into tensor
             pixels_matrix_to_float_array(tile, input_tensor_buffer);
@@ -159,18 +155,19 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
                     tile_rgb_matrix.cols()) = tile_rgb_matrix;
 
             // Recalculate padding and position of next tile in row
-            if (incomplete_x) {
+            if (final_x) {
                 break;
             } else {
-                x += tile_size - (x == 0 ? padding * 3 : padding * 2);
+                x += tile_rgb_matrix.cols() / scale;
+                last_row_height = tile_rgb_matrix.rows() / scale;
             }
         }
 
         // Recalculate padding and position of next column's tiles
-        if (incomplete_y) {
+        if (final_y) {
             break;
         } else {
-            y += tile_size - (y == 0 ? padding * 3 : padding * 2);
+            y += last_row_height;
         }
     }
 
