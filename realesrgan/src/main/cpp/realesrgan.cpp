@@ -11,6 +11,7 @@
 
 #include "unsupported/Eigen/CXX11/Tensor"
 
+#include "progress_tracker.h"
 #include "realesrgan.h"
 
 void pixels_matrix_to_float_array(const Eigen::MatrixXi& tile, float* float_buffer) {
@@ -86,6 +87,8 @@ std::pair<int, int> calculate_axis_padding(const int position, const int axis_si
 }
 
 Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_tiles(
+        JNIEnv* jni_env,
+        jobject progress_tracker,
         MNN::Interpreter* interpreter,
         MNN::Session* session,
         const Eigen::MatrixXi& image_matrix,
@@ -108,6 +111,9 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
 
     int y = 0;
     int last_row_height = 0;
+    int processed_pixels = 0;
+    set_progress_percentage(jni_env, progress_tracker, 0);
+
     while (true) {
         int x = 0;
         std::pair<int, int> y_padding = calculate_axis_padding(y, height, tile_size, padding);
@@ -160,6 +166,8 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
             } else {
                 x += tile_rgb_matrix.cols() / scale;
                 last_row_height = tile_rgb_matrix.rows() / scale;
+                processed_pixels += tile_rgb_matrix.size();
+                set_progress_percentage(jni_env, progress_tracker, 100.0 * processed_pixels / output_image_matrix->size());
             }
         }
 
@@ -175,6 +183,8 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
 }
 
 const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_inference(
+        JNIEnv* jni_env,
+        jobject progress_tracker,
         const void* model_data,
         const long model_size,
         int scale,
@@ -184,6 +194,7 @@ const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_i
 
     if (!interpreter) {
         LOGE("Failed to create MNN interpreter");
+        set_progress_error(jni_env, progress_tracker);
         return nullptr;
     }
 
@@ -198,6 +209,8 @@ const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_i
     MNN::Session* session = interpreter->createSession(config);
 
     const auto output_image = process_tiles(
+            jni_env,
+            progress_tracker,
             interpreter,
             session,
             input_image,

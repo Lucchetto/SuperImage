@@ -3,6 +3,7 @@ package com.zhenxiang.realesrgan
 class RealESRGAN {
 
     external fun runUpscaling(
+        progressTracker: JNIProgressTracker,
         modelData: ByteArray,
         scale: Int,
         inputImage: IntArray,

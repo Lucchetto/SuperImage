@@ -6,6 +6,7 @@
 #define TFREALESRGAN_REALESRGAN_H
 
 #include <android/log.h>
+#include "jni.h"
 
 #include "Eigen/Core"
 
@@ -20,9 +21,12 @@
   ((void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__))
 
 
-const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_inference(const void* model_data,
-                                    const long model_size,
-                                    int scale,
-                                    const Eigen::MatrixXi& input_image);
+const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_inference(
+        JNIEnv* jni_env,
+        jobject progress_tracker,
+        const void* model_data,
+        const long model_size,
+        int scale,
+        const Eigen::MatrixXi& input_image);
 
 #endif //TFREALESRGAN_REALESRGAN_H

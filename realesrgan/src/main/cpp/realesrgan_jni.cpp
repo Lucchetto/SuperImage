@@ -7,6 +7,7 @@ extern "C" JNIEXPORT jintArray JNICALL
 Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
         JNIEnv *env,
         jobject /* thiz */,
+        jobject progress_tracker,
         jbyteArray model_data_jarray,
         jint scale,
         jintArray input_image_jarray,
@@ -21,7 +22,7 @@ Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
             input_image_height,
             input_image_width);
 
-    const auto output_image = run_inference(model_data, model_size_bytes, scale, input_image);
+    const auto output_image = run_inference(env, progress_tracker, model_data, model_size_bytes, scale, input_image);
 
     // Cleanup and return data
     env->ReleaseByteArrayElements(model_data_jarray, model_data, JNI_OK);
