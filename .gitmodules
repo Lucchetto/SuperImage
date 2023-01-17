@@ -1,0 +1,6 @@
+[submodule "realesrgan/src/main/cpp/MNN"]
+	path = realesrgan/src/main/cpp/MNN
+	url = https://github.com/alibaba/MNN
+[submodule "realesrgan/src/main/cpp/eigen"]
+	path = realesrgan/src/main/cpp/eigen
+	url = https://gitlab.com/libeigen/eigen
