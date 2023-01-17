@@ -5,5 +5,5 @@
 	path = realesrgan/src/main/cpp/eigen
 	url = https://gitlab.com/libeigen/eigen
 [submodule "app/src/main/assets"]
-	path = app/src/main/assets
+	path = realesrgan/src/main/assets
 	url = https://github.com/Lucchetto/Real-ESRGAN-models/
