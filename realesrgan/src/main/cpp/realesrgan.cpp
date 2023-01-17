@@ -100,10 +100,10 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
     const int width = image_matrix.cols();
     const auto output_image_matrix = new Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(height * scale, width * scale);
 
-    MNN::Tensor* interpreter_input = interpreter->getSessionInput(session, "input.1");
+    MNN::Tensor* interpreter_input = interpreter->getSessionInput(session, nullptr);
     interpreter->resizeTensor(interpreter_input, 1, REALESRGAN_IMAGE_CHANNELS, tile_size, tile_size);
     interpreter->resizeSession(session);
-    MNN::Tensor* interpreter_output = interpreter->getSessionOutput(session, "1895");
+    MNN::Tensor* interpreter_output = interpreter->getSessionOutput(session, nullptr);
     MNN::Tensor input_tensor(interpreter_input, MNN::Tensor::CAFFE);
     MNN::Tensor output_tensor(interpreter_output, MNN::Tensor::CAFFE);
     auto input_tensor_buffer = input_tensor.host<float>();
