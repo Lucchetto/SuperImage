@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">SuperImage</string>
+
+    <string name="upscale_label">Upscale</string>
+
+    <string name="upscaling_worker_notification_title">Upscaling %1$s</string>
+    <string name="upscaling_worker_error_notification_title">An error occurred while upscaling %1$s</string>
+    <string name="upscaling_worker_success_notification_title">%1$s upscaled successfully !</string>
+    <string name="upscaling_worker_notification_channel_name">Upscale image</string>
 </resources>
