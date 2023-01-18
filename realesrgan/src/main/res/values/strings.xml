@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="x2_plus_model_label">x2 general</string>
     <string name="x4_plus_model_label">x4 general</string>
 </resources>

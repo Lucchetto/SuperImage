@@ -2,5 +2,8 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/realesrgan/src/main/assets" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/realesrgan/src/main/cpp/MNN" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/realesrgan/src/main/cpp/eigen" vcs="Git" />
   </component>
 </project>
