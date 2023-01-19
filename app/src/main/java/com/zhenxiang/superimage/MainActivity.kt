@@ -5,14 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.zhenxiang.superimage.home.HomePage
-import com.zhenxiang.superimage.ui.theme.SuperImageTheme
+import com.zhenxiang.superimage.ui.theme.MonoTheme
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            SuperImageTheme {
+            MonoTheme {
                 HomePage(viewModel())
             }
         }

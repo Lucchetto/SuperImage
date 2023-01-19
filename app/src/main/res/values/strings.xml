@@ -1,9 +1,11 @@
 <resources>
     <string name="app_name">SuperImage</string>
 
-    <string name="select_image">Select image</string>
+    <string name="select_image_label">Select image</string>
+    <string name="change_image_label">Change image</string>
     <string name="upscale_label">Upscale</string>
     <string name="selected_mode_label">Selected mode</string>
+    <string name="upscaling_options_title">Upscaling options</string>
 
     <string name="upscaling_worker_notification_title">Upscaling %1$s</string>
     <string name="upscaling_worker_error_notification_title">An error occurred while upscaling %1$s</string>

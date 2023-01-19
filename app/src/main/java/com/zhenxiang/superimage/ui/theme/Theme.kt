@@ -1,68 +1,115 @@
 package com.zhenxiang.superimage.ui.theme
 
 import android.app.Activity
+import android.graphics.Color
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+private val LightColors = lightColorScheme(
+    primary = black,
+    onPrimary = white,
+    primaryContainer = white,
+    onPrimaryContainer = black,
+    secondary = black,
+    onSecondary = white,
+    secondaryContainer = white,
+    onSecondaryContainer = black,
+    tertiary = black,
+    onTertiary = white,
+    tertiaryContainer = white,
+    onTertiaryContainer = black,
+    error = md_theme_light_error,
+    onError = md_theme_light_onError,
+    errorContainer = md_theme_light_errorContainer,
+    onErrorContainer = md_theme_light_onErrorContainer,
+    outline = black,
+    background = white,
+    onBackground = black,
+    surface = white,
+    onSurface = black,
+    surfaceVariant = white,
+    onSurfaceVariant = black,
+    inverseSurface = black,
+    inverseOnSurface = white,
+    inversePrimary = md_theme_light_inversePrimary,
+    surfaceTint = md_theme_light_surfaceTint,
+    outlineVariant = md_theme_light_outlineVariant,
+    scrim = md_theme_light_scrim,
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+private val DarkColors = darkColorScheme(
+    primary = white,
+    onPrimary = black,
+    primaryContainer = black,
+    onPrimaryContainer = white,
+    secondary = white,
+    onSecondary = black,
+    secondaryContainer = black,
+    onSecondaryContainer = white,
+    tertiary = white,
+    onTertiary = black,
+    tertiaryContainer = black,
+    onTertiaryContainer = white,
+    error = md_theme_dark_error,
+    onError = md_theme_dark_onError,
+    errorContainer = md_theme_dark_errorContainer,
+    onErrorContainer = md_theme_dark_onErrorContainer,
+    outline = white,
+    background = black,
+    onBackground = white,
+    surface = black,
+    onSurface = white,
+    surfaceVariant = black,
+    onSurfaceVariant = white,
+    inverseSurface = white,
+    inverseOnSurface = black,
+    inversePrimary = md_theme_dark_inversePrimary,
+    surfaceTint = md_theme_dark_surfaceTint,
+    outlineVariant = md_theme_dark_outlineVariant,
+    scrim = md_theme_dark_scrim,
 )
 
 @Composable
-fun SuperImageTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+fun MonoTheme(
+    lightMode: Boolean = !isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    val colors = if (lightMode) {
+        LightColors
+    } else {
+        DarkColors
     }
+
     val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
-            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
+    val activity = view.context as? Activity
+    activity?.let {
+        val window = it.window
+        if (!view.isInEditMode) {
+            SideEffect {
+                window.statusBarColor = Color.TRANSPARENT
+                window.navigationBarColor = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && lightMode) Color.BLACK else Color.TRANSPARENT
+                WindowCompat.getInsetsController(window, view).apply {
+                    isAppearanceLightStatusBars = lightMode
+                    isAppearanceLightNavigationBars = lightMode
+                }
+                WindowCompat.setDecorFitsSystemWindows(window, false)
+            }
         }
     }
 
+
     MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
+        colorScheme = colors,
+        shapes = Shapes,
+        content = content,
+        typography = Typography
     )
 }

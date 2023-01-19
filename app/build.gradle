@@ -59,6 +59,7 @@ dependencies {
     implementation 'androidx.compose.material3:material3:1.1.0-alpha04'
     implementation 'androidx.documentfile:documentfile:1.0.1'
     implementation "androidx.work:work-runtime-ktx:2.7.1"
+    implementation "io.coil-kt:coil-compose:2.2.2"
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

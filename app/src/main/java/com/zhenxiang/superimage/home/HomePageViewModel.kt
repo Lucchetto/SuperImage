@@ -33,9 +33,11 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
             viewModelScope.launch(Dispatchers.IO) {
                 val application = getApplication<Application>()
                 DocumentFile.fromSingleUri(application, imageUri)?.name?.let { fileName ->
-                    BitmapUtils.loadImageFromUri(application.contentResolver, imageUri)?.let { bitmap ->
-                        emit(DataState.Success(InputImage(fileName, imageUri, bitmap)))
-                    } ?: emit(DataState.Error(Unit))
+                    emit(
+                        DataState.Success(
+                            InputImage(fileName, imageUri)
+                        )
+                    )
                 } ?: emit(DataState.Error(Unit))
             }
         }
