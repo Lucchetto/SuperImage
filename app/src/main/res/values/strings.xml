@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">SuperImage</string>
 
+    <string name="select_image">Select image</string>
     <string name="upscale_label">Upscale</string>
     <string name="selected_mode_label">Selected mode</string>
 

@@ -19,6 +19,7 @@ import androidx.work.WorkerParameters
 import com.zhenxiang.realesrgan.JNIProgressTracker
 import com.zhenxiang.realesrgan.RealESRGAN
 import com.zhenxiang.superimage.R
+import com.zhenxiang.superimage.utils.BitmapUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
@@ -100,7 +101,7 @@ class RealESRGANWorker(
     }
 
     private fun getInputBitmap(): Bitmap? = inputImageUri?.let { uri ->
-        loadImageFromUri(applicationContext.contentResolver, uri)?.let { bitmap ->
+        BitmapUtils.loadImageFromUri(applicationContext.contentResolver, uri)?.let { bitmap ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && bitmap.config == Bitmap.Config.HARDWARE) {
                 val bitmapCopy = bitmap.copy(Bitmap.Config.ARGB_8888, false)
                 bitmap.recycle()
@@ -213,17 +214,6 @@ class RealESRGANWorker(
             bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
 
             return pixels
-        }
-
-        private fun loadImageFromUri(contentResolver: ContentResolver, uri: Uri): Bitmap? = try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri))
-            } else {
-                MediaStore.Images.Media.getBitmap(contentResolver, uri)
-            }
-        } catch (e: Exception) {
-            Log.wtf(null, e)
-            null
         }
     }
 }

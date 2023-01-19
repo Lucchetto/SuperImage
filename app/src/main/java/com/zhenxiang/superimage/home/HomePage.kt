@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -15,11 +16,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.R
+import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.ui.form.DropDownMenu
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -28,7 +31,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 fun HomePage(viewModel: HomePageViewModel) = Scaffold { padding ->
 
     val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
-        it?.let { viewModel.upscale(it) }
+        it?.let { viewModel.loadImage(it) }
     }
     val requestPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
     }
@@ -47,10 +50,25 @@ fun HomePage(viewModel: HomePageViewModel) = Scaffold { padding ->
     }
 
     Column(modifier = Modifier.padding(padding)) {
+
+        val selectedImageState by viewModel.selectedImageFlow.collectAsStateWithLifecycle()
+        val selectedImage = selectedImageState as? DataState.Success
+
         ModelSelection(flow = viewModel.selectedUpscalingModelFlow)
 
+        selectedImage?.data?.let {
+            Image(bitmap = it.preview.asImageBitmap(), contentDescription = it.fileName)
+        }
+
         Button(
-            onClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
+            onClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
+        ) {
+            Text(stringResource(id = R.string.select_image))
+        }
+
+        Button(
+            enabled = selectedImage != null,
+            onClick = { viewModel.upscale() },
         ) {
             Text(stringResource(id = R.string.upscale_label))
         }
