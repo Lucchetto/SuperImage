@@ -6,6 +6,7 @@
     <string name="upscale_label">Upscale</string>
     <string name="selected_mode_label">Selected mode</string>
     <string name="upscaling_options_title">Upscaling options</string>
+    <string name="output_format_title">Output format</string>
 
     <string name="upscaling_worker_notification_title">Upscaling %1$s</string>
     <string name="upscaling_worker_error_notification_title">An error occurred while upscaling %1$s</string>

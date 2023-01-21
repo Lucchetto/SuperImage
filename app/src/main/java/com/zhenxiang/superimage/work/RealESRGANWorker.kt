@@ -1,15 +1,12 @@
 package com.zhenxiang.superimage.work
 
 import android.app.Notification
-import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.util.Log
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -19,7 +16,10 @@ import androidx.work.WorkerParameters
 import com.zhenxiang.realesrgan.JNIProgressTracker
 import com.zhenxiang.realesrgan.RealESRGAN
 import com.zhenxiang.superimage.R
+import com.zhenxiang.superimage.model.OutputFormat
 import com.zhenxiang.superimage.utils.BitmapUtils
+import com.zhenxiang.superimage.utils.compress
+import com.zhenxiang.superimage.utils.replaceFileExtension
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
@@ -42,6 +42,9 @@ class RealESRGANWorker(
     private val inputImageName = params.inputData.getString(INPUT_IMAGE_NAME_PARAM) ?: throw IllegalArgumentException(
         "INPUT_IMAGE_NAME_PARAM must not be null"
     )
+    private val outputFormat = params.inputData.getString(OUTPUT_IMAGE_FORMAT_PARAM)?.let {
+        OutputFormat.fromFormatName(it)
+    } ?: throw IllegalArgumentException("Invalid OUTPUT_IMAGE_FORMAT_PARAM")
     private val upscalingModelAssetPath = params.inputData.getString(UPSCALING_MODEL_PATH_PARAM)
     private val upscalingScale = params.inputData.getInt(UPSCALING_SCALE_PARAM, -1)
     
@@ -139,7 +142,10 @@ class RealESRGANWorker(
 
     private fun getOutputStream(): OutputStream? {
         val contentValues = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, inputImageName)
+            put(
+                MediaStore.Images.Media.DISPLAY_NAME,
+                inputImageName.replaceFileExtension(outputFormat.formatExtension)
+            )
         }
 
         return applicationContext.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)?.let {
@@ -150,7 +156,7 @@ class RealESRGANWorker(
     private fun saveOutputImage(pixels: IntArray, width: Int, height: Int): Boolean = getOutputStream()?.use {
         Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).run {
             setPixels(pixels, 0, width, 0, 0, width, height)
-            val success = compress(Bitmap.CompressFormat.PNG, 100, it)
+            val success = compress(outputFormat, 100, it)
             recycle()
 
             success
@@ -161,6 +167,7 @@ class RealESRGANWorker(
 
         const val INPUT_IMAGE_URI_PARAM = "input_image_uri"
         const val INPUT_IMAGE_NAME_PARAM = "input_image_name"
+        const val OUTPUT_IMAGE_FORMAT_PARAM = "output_format"
         const val UPSCALING_MODEL_PATH_PARAM = "model_path"
         const val UPSCALING_SCALE_PARAM = "scale"
 

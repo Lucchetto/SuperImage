@@ -33,8 +33,7 @@ fun <T> DropDownMenu(
                     if (it.isFocused) {
                         expanded = true
                     }
-                }
-                .fillMaxWidth(),
+                },
             readOnly = true,
             value = toStringAdapter(value),
             onValueChange = { },

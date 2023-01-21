@@ -6,7 +6,9 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.util.Log
+import com.zhenxiang.superimage.model.OutputFormat
+import timber.log.Timber
+import java.io.OutputStream
 
 object BitmapUtils {
 
@@ -17,7 +19,16 @@ object BitmapUtils {
             MediaStore.Images.Media.getBitmap(contentResolver, uri)
         }
     } catch (e: Exception) {
-        Log.wtf(null, e)
+        Timber.e(e)
         null
     }
+}
+
+fun Bitmap.compress(outputFormat: OutputFormat, quality: Int, outputStream: OutputStream): Boolean {
+    val bitmapCompressFormat = when (outputFormat) {
+        OutputFormat.PNG -> Bitmap.CompressFormat.PNG
+        OutputFormat.JPEG -> Bitmap.CompressFormat.JPEG
+    }
+
+    return compress(bitmapCompressFormat, quality, outputStream)
 }

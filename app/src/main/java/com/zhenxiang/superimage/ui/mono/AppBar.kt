@@ -23,7 +23,6 @@ fun MonoAppBar(
         modifier = modifier
             .fillMaxWidth()
             .windowInsetsPadding(windowInsets)
-            .background(MaterialTheme.colorScheme.primaryContainer)
             .drawBottomBorder(MaterialTheme.border.regular)
             .padding(MaterialTheme.spacing.level5)
     ) {

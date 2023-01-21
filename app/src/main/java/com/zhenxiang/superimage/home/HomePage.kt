@@ -7,8 +7,6 @@ import android.content.res.Configuration
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,14 +15,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,6 +29,7 @@ import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.coil.BlurShadowTransformation
 import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.model.InputImage
+import com.zhenxiang.superimage.model.OutputFormat
 import com.zhenxiang.superimage.ui.form.DropDownMenu
 import com.zhenxiang.superimage.ui.mono.MonoAppBar
 import com.zhenxiang.superimage.ui.mono.MonoButton
@@ -84,7 +79,8 @@ fun HomePage(viewModel: HomePageViewModel) = Scaffold(
         ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
 
         Options(
-            flow = viewModel.selectedUpscalingModelFlow,
+            upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
+            outputFormatFlow = viewModel.selectedOutputFormatFlow,
             selectedImageState = selectedImageState
         ) {
             viewModel.upscale()
@@ -175,11 +171,34 @@ private fun ImagePreview(
 }
 
 @Composable
-private fun ModelSelection(flow: MutableStateFlow<UpscalingModel>) {
+private fun OutputFormatSelection(
+    modifier: Modifier = Modifier,
+    flow: MutableStateFlow<OutputFormat>
+) {
 
     val selected by flow.collectAsStateWithLifecycle()
 
     DropDownMenu(
+        modifier = modifier,
+        value = selected,
+        label = { Text(stringResource(id = R.string.output_format_title)) },
+        options = OutputFormat.VALUES,
+        toStringAdapter = { it.formatName },
+    ) {
+        flow.tryEmit(it)
+    }
+}
+
+@Composable
+private fun ModelSelection(
+    modifier: Modifier = Modifier,
+    flow: MutableStateFlow<UpscalingModel>
+) {
+
+    val selected by flow.collectAsStateWithLifecycle()
+
+    DropDownMenu(
+        modifier = modifier,
         value = selected,
         label = { Text(stringResource(id = R.string.selected_mode_label)) },
         options = UpscalingModel.VALUES,
@@ -191,7 +210,8 @@ private fun ModelSelection(flow: MutableStateFlow<UpscalingModel>) {
 
 @Composable
 private fun Options(
-    flow: MutableStateFlow<UpscalingModel>,
+    upscalingModelFlow: MutableStateFlow<UpscalingModel>,
+    outputFormatFlow: MutableStateFlow<OutputFormat>,
     selectedImageState: DataState<InputImage, Unit>?,
     onUpscaleClick: () -> Unit
 ) {
@@ -213,10 +233,19 @@ private fun Options(
             style = MaterialTheme.typography.headlineSmall
         )
 
-        ModelSelection(flow = flow)
+        Row {
+            ModelSelection(
+                modifier = Modifier.weight(1f).padding(end = MaterialTheme.spacing.level4),
+                flow = upscalingModelFlow
+            )
+            OutputFormatSelection(
+                modifier = Modifier.weight(1f),
+                flow = outputFormatFlow
+            )
+        }
 
         MonoButton(
-            modifier = Modifier.padding(top = MaterialTheme.spacing.level5),
+            modifier = Modifier.padding(vertical = MaterialTheme.spacing.level5),
             enabled = selectedImageState is DataState.Success,
             onClick = onUpscaleClick,
         ) {
@@ -233,7 +262,8 @@ private fun Options(
 private fun OptionsPreview() = MonoTheme {
     Scaffold {
         Options(
-            flow = MutableStateFlow(UpscalingModel.X4_PLUS),
+            upscalingModelFlow = MutableStateFlow(UpscalingModel.X4_PLUS),
+            outputFormatFlow = MutableStateFlow(OutputFormat.PNG),
             selectedImageState = DataState.Success(InputImage("", "".toUri()))
         ) {}
     }
