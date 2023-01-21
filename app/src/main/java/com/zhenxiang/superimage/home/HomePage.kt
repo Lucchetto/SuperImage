@@ -1,11 +1,14 @@
 package com.zhenxiang.superimage.home
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -14,10 +17,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -25,6 +32,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.R
+import com.zhenxiang.superimage.coil.BlurShadowTransformation
 import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.ui.form.DropDownMenu
@@ -35,6 +43,7 @@ import com.zhenxiang.superimage.ui.mono.drawTopBorder
 import com.zhenxiang.superimage.ui.theme.MonoTheme
 import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.spacing
+import com.zhenxiang.superimage.ui.toDp
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,7 +79,8 @@ fun HomePage(viewModel: HomePageViewModel) = Scaffold(
             modifier = Modifier
                 .weight(1f, true)
                 .fillMaxWidth(),
-            selectedImageState = selectedImageState
+            selectedImageState = selectedImageState,
+            blurShadowTransformation = viewModel.blurShadowTransformation,
         ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
 
         Options(
@@ -93,6 +103,7 @@ private fun TopBar() {
 private fun ImagePreview(
     modifier: Modifier,
     selectedImageState: DataState<InputImage, Unit>?,
+    blurShadowTransformation: BlurShadowTransformation,
     onSelectedImage: () -> Unit
 ) {
     Column(
@@ -103,19 +114,31 @@ private fun ImagePreview(
         when (selectedImageState) {
             is DataState.Success -> selectedImageState.data.let {
                 Box(
-                    modifier = Modifier
-                        .weight(1f, fill = false)
-                        .padding(
-                            horizontal = MaterialTheme.spacing.level3,
-                            vertical = MaterialTheme.spacing.level5,
-                        )
-                    ,
+                    modifier = Modifier.weight(1f, fill = false),
                     contentAlignment = Alignment.Center
                 ) {
+                    val blurShadow by blurShadowTransformation.blurBitmapFlow.collectAsStateWithLifecycle()
+                    blurShadow?.let {
+                        AsyncImage(
+                            modifier = Modifier
+                                .requiredSize(it.width.toDp(), it.height.toDp()),
+                            model = ImageRequest.Builder(LocalContext.current).data(it).build(),
+                            alpha = 0.95f,
+                            contentDescription = null
+                        )
+                    }
+
                     AsyncImage(
                         modifier = Modifier
+                            .padding(
+                                horizontal = MaterialTheme.spacing.level3,
+                                vertical = MaterialTheme.spacing.level5,
+                            )
                             .clip(MaterialTheme.shapes.large),
-                        model = ImageRequest.Builder(LocalContext.current).data(it.fileUri).build(),
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(it.fileUri)
+                            .transformations(blurShadowTransformation)
+                            .build(),
                         contentDescription = it.fileName
                     )
                 }
@@ -202,6 +225,7 @@ private fun Options(
     }
 }
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview(showBackground = true)
