@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.R
@@ -122,7 +123,10 @@ private fun ImagePreview(
                             AsyncImage(
                                 modifier = Modifier
                                     .requiredSize(it.width.toDp(), it.height.toDp()),
-                                model = ImageRequest.Builder(LocalContext.current).data(it).build(),
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(it)
+                                    .memoryCachePolicy(CachePolicy.DISABLED)
+                                    .build(),
                                 alpha = 0.95f,
                                 contentDescription = null
                             )
@@ -138,6 +142,7 @@ private fun ImagePreview(
                             .clip(MaterialTheme.shapes.large),
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(it.fileUri)
+                            .memoryCachePolicy(CachePolicy.DISABLED)
                             .transformations(blurShadowTransformation)
                             .build(),
                         contentDescription = it.fileName
