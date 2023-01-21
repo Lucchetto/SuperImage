@@ -32,6 +32,10 @@ class BlurShadowTransformation(
     override val cacheKey: String
         get() = "blur_shadow_$radius"
 
+    fun clearCurrentBitmap() {
+        _blurBitmapFlow.tryEmit(null)
+    }
+
     @SuppressLint("NewApi")
     override suspend fun transform(input: Bitmap, size: Size): Bitmap {
         blurJob?.cancel()

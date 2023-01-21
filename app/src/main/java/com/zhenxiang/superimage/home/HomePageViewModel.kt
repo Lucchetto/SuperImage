@@ -32,6 +32,7 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
 
     fun loadImage(imageUri: Uri) {
         _selectedImageFlow.apply {
+            blurShadowTransformation.clearCurrentBitmap()
             tryEmit(DataState.Loading())
             viewModelScope.launch(Dispatchers.IO) {
                 val application = getApplication<Application>()

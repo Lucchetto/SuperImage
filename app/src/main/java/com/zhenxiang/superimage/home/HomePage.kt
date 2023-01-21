@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
+import coil.transition.CrossfadeTransition
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.coil.BlurShadowTransformation
@@ -104,6 +106,11 @@ private fun ImagePreview(
     blurShadowTransformation: BlurShadowTransformation,
     onSelectedImage: () -> Unit
 ) {
+
+    val crossfadeTransition = remember {
+        CrossfadeTransition.Factory(125)
+    }
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,
@@ -125,6 +132,7 @@ private fun ImagePreview(
                                     .requiredSize(it.width.toDp(), it.height.toDp()),
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data(it)
+                                    .transitionFactory(crossfadeTransition)
                                     .memoryCachePolicy(CachePolicy.DISABLED)
                                     .build(),
                                 alpha = 0.95f,
@@ -143,6 +151,7 @@ private fun ImagePreview(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(it.fileUri)
                             .memoryCachePolicy(CachePolicy.DISABLED)
+                            .transitionFactory(crossfadeTransition)
                             .transformations(blurShadowTransformation)
                             .build(),
                         contentDescription = it.fileName
