@@ -35,10 +35,7 @@ import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.model.OutputFormat
 import com.zhenxiang.superimage.ui.form.DropDownMenu
-import com.zhenxiang.superimage.ui.mono.MonoAppBar
-import com.zhenxiang.superimage.ui.mono.MonoButton
-import com.zhenxiang.superimage.ui.mono.MonoButtonDefaults
-import com.zhenxiang.superimage.ui.mono.drawTopBorder
+import com.zhenxiang.superimage.ui.mono.*
 import com.zhenxiang.superimage.ui.theme.MonoTheme
 import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.spacing
@@ -167,12 +164,9 @@ private fun ImagePreview(
                     MonoButton(
                         onClick = onSelectedImage
                     ) {
-                        Icon(
+                        MonoButtonIcon(
                             painterResource(id = R.drawable.ic_image_24),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .padding(end = MaterialTheme.spacing.level3)
-                                .size(MonoButtonDefaults.IconSize)
+                            contentDescription = null
                         )
                         Text(stringResource(id = R.string.change_image_label))
                     }
@@ -268,6 +262,10 @@ private fun Options(
             enabled = selectedImageState is DataState.Success,
             onClick = onUpscaleClick,
         ) {
+            MonoButtonIcon(
+                painterResource(id = R.drawable.outline_auto_awesome_24),
+                contentDescription = null
+            )
             Text(stringResource(id = R.string.upscale_label))
         }
     }

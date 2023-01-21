@@ -10,6 +10,12 @@ object Border {
     val regular: BorderStroke
         @Composable
         get() = BorderStroke(1.25.dp, MaterialTheme.colorScheme.outline)
+
+    @Composable
+    fun RegularWithAlpha(alpha: Float) = BorderStroke(
+        1.25.dp,
+        MaterialTheme.colorScheme.outline.copy(alpha)
+    )
 }
 
 val MaterialTheme.border: Border
