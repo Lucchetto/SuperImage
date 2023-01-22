@@ -6,6 +6,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
@@ -25,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.io.IOException
 import java.io.OutputStream
 import kotlin.math.roundToInt
@@ -141,16 +143,46 @@ class RealESRGANWorker(
         ).setName(applicationContext.getString(R.string.upscaling_worker_notification_channel_name)).build()
 
     private fun getOutputStream(): OutputStream? {
-        val contentValues = ContentValues().apply {
-            put(
-                MediaStore.Images.Media.DISPLAY_NAME,
-                inputImageName.replaceFileExtension(outputFormat.formatExtension)
-            )
+        val outputFileName = inputImageName.replaceFileExtension(outputFormat.formatExtension)
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val contentValues = ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, outputFileName)
+                put(
+                    MediaStore.Images.Media.RELATIVE_PATH,
+                    "${Environment.DIRECTORY_PICTURES}${File.separatorChar}$OUTPUT_FOLDER_NAME"
+                )
+            }
+
+            with(applicationContext.contentResolver) {
+                insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)?.let {
+                    openOutputStream(it)
+                }
+            }
+        } else {
+            createOutputFilePreQ(outputFileName)?.outputStream()
+        }
+    }
+
+    private fun createOutputFilePreQ(fileName: String): File? = createOutputDirPreQ()?.let {
+        File(it, fileName)
+    }
+
+    private fun createOutputDirPreQ(): File? {
+        val outputDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), OUTPUT_FOLDER_NAME)
+        val outputDirCreated = when {
+            outputDir.exists() && !outputDir.isDirectory -> {
+                /**
+                 * Handle the case when file with same name already exists like how MediaStore would.
+                 * By doing nothing
+                 */
+                false
+            }
+            !outputDir.exists() -> outputDir.mkdir()
+            else -> true
         }
 
-        return applicationContext.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)?.let {
-            applicationContext.contentResolver.openOutputStream(it)
-        }
+        return if (!outputDirCreated) null else outputDir
     }
 
     private fun saveOutputImage(pixels: IntArray, width: Int, height: Int): Boolean = getOutputStream()?.use {
@@ -174,7 +206,7 @@ class RealESRGANWorker(
         private const val NOTIFICATION_CHANNEL_ID = "real_esrgan"
         private const val NOTIFICATION_ID = 69
 
-        private const val OUTPUT_FOLDER_NAME = "RealESRGAN"
+        private const val OUTPUT_FOLDER_NAME = "SuperImage"
 
         private fun buildNotification(
             context: Context,
