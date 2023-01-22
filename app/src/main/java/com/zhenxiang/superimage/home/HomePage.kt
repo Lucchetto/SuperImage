@@ -77,15 +77,15 @@ fun HomePage(viewModel: HomePageViewModel) = Scaffold(
                 .fillMaxWidth(),
             selectedImageState = selectedImageState,
             blurShadowTransformation = viewModel.blurShadowTransformation,
-        ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
+        )
 
         Options(
             upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
             outputFormatFlow = viewModel.selectedOutputFormatFlow,
-            selectedImageState = selectedImageState
-        ) {
-            viewModel.upscale()
-        }
+            selectedImageState = selectedImageState,
+            onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
+            onUpscaleClick = { viewModel.upscale() }
+        )
     }
 }
 
@@ -100,8 +100,7 @@ private fun TopBar() {
 private fun ImagePreview(
     modifier: Modifier,
     selectedImageState: DataState<InputImage, Unit>?,
-    blurShadowTransformation: BlurShadowTransformation,
-    onSelectedImage: () -> Unit
+    blurShadowTransformation: BlurShadowTransformation
 ) {
 
     val crossfadeTransition = remember {
@@ -154,29 +153,8 @@ private fun ImagePreview(
                         contentDescription = it.fileName
                     )
                 }
-
-                MonoButton(
-                    modifier = Modifier.padding(
-                        start = MaterialTheme.spacing.level5,
-                        end = MaterialTheme.spacing.level5,
-                        bottom = MaterialTheme.spacing.level5,
-                    ),
-                    onClick = onSelectedImage
-                ) {
-                    MonoButtonIcon(
-                        painterResource(id = R.drawable.ic_image_24),
-                        contentDescription = null
-                    )
-                    Text(stringResource(id = R.string.change_image_label))
-                }
             }
-            else -> {
-                MonoButton(
-                    onClick = onSelectedImage,
-                ) {
-                    Text(stringResource(id = R.string.select_image_label))
-                }
-            }
+            else -> { }
         }
     }
 }
@@ -224,6 +202,7 @@ private fun Options(
     upscalingModelFlow: MutableStateFlow<UpscalingModel>,
     outputFormatFlow: MutableStateFlow<OutputFormat>,
     selectedImageState: DataState<InputImage, Unit>?,
+    onSelectImageClick: () -> Unit,
     onUpscaleClick: () -> Unit
 ) {
     Column(
@@ -244,9 +223,13 @@ private fun Options(
             style = MaterialTheme.typography.headlineSmall
         )
 
-        Row {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             ModelSelection(
-                modifier = Modifier.weight(1f).padding(end = MaterialTheme.spacing.level4),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = MaterialTheme.spacing.level4),
                 flow = upscalingModelFlow
             )
             OutputFormatSelection(
@@ -255,16 +238,38 @@ private fun Options(
             )
         }
 
-        MonoButton(
-            modifier = Modifier.padding(vertical = MaterialTheme.spacing.level5),
-            enabled = selectedImageState is DataState.Success,
-            onClick = onUpscaleClick,
+        val imageSelected = selectedImageState is DataState.Success
+
+        Row(
+            modifier = Modifier
+                .padding(vertical = MaterialTheme.spacing.level5)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            MonoButtonIcon(
-                painterResource(id = R.drawable.outline_auto_awesome_24),
-                contentDescription = null
-            )
-            Text(stringResource(id = R.string.upscale_label))
+            MonoButton(
+                modifier = Modifier.padding(end = MaterialTheme.spacing.level4),
+                onClick = onSelectImageClick
+            ) {
+                MonoButtonIcon(
+                    painterResource(id = R.drawable.ic_image_24),
+                    contentDescription = null
+                )
+                Text(
+                    stringResource(id = if (imageSelected) R.string.change_image_label else R.string.select_image_label)
+                )
+            }
+
+            MonoButton(
+                enabled = imageSelected,
+                onClick = onUpscaleClick,
+            ) {
+                MonoButtonIcon(
+                    painterResource(id = R.drawable.outline_auto_awesome_24),
+                    contentDescription = null
+                )
+                Text(stringResource(id = R.string.upscale_label))
+            }
         }
     }
 }
@@ -279,7 +284,9 @@ private fun OptionsPreview() = MonoTheme {
         Options(
             upscalingModelFlow = MutableStateFlow(UpscalingModel.X4_PLUS),
             outputFormatFlow = MutableStateFlow(OutputFormat.PNG),
-            selectedImageState = DataState.Success(InputImage("", "".toUri()))
-        ) {}
+            selectedImageState = DataState.Success(InputImage("", "".toUri())),
+            onSelectImageClick = { },
+            onUpscaleClick = { }
+        )
     }
 }
