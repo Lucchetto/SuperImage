@@ -155,21 +155,19 @@ private fun ImagePreview(
                     )
                 }
 
-                Row(
+                MonoButton(
                     modifier = Modifier.padding(
-                        horizontal = MaterialTheme.spacing.level5,
-                        vertical = MaterialTheme.spacing.level5,
-                    )
+                        start = MaterialTheme.spacing.level5,
+                        end = MaterialTheme.spacing.level5,
+                        bottom = MaterialTheme.spacing.level5,
+                    ),
+                    onClick = onSelectedImage
                 ) {
-                    MonoButton(
-                        onClick = onSelectedImage
-                    ) {
-                        MonoButtonIcon(
-                            painterResource(id = R.drawable.ic_image_24),
-                            contentDescription = null
-                        )
-                        Text(stringResource(id = R.string.change_image_label))
-                    }
+                    MonoButtonIcon(
+                        painterResource(id = R.drawable.ic_image_24),
+                        contentDescription = null
+                    )
+                    Text(stringResource(id = R.string.change_image_label))
                 }
             }
             else -> {
