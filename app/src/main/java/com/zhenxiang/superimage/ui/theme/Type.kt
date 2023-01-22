@@ -79,11 +79,11 @@ val Typography = Typography(
         letterSpacing = 0.25.sp
     ),
     bodySmall = TextStyle(
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.SemiBold,
         fontFamily = CrimsonText,
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.4.sp
+        letterSpacing = 0.25.sp
     ),
     labelLarge = TextStyle(
         fontWeight = FontWeight.Normal,

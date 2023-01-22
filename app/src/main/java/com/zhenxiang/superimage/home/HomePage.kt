@@ -34,7 +34,7 @@ import com.zhenxiang.superimage.coil.BlurShadowTransformation
 import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.model.OutputFormat
-import com.zhenxiang.superimage.ui.form.DropDownMenu
+import com.zhenxiang.superimage.ui.form.MonoDropDownMenu
 import com.zhenxiang.superimage.ui.mono.*
 import com.zhenxiang.superimage.ui.theme.MonoTheme
 import com.zhenxiang.superimage.ui.theme.border
@@ -191,7 +191,7 @@ private fun OutputFormatSelection(
 
     val selected by flow.collectAsStateWithLifecycle()
 
-    DropDownMenu(
+    MonoDropDownMenu(
         modifier = modifier,
         value = selected,
         label = { Text(stringResource(id = R.string.output_format_title)) },
@@ -210,7 +210,7 @@ private fun ModelSelection(
 
     val selected by flow.collectAsStateWithLifecycle()
 
-    DropDownMenu(
+    MonoDropDownMenu(
         modifier = modifier,
         value = selected,
         label = { Text(stringResource(id = R.string.selected_mode_label)) },
