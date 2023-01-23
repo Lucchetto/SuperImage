@@ -107,13 +107,7 @@ class RealESRGANWorker(
 
     private fun getInputBitmap(): Bitmap? = inputImageUri?.let { uri ->
         BitmapUtils.loadImageFromUri(applicationContext.contentResolver, uri)?.let { bitmap ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && bitmap.config == Bitmap.Config.HARDWARE) {
-                val bitmapCopy = bitmap.copy(Bitmap.Config.ARGB_8888, false)
-                bitmap.recycle()
-                bitmapCopy
-            } else {
-                bitmap
-            }
+            BitmapUtils.copyToSoftware(bitmap, true)
         }
     }
 

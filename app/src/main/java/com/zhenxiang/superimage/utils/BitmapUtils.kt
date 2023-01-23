@@ -22,6 +22,23 @@ object BitmapUtils {
         Timber.e(e)
         null
     }
+
+    /**
+     * Copy hardware bitmap to software.
+     * It will simply return the input bitmap if it's not a hardware bitmap
+     */
+    fun copyToSoftware(
+        hwBitmap: Bitmap,
+        recycleHwBitmap: Boolean = false
+    ): Bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && hwBitmap.config == Bitmap.Config.HARDWARE) {
+        val bitmapCopy = hwBitmap.copy(Bitmap.Config.ARGB_8888, false)
+        if (recycleHwBitmap) {
+            hwBitmap.recycle()
+        }
+        bitmapCopy
+    } else {
+        hwBitmap
+    }
 }
 
 fun Bitmap.compress(outputFormat: OutputFormat, quality: Int, outputStream: OutputStream): Boolean {

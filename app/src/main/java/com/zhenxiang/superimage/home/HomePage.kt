@@ -17,17 +17,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
-import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.transition.CrossfadeTransition
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.R
-import com.zhenxiang.superimage.coil.BlurShadowTransformation
 import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.model.OutputFormat
@@ -36,7 +32,6 @@ import com.zhenxiang.superimage.ui.mono.*
 import com.zhenxiang.superimage.ui.theme.MonoTheme
 import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.spacing
-import com.zhenxiang.superimage.ui.toDp
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,7 +69,6 @@ fun HomePage(viewModel: HomePageViewModel) = Scaffold(
                 .fillMaxWidth(),
             selectedImageState = selectedImageState,
             selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
-            blurShadowTransformation = viewModel.blurShadowTransformation,
         )
 
         Options(
@@ -98,13 +92,10 @@ private fun TopBar() {
 private fun ImagePreview(
     modifier: Modifier,
     selectedImageState: DataState<InputImage, Unit>?,
-    selectedModelState: State<UpscalingModel>,
-    blurShadowTransformation: BlurShadowTransformation
+    selectedModelState: State<UpscalingModel>
 ) {
 
-    val crossfadeTransition = remember {
-        CrossfadeTransition.Factory(125)
-    }
+    val crossfadeTransition = remember { CrossfadeTransition.Factory(125) }
 
     Column(
         modifier = modifier,
@@ -113,45 +104,20 @@ private fun ImagePreview(
     ) {
         when (selectedImageState) {
             is DataState.Success -> selectedImageState.data.let {
-                Box(
+                BlurShadowImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(it.fileUri)
+                        .transitionFactory(crossfadeTransition)
+                        .build(),
+                    contentDescription = it.fileName,
                     modifier = Modifier.weight(1f, fill = false),
-                    contentAlignment = Alignment.Center
-                ) {
-                    val blurShadow by blurShadowTransformation.blurBitmapFlow.collectAsStateWithLifecycle()
-                    blurShadow?.let {
-                        Box(
-                            modifier = Modifier.requiredSize(0.dp)
-                        ) {
-                            AsyncImage(
-                                modifier = Modifier
-                                    .requiredSize(it.width.toDp(), it.height.toDp()),
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(it)
-                                    .transitionFactory(crossfadeTransition)
-                                    .memoryCachePolicy(CachePolicy.DISABLED)
-                                    .build(),
-                                alpha = 0.95f,
-                                contentDescription = null
-                            )
-                        }
-                    }
-
-                    AsyncImage(
-                        modifier = Modifier
-                            .padding(
-                                horizontal = MaterialTheme.spacing.level3,
-                                vertical = MaterialTheme.spacing.level5,
-                            )
-                            .clip(MaterialTheme.shapes.large),
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(it.fileUri)
-                            .memoryCachePolicy(CachePolicy.DISABLED)
-                            .transitionFactory(crossfadeTransition)
-                            .transformations(blurShadowTransformation)
-                            .build(),
-                        contentDescription = it.fileName
-                    )
-                }
+                    imageModifier = Modifier
+                        .padding(
+                            horizontal = MaterialTheme.spacing.level3,
+                            vertical = MaterialTheme.spacing.level5,
+                        )
+                        .clip(MaterialTheme.shapes.large)
+                )
 
                 Text(
                     text = stringResource(id = R.string.original_image_resolution_label, it.width, it.height)
