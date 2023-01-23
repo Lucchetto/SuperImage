@@ -127,7 +127,7 @@ private fun ImagePreview(
                 Text(
                     modifier = Modifier.padding(bottom = MaterialTheme.spacing.level5),
                     text = stringResource(
-                        id = R.string.upscaled_image_resolution_label,
+                        id = R.string.output_image_resolution_label,
                         it.width * selectedModel.scale,
                         it.height * selectedModel.scale
                     )

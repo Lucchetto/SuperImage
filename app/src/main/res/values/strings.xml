@@ -2,7 +2,7 @@
     <string name="app_name">SuperImage</string>
 
     <string name="original_image_resolution_label">Original resolution: %1$sx%2$s</string>
-    <string name="upscaled_image_resolution_label">Upscaled resolution: %1$sx%2$s</string>
+    <string name="output_image_resolution_label">Output resolution: %1$sx%2$s</string>
     <string name="select_image_label">Select image</string>
     <string name="change_image_label">Change image</string>
     <string name="upscale_label">Upscale</string>
