@@ -9,10 +9,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -76,6 +73,7 @@ fun HomePage(viewModel: HomePageViewModel) = Scaffold(
                 .weight(1f, true)
                 .fillMaxWidth(),
             selectedImageState = selectedImageState,
+            selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
             blurShadowTransformation = viewModel.blurShadowTransformation,
         )
 
@@ -100,6 +98,7 @@ private fun TopBar() {
 private fun ImagePreview(
     modifier: Modifier,
     selectedImageState: DataState<InputImage, Unit>?,
+    selectedModelState: State<UpscalingModel>,
     blurShadowTransformation: BlurShadowTransformation
 ) {
 
@@ -153,6 +152,20 @@ private fun ImagePreview(
                         contentDescription = it.fileName
                     )
                 }
+
+                Text(
+                    text = stringResource(id = R.string.original_image_resolution_label, it.width, it.height)
+                )
+
+                val selectedModel by selectedModelState
+                Text(
+                    modifier = Modifier.padding(bottom = MaterialTheme.spacing.level5),
+                    text = stringResource(
+                        id = R.string.upscaled_image_resolution_label,
+                        it.width * selectedModel.scale,
+                        it.height * selectedModel.scale
+                    )
+                )
             }
             else -> { }
         }
@@ -284,7 +297,7 @@ private fun OptionsPreview() = MonoTheme {
         Options(
             upscalingModelFlow = MutableStateFlow(UpscalingModel.X4_PLUS),
             outputFormatFlow = MutableStateFlow(OutputFormat.PNG),
-            selectedImageState = DataState.Success(InputImage("", "".toUri())),
+            selectedImageState = DataState.Success(InputImage("", "".toUri(), 0, 0)),
             onSelectImageClick = { },
             onUpscaleClick = { }
         )

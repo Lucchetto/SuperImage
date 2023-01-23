@@ -1,8 +1,10 @@
 package com.zhenxiang.superimage.home
 
 import android.app.Application
+import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
+import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequestBuilder
@@ -35,13 +37,8 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
             blurShadowTransformation.clearCurrentBitmap()
             tryEmit(DataState.Loading())
             viewModelScope.launch(Dispatchers.IO) {
-                val application = getApplication<Application>()
-                DocumentFile.fromSingleUri(application, imageUri)?.name?.let { fileName ->
-                    emit(
-                        DataState.Success(
-                            InputImage(fileName, imageUri)
-                        )
-                    )
+                imageUri.toInputImage(getApplication())?.let {
+                    emit(DataState.Success(it))
                 } ?: emit(DataState.Error(Unit))
             }
         }
@@ -65,5 +62,22 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
 
     companion object {
         const val IMAGE_MIME_TYPE = "image/*"
+    }
+}
+
+private fun Uri.toInputImage(context: Context): InputImage? = DocumentFile.fromSingleUri(context, this)?.let {
+    val fileName = it.name ?: return null
+    return try {
+        context.contentResolver.openInputStream(this)?.use { inputStream ->
+            val exif = ExifInterface(inputStream)
+            InputImage(
+                fileName,
+                this,
+                exif.getAttributeInt(ExifInterface.TAG_IMAGE_WIDTH, 0),
+                exif.getAttributeInt(ExifInterface.TAG_IMAGE_LENGTH, 0)
+            )
+        }
+    } catch (e: Exception) {
+        null
     }
 }
