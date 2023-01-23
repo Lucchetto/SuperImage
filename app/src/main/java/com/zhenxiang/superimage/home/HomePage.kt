@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
@@ -32,6 +33,7 @@ import com.zhenxiang.superimage.ui.mono.*
 import com.zhenxiang.superimage.ui.theme.MonoTheme
 import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.spacing
+import com.zhenxiang.superimage.ui.utils.RowSpacer
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,7 +71,7 @@ fun HomePage(viewModel: HomePageViewModel) = Scaffold(
                 .fillMaxWidth(),
             selectedImageState = selectedImageState,
             selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
-        )
+        ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
 
         Options(
             upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
@@ -92,7 +94,8 @@ private fun TopBar() {
 private fun ImagePreview(
     modifier: Modifier,
     selectedImageState: DataState<InputImage, Unit>?,
-    selectedModelState: State<UpscalingModel>
+    selectedModelState: State<UpscalingModel>,
+    onSelectImageClick: () -> Unit
 ) {
 
     val crossfadeTransition = remember { CrossfadeTransition.Factory(125) }
@@ -133,7 +136,43 @@ private fun ImagePreview(
                     )
                 )
             }
-            else -> { }
+            else -> StartWizard(onSelectImageClick)
+        }
+    }
+}
+
+@Composable
+private fun ColumnScope.StartWizard(onSelectImageClick: () -> Unit) {
+    Text(
+        modifier = Modifier.padding(vertical = MaterialTheme.spacing.level5),
+        text = stringResource(id = R.string.select_image_wizard_hint),
+        textAlign = TextAlign.Center,
+        style = MaterialTheme.typography.labelLarge,
+    )
+    MonoButton(onClick = onSelectImageClick) {
+        MonoButtonIcon(
+            painterResource(id = R.drawable.ic_image_24),
+            contentDescription = null
+        )
+        Text(
+            stringResource(id = R.string.select_image_label)
+        )
+    }
+}
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun SetupWizardPreview() = MonoTheme {
+    Scaffold {
+        Column(
+            modifier = Modifier.padding(MaterialTheme.spacing.level5).fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            StartWizard { }
         }
     }
 }
@@ -226,17 +265,21 @@ private fun Options(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            MonoButton(
-                modifier = Modifier.padding(end = MaterialTheme.spacing.level4),
-                onClick = onSelectImageClick
-            ) {
-                MonoButtonIcon(
-                    painterResource(id = R.drawable.ic_image_24),
-                    contentDescription = null
-                )
-                Text(
-                    stringResource(id = if (imageSelected) R.string.change_image_label else R.string.select_image_label)
-                )
+            if (imageSelected) {
+                MonoButton(
+                    modifier = Modifier.padding(end = MaterialTheme.spacing.level4),
+                    onClick = onSelectImageClick
+                ) {
+                    MonoButtonIcon(
+                        painterResource(id = R.drawable.ic_image_24),
+                        contentDescription = null
+                    )
+                    Text(
+                        stringResource(id = R.string.change_image_label)
+                    )
+                }   
+            } else {
+                RowSpacer()
             }
 
             MonoButton(
