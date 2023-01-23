@@ -2,9 +2,9 @@ package com.zhenxiang.superimage.home
 
 import android.app.Application
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
-import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequestBuilder
@@ -66,13 +66,10 @@ private fun Uri.toInputImage(context: Context): InputImage? = DocumentFile.fromS
     val fileName = it.name ?: return null
     return try {
         context.contentResolver.openInputStream(this)?.use { inputStream ->
-            val exif = ExifInterface(inputStream)
-            InputImage(
-                fileName,
-                this,
-                exif.getAttributeInt(ExifInterface.TAG_IMAGE_WIDTH, 0),
-                exif.getAttributeInt(ExifInterface.TAG_IMAGE_LENGTH, 0)
-            )
+            val options = BitmapFactory.Options()
+            options.inJustDecodeBounds = true
+            BitmapFactory.decodeStream(inputStream, null, options)
+            InputImage(fileName, this, options.outWidth, options.outHeight)
         }
     } catch (e: Exception) {
         null
