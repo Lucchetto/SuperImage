@@ -7,6 +7,7 @@ import android.content.res.Configuration
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -225,6 +226,7 @@ private fun Options(
 ) {
     Column(
         modifier = Modifier
+            .background(MaterialTheme.colorScheme.primaryContainer)
             .drawTopBorder(MaterialTheme.border.regular)
             .padding(
                 horizontal = MaterialTheme.spacing.level3,
