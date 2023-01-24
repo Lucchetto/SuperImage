@@ -7,6 +7,7 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
@@ -51,7 +52,9 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
                 RealESRGANWorker.UPSCALING_MODEL_PATH_PARAM to selectedModel.assetPath,
                 RealESRGANWorker.UPSCALING_SCALE_PARAM to selectedModel.scale
             )
-            workManager.beginWith(
+            workManager.beginUniqueWork(
+                RealESRGANWorker.UNIQUE_WORK_ID,
+                ExistingWorkPolicy.KEEP,
                 OneTimeWorkRequestBuilder<RealESRGANWorker>().setInputData(inputData).build()
             ).enqueue()
         }

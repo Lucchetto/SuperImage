@@ -196,6 +196,7 @@ class RealESRGANWorker(
         const val OUTPUT_IMAGE_FORMAT_PARAM = "output_format"
         const val UPSCALING_MODEL_PATH_PARAM = "model_path"
         const val UPSCALING_SCALE_PARAM = "scale"
+        const val UNIQUE_WORK_ID = "real_esrgan"
 
         private const val NOTIFICATION_CHANNEL_ID = "real_esrgan"
         private const val NOTIFICATION_ID = 69
