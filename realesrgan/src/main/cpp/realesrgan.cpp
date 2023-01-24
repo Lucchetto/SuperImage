@@ -77,7 +77,7 @@ std::pair<int, int> calculate_axis_padding(const int position, const int axis_si
     if (position == 0) {
         // First tile
         return std::pair<int, int> {0, padding};
-    } else if (axis_size - position - padding <= tile_size) {
+    } else if (axis_size - position <= tile_size - padding) {
         // Final tile
         return std::pair<int, int> {(tile_size - (axis_size - position)), 0};
     } else {
