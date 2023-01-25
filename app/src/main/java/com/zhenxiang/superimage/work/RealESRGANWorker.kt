@@ -1,5 +1,6 @@
 package com.zhenxiang.superimage.work
 
+import android.Manifest
 import android.app.Notification
 import android.content.ContentValues
 import android.content.Context
@@ -7,7 +8,9 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.SystemClock
 import android.provider.MediaStore
+import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -23,6 +26,7 @@ import com.zhenxiang.superimage.utils.compress
 import com.zhenxiang.superimage.utils.replaceFileExtension
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
@@ -54,8 +58,18 @@ class RealESRGANWorker(
         return withContext(Dispatchers.IO) {
             actualWork().also {
                 when (it) {
-                    is Result.Success -> updateNotification(JNIProgressTracker.Progress.Success)
-                    is Result.Failure -> updateNotification(JNIProgressTracker.Progress.Error)
+                    is Result.Success -> NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID).apply {
+                        setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_success_notification_title, inputImageName))
+                        setSmallIcon(R.drawable.outline_photo_size_select_large_24)
+                    }.build().apply {
+                        notificationManager.notifyAutoId(this)
+                    }
+                    is Result.Failure -> NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID).apply {
+                        setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_error_notification_title, inputImageName))
+                        setSmallIcon(R.drawable.outline_photo_size_select_large_24)
+                    }.build().apply {
+                        notificationManager.notifyAutoId(this)
+                    }
                 }
             }
         }
@@ -72,11 +86,13 @@ class RealESRGANWorker(
         val inputHeight = inputBitmap.height
         inputBitmap.recycle()
 
-        setForeground(createForegroundInfo())
+        setupProgressNotificationBuilder()
+        createNotificationChannel()
+        updateProgress(JNIProgressTracker.INDETERMINATE)
 
         val progressTracker = JNIProgressTracker()
-        progressTracker.progressFlow.onEach {
-            updateNotification(it)
+        val progressUpdateJob = progressTracker.progressFlow.onEach {
+            updateProgress(it)
         }.launchIn(this)
 
         val outputPixels = realESRGAN.runUpscaling(
@@ -86,12 +102,21 @@ class RealESRGANWorker(
             inputPixels,
             inputWidth,
             inputHeight
-        ) ?: return Result.failure()
+        )
+        progressUpdateJob.cancelAndJoin()
 
-        return if (saveOutputImage(outputPixels, inputWidth * upscalingScale, inputHeight * upscalingScale)) {
+        return if (outputPixels != null && saveOutputImage(outputPixels, inputWidth * upscalingScale, inputHeight * upscalingScale)) {
             Result.success()
         } else {
             Result.failure()
+        }
+    }
+
+    private fun setupProgressNotificationBuilder() {
+        progressNotificationBuilder.apply {
+            setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_notification_title, inputImageName))
+            setSmallIcon(R.drawable.outline_photo_size_select_large_24)
+            setOngoing(true)
         }
     }
 
@@ -111,23 +136,20 @@ class RealESRGANWorker(
         }
     }
 
-    private fun createForegroundInfo(): ForegroundInfo {
-        // Create a Notification channel if necessary
+    private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationManager.createNotificationChannel(buildNotificationChannel())
         }
-
-        return ForegroundInfo(
-            NOTIFICATION_ID,
-            buildNotification(applicationContext, progressNotificationBuilder, inputImageName)
-        )
     }
 
-    private fun updateNotification(progress: JNIProgressTracker.Progress) {
-        notificationManager.notify(
-            NOTIFICATION_ID,
-            buildNotification(applicationContext, progressNotificationBuilder, inputImageName, progress)
-        )
+    private suspend fun updateProgress(progress: Float) = progressNotificationBuilder.apply {
+        if (progress == -1f) {
+            setProgress(100, 0, true)
+        } else {
+            setProgress(100, progress.roundToInt(), false)
+        }
+    }.build().apply {
+        setForeground(ForegroundInfo(PROGRESS_NOTIFICATION_ID, this))
     }
 
     private fun buildNotificationChannel(): NotificationChannelCompat =
@@ -199,49 +221,9 @@ class RealESRGANWorker(
         const val UNIQUE_WORK_ID = "real_esrgan"
 
         private const val NOTIFICATION_CHANNEL_ID = "real_esrgan"
-        private const val NOTIFICATION_ID = 69
+        private const val PROGRESS_NOTIFICATION_ID = -1
 
         private const val OUTPUT_FOLDER_NAME = "SuperImage"
-
-        private fun buildNotification(
-            context: Context,
-            notificationBuilder: NotificationCompat.Builder,
-            fileName: String,
-            progress: JNIProgressTracker.Progress = JNIProgressTracker.Progress.Indeterminate
-        ): Notification {
-
-            val title = when (progress) {
-                JNIProgressTracker.Progress.Error -> R.string.upscaling_worker_error_notification_title
-                JNIProgressTracker.Progress.Indeterminate -> R.string.upscaling_worker_notification_title
-                is JNIProgressTracker.Progress.Loading ->R.string.upscaling_worker_notification_title
-                JNIProgressTracker.Progress.Success -> R.string.upscaling_worker_success_notification_title
-            }.let { context.getString(it, fileName) }
-
-            return notificationBuilder.apply {
-                setContentTitle(title)
-                setTicker(title)
-                setSmallIcon(R.drawable.outline_photo_size_select_large_24)
-
-                when (progress) {
-                    JNIProgressTracker.Progress.Indeterminate -> {
-                        setOngoing(true)
-                        setProgress(100, 0, true)
-                    }
-                    is JNIProgressTracker.Progress.Loading -> {
-                        setOngoing(true)
-                        setProgress(
-                            100,
-                            progress.percentage.roundToInt().coerceAtMost(100),
-                            false
-                        )
-                    }
-                    else -> {
-                        setOngoing(false)
-                        setProgress(0, 0, false)
-                    }
-                }
-            }.build()
-        }
 
         private fun getPixels(bitmap: Bitmap): IntArray {
             val pixels = IntArray(bitmap.width * bitmap.height)
@@ -251,3 +233,14 @@ class RealESRGANWorker(
         }
     }
 }
+
+private fun NotificationCompat.Builder.setTitleAndTicker(title: String) = apply {
+    setContentTitle(title)
+    setTicker(title)
+}
+
+@RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+private fun NotificationManagerCompat.notifyAutoId(notification: Notification) = notify(
+    SystemClock.elapsedRealtime().toInt(),
+    notification
+)

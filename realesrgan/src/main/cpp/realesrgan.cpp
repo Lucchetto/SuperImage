@@ -194,7 +194,6 @@ const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_i
 
     if (!interpreter) {
         LOGE("Failed to create MNN interpreter");
-        set_progress_error(jni_env, progress_tracker);
         return nullptr;
     }
 

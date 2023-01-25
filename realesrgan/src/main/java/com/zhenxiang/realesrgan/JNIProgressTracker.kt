@@ -8,38 +8,15 @@ import kotlinx.coroutines.flow.StateFlow
  */
 class JNIProgressTracker {
 
-    private val _progressFlow = MutableStateFlow<Progress>(Progress.Indeterminate)
-    val progressFlow: StateFlow<Progress>
+    private val _progressFlow = MutableStateFlow(INDETERMINATE)
+    val progressFlow: StateFlow<Float>
         get() = _progressFlow
 
-    fun setProgress(progress: Progress) {
+    fun setProgress(progress: Float) {
         _progressFlow.tryEmit(progress)
     }
 
-    fun setIndeterminate() {
-        _progressFlow.tryEmit(Progress.Indeterminate)
-    }
-
-    fun setLoadingPercentage(percentage: Float) {
-        _progressFlow.tryEmit(Progress.Loading(percentage))
-    }
-
-    fun setSuccess() {
-        _progressFlow.tryEmit(Progress.Success)
-    }
-
-    fun setError() {
-        _progressFlow.tryEmit(Progress.Error)
-    }
-
-    sealed interface Progress {
-
-        object Indeterminate: Progress
-
-        data class Loading(val percentage: Float): Progress
-
-        object Success: Progress
-
-        object Error: Progress
+    companion object {
+        const val INDETERMINATE = -1f
     }
 }
