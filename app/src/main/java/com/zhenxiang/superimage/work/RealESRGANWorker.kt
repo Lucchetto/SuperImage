@@ -2,8 +2,10 @@ package com.zhenxiang.superimage.work
 
 import android.Manifest
 import android.app.Notification
+import android.app.PendingIntent
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
@@ -14,11 +16,14 @@ import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.zhenxiang.realesrgan.JNIProgressTracker
 import com.zhenxiang.realesrgan.RealESRGAN
+import com.zhenxiang.superimage.MainActivity
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.model.OutputFormat
 import com.zhenxiang.superimage.utils.BitmapUtils
@@ -54,33 +59,48 @@ class RealESRGANWorker(
     private val upscalingModelAssetPath = params.inputData.getString(UPSCALING_MODEL_PATH_PARAM)
     private val upscalingScale = params.inputData.getInt(UPSCALING_SCALE_PARAM, -1)
     
-    override suspend fun doWork(): Result {
-        return withContext(Dispatchers.IO) {
-            actualWork().also {
-                when (it) {
-                    is Result.Success -> NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID).apply {
-                        setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_success_notification_title, inputImageName))
-                        setSmallIcon(R.drawable.outline_photo_size_select_large_24)
-                    }.build().apply {
-                        notificationManager.notifyAutoId(this)
-                    }
-                    is Result.Failure -> NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID).apply {
-                        setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_error_notification_title, inputImageName))
-                        setSmallIcon(R.drawable.outline_photo_size_select_large_24)
-                    }.build().apply {
-                        notificationManager.notifyAutoId(this)
-                    }
+    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+        actualWork()?.let {
+            NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID).apply {
+                setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_success_notification_title, inputImageName))
+                setSmallIcon(R.drawable.outline_photo_size_select_large_24)
+                setContentText(applicationContext.getString(R.string.upscaling_worker_success_notification_desc))
+                setAutoCancel(true)
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    data = it
                 }
+                setContentIntent(
+                    PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT)
+                )
+            }.build().apply {
+                notificationManager.notifyAutoId(this)
             }
+            Result.success(workDataOf(OUTPUT_FILE_URI_PARAM to it.toString()))
+        } ?: run {
+            NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID).apply {
+                setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_error_notification_title, inputImageName))
+                setSmallIcon(R.drawable.outline_photo_size_select_large_24)
+                val intent = Intent(applicationContext, MainActivity::class.java)
+                setAutoCancel(true)
+                setContentIntent(
+                    PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT)
+                )
+            }.build().apply {
+                notificationManager.notifyAutoId(this)
+            }
+            Result.failure()
         }
     }
-    
-    private suspend fun CoroutineScope.actualWork(): Result {
+
+    /**
+     * @return the uri of the saved output image
+     */
+    private suspend fun CoroutineScope.actualWork(): Uri? {
         if (upscalingScale < 2) {
-            return Result.failure()
+            return null
         }
-        val inputBitmap = getInputBitmap() ?: return Result.failure()
-        val upscalingModel = getUpscalingModel() ?: return Result.failure()
+        val inputBitmap = getInputBitmap() ?: return null
+        val upscalingModel = getUpscalingModel() ?: return null
         val inputPixels = getPixels(inputBitmap)
         val inputWidth = inputBitmap.width
         val inputHeight = inputBitmap.height
@@ -105,10 +125,10 @@ class RealESRGANWorker(
         )
         progressUpdateJob.cancelAndJoin()
 
-        return if (outputPixels != null && saveOutputImage(outputPixels, inputWidth * upscalingScale, inputHeight * upscalingScale)) {
-            Result.success()
+        return if (outputPixels != null) {
+            saveOutputImage(outputPixels, inputWidth * upscalingScale, inputHeight * upscalingScale)
         } else {
-            Result.failure()
+            null
         }
     }
 
@@ -158,7 +178,7 @@ class RealESRGANWorker(
             NotificationManagerCompat.IMPORTANCE_LOW
         ).setName(applicationContext.getString(R.string.upscaling_worker_notification_channel_name)).build()
 
-    private fun getOutputStream(): OutputStream? {
+    private fun getOutputStream(): Pair<OutputStream, Uri>? {
         val outputFileName = inputImageName.replaceFileExtension(outputFormat.formatExtension)
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -171,12 +191,12 @@ class RealESRGANWorker(
             }
 
             with(applicationContext.contentResolver) {
-                insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)?.let {
-                    openOutputStream(it)
+                insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)?.let { uri ->
+                    openOutputStream(uri)?.let { Pair(it, uri) }
                 }
             }
         } else {
-            createOutputFilePreQ(outputFileName)?.outputStream()
+            createOutputFilePreQ(outputFileName)?.let { Pair(it.outputStream(), it.toUri()) }
         }
     }
 
@@ -201,21 +221,24 @@ class RealESRGANWorker(
         return if (!outputDirCreated) null else outputDir
     }
 
-    private fun saveOutputImage(pixels: IntArray, width: Int, height: Int): Boolean = getOutputStream()?.use {
-        Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).run {
-            setPixels(pixels, 0, width, 0, 0, width, height)
-            val success = compress(outputFormat, 100, it)
-            recycle()
+    private fun saveOutputImage(pixels: IntArray, width: Int, height: Int): Uri? = getOutputStream()?.let {
+        it.first.use { outputStream ->
+            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).run {
+                setPixels(pixels, 0, width, 0, 0, width, height)
+                val success = compress(outputFormat, 100, outputStream)
+                recycle()
 
-            success
+                if (success) it.second else null
+            }
         }
-    } ?: false
+    }
 
     companion object {
 
         const val INPUT_IMAGE_URI_PARAM = "input_image_uri"
         const val INPUT_IMAGE_NAME_PARAM = "input_image_name"
         const val OUTPUT_IMAGE_FORMAT_PARAM = "output_format"
+        const val OUTPUT_FILE_URI_PARAM = "output_uri"
         const val UPSCALING_MODEL_PATH_PARAM = "model_path"
         const val UPSCALING_SCALE_PARAM = "scale"
         const val UNIQUE_WORK_ID = "real_esrgan"
