@@ -107,8 +107,7 @@ class RealESRGANWorker(
         inputBitmap.recycle()
 
         setupProgressNotificationBuilder()
-        createNotificationChannel()
-        updateProgress(JNIProgressTracker.INDETERMINATE)
+        setForeground(createForegroundInfo())
 
         val progressTracker = JNIProgressTracker()
         val progressUpdateJob = progressTracker.progressFlow.onEach {
@@ -156,20 +155,28 @@ class RealESRGANWorker(
         }
     }
 
-    private fun createNotificationChannel() {
+    private fun createForegroundInfo(): ForegroundInfo {
+        // Create a Notification channel if necessary
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationManager.createNotificationChannel(buildNotificationChannel())
         }
+
+        return ForegroundInfo(
+            PROGRESS_NOTIFICATION_ID,
+            buildProgressNotification(JNIProgressTracker.INDETERMINATE)
+        )
     }
 
-    private suspend fun updateProgress(progress: Float) = progressNotificationBuilder.apply {
-        if (progress == -1f) {
+    private fun buildProgressNotification(progress: Float): Notification = progressNotificationBuilder.apply {
+        if (progress == JNIProgressTracker.INDETERMINATE) {
             setProgress(100, 0, true)
         } else {
             setProgress(100, progress.roundToInt(), false)
         }
-    }.build().apply {
-        setForeground(ForegroundInfo(PROGRESS_NOTIFICATION_ID, this))
+    }.build()
+
+    private fun updateProgress(progress: Float) {
+        notificationManager.notify(PROGRESS_NOTIFICATION_ID, buildProgressNotification(progress))
     }
 
     private fun buildNotificationChannel(): NotificationChannelCompat =
