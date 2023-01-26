@@ -17,12 +17,10 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
-import androidx.work.CoroutineWorker
-import androidx.work.ForegroundInfo
-import androidx.work.WorkerParameters
-import androidx.work.workDataOf
+import androidx.work.*
 import com.zhenxiang.realesrgan.JNIProgressTracker
 import com.zhenxiang.realesrgan.RealESRGAN
+import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.MainActivity
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.model.OutputFormat
@@ -111,7 +109,7 @@ class RealESRGANWorker(
 
         val progressTracker = JNIProgressTracker()
         val progressUpdateJob = progressTracker.progressFlow.onEach {
-            updateProgress(it)
+            updateProgress(it.coerceAtMost(100f))
         }.launchIn(this)
 
         val outputPixels = realESRGAN.runUpscaling(
@@ -175,7 +173,8 @@ class RealESRGANWorker(
         }
     }.build()
 
-    private fun updateProgress(progress: Float) {
+    private suspend fun updateProgress(progress: Float) {
+        setProgress(workDataOf(PROGRESS_VALUE_PARAM to progress))
         notificationManager.notify(PROGRESS_NOTIFICATION_ID, buildProgressNotification(progress))
     }
 
@@ -240,15 +239,52 @@ class RealESRGANWorker(
         }
     }
 
+    data class InputData(
+        val fileName: String,
+        val fileUri: Uri,
+        val outputFormat: OutputFormat,
+        val upscalingModel: UpscalingModel
+    ) {
+        fun toWorkData(): Data = workDataOf(
+            INPUT_IMAGE_URI_PARAM to fileUri.toString(),
+            INPUT_IMAGE_NAME_PARAM to fileName,
+            OUTPUT_IMAGE_FORMAT_PARAM to outputFormat.formatName,
+            UPSCALING_MODEL_PATH_PARAM to upscalingModel.assetPath,
+            UPSCALING_SCALE_PARAM to upscalingModel.scale
+        )
+    }
+
+    sealed interface Progress {
+
+        data class Running(val progress: Float): Progress
+
+        object Success: Progress
+
+        object Failed: Progress
+
+        companion object {
+
+            fun fromWorkInfo(workInfo: WorkInfo): Progress? = when (workInfo.state) {
+                WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED -> Running(JNIProgressTracker.INDETERMINATE)
+                WorkInfo.State.RUNNING -> Running(
+                    workInfo.progress.getFloat(PROGRESS_VALUE_PARAM, JNIProgressTracker.INDETERMINATE)
+                )
+                WorkInfo.State.SUCCEEDED -> Success
+                WorkInfo.State.FAILED -> Failed
+                WorkInfo.State.CANCELLED -> null
+            }
+        }
+    }
+
     companion object {
 
-        const val INPUT_IMAGE_URI_PARAM = "input_image_uri"
-        const val INPUT_IMAGE_NAME_PARAM = "input_image_name"
-        const val OUTPUT_IMAGE_FORMAT_PARAM = "output_format"
-        const val OUTPUT_FILE_URI_PARAM = "output_uri"
-        const val UPSCALING_MODEL_PATH_PARAM = "model_path"
-        const val UPSCALING_SCALE_PARAM = "scale"
-        const val UNIQUE_WORK_ID = "real_esrgan"
+        private const val INPUT_IMAGE_URI_PARAM = "input_image_uri"
+        private const val INPUT_IMAGE_NAME_PARAM = "input_image_name"
+        private const val PROGRESS_VALUE_PARAM = "progress"
+        private const val OUTPUT_IMAGE_FORMAT_PARAM = "output_format"
+        private const val OUTPUT_FILE_URI_PARAM = "output_uri"
+        private const val UPSCALING_MODEL_PATH_PARAM = "model_path"
+        private const val UPSCALING_SCALE_PARAM = "scale"
 
         private const val NOTIFICATION_CHANNEL_ID = "real_esrgan"
         private const val PROGRESS_NOTIFICATION_ID = -1

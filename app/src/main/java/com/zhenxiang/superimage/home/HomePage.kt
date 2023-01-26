@@ -27,7 +27,7 @@ import coil.transition.CrossfadeTransition
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.model.DataState
-import com.zhenxiang.superimage.model.InputImage
+import com.zhenxiang.superimage.model.InputImagePreview
 import com.zhenxiang.superimage.model.OutputFormat
 import com.zhenxiang.superimage.ui.form.MonoDropDownMenu
 import com.zhenxiang.superimage.ui.mono.*
@@ -94,7 +94,7 @@ private fun TopBar() {
 @Composable
 private fun ImagePreview(
     modifier: Modifier,
-    selectedImageState: DataState<InputImage, Unit>?,
+    selectedImageState: DataState<InputImagePreview, Unit>?,
     selectedModelState: State<UpscalingModel>,
     onSelectImageClick: () -> Unit
 ) {
@@ -220,7 +220,7 @@ private fun ModelSelection(
 private fun Options(
     upscalingModelFlow: MutableStateFlow<UpscalingModel>,
     outputFormatFlow: MutableStateFlow<OutputFormat>,
-    selectedImageState: DataState<InputImage, Unit>?,
+    selectedImageState: DataState<InputImagePreview, Unit>?,
     onSelectImageClick: () -> Unit,
     onUpscaleClick: () -> Unit
 ) {
@@ -308,7 +308,7 @@ private fun OptionsPreview() = MonoTheme {
         Options(
             upscalingModelFlow = MutableStateFlow(UpscalingModel.X4_PLUS),
             outputFormatFlow = MutableStateFlow(OutputFormat.PNG),
-            selectedImageState = DataState.Success(InputImage("", "".toUri(), 0, 0)),
+            selectedImageState = DataState.Success(InputImagePreview("", "".toUri(), 0, 0)),
             onSelectImageClick = { },
             onUpscaleClick = { }
         )

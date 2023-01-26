@@ -62,6 +62,7 @@ dependencies {
     implementation 'com.github.Dimezis:BlurView:version-2.0.3'
     implementation 'com.jakewharton.timber:timber:5.0.1'
     implementation "io.coil-kt:coil-compose:2.2.2"
+    implementation "io.insert-koin:koin-android:$koin_android_version"
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

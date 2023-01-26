@@ -7,35 +7,34 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.model.DataState
-import com.zhenxiang.superimage.model.InputImage
+import com.zhenxiang.superimage.model.InputImagePreview
 import com.zhenxiang.superimage.model.OutputFormat
 import com.zhenxiang.superimage.work.RealESRGANWorker
+import com.zhenxiang.superimage.work.RealESRGANWorkerManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class HomePageViewModel(application: Application): AndroidViewModel(application) {
+class HomePageViewModel(application: Application): AndroidViewModel(application), KoinComponent {
 
-    private val workManager = WorkManager.getInstance(getApplication())
+    private val realESRGANWorkerManager by inject<RealESRGANWorkerManager>()
 
-    private val _selectedImageFlow = MutableStateFlow<DataState<InputImage, Unit>?>(null)
+    private val _selectedImageFlow = MutableStateFlow<DataState<InputImagePreview, Unit>?>(null)
 
     val selectedOutputFormatFlow = MutableStateFlow(OutputFormat.PNG)
     val selectedUpscalingModelFlow = MutableStateFlow(UpscalingModel.X4_PLUS)
-    val selectedImageFlow: StateFlow<DataState<InputImage, Unit>?> = _selectedImageFlow
+    val selectedImageFlow: StateFlow<DataState<InputImagePreview, Unit>?> = _selectedImageFlow
 
     fun loadImage(imageUri: Uri) {
         _selectedImageFlow.apply {
             tryEmit(DataState.Loading())
             viewModelScope.launch(Dispatchers.IO) {
-                imageUri.toInputImage(getApplication())?.let {
+                imageUri.toInputImagePreview(getApplication())?.let {
                     emit(DataState.Success(it))
                 } ?: emit(DataState.Error(Unit))
             }
@@ -44,19 +43,9 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
 
     fun upscale() {
         (selectedImageFlow.value as DataState.Success).data.let {
-            val selectedModel = selectedUpscalingModelFlow.value
-            val inputData = workDataOf(
-                RealESRGANWorker.INPUT_IMAGE_URI_PARAM to it.fileUri.toString(),
-                RealESRGANWorker.INPUT_IMAGE_NAME_PARAM to it.fileName,
-                RealESRGANWorker.OUTPUT_IMAGE_FORMAT_PARAM to selectedOutputFormatFlow.value.formatName,
-                RealESRGANWorker.UPSCALING_MODEL_PATH_PARAM to selectedModel.assetPath,
-                RealESRGANWorker.UPSCALING_SCALE_PARAM to selectedModel.scale
+            realESRGANWorkerManager.beginWork(
+                RealESRGANWorker.InputData(it.fileName, it.fileUri, selectedOutputFormatFlow.value, selectedUpscalingModelFlow.value)
             )
-            workManager.beginUniqueWork(
-                RealESRGANWorker.UNIQUE_WORK_ID,
-                ExistingWorkPolicy.KEEP,
-                OneTimeWorkRequestBuilder<RealESRGANWorker>().setInputData(inputData).build()
-            ).enqueue()
         }
     }
 
@@ -65,14 +54,14 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
     }
 }
 
-private fun Uri.toInputImage(context: Context): InputImage? = DocumentFile.fromSingleUri(context, this)?.let {
+private fun Uri.toInputImagePreview(context: Context): InputImagePreview? = DocumentFile.fromSingleUri(context, this)?.let {
     val fileName = it.name ?: return null
     return try {
         context.contentResolver.openInputStream(this)?.use { inputStream ->
             val options = BitmapFactory.Options()
             options.inJustDecodeBounds = true
             BitmapFactory.decodeStream(inputStream, null, options)
-            InputImage(fileName, this, options.outWidth, options.outHeight)
+            InputImagePreview(fileName, this, options.outWidth, options.outHeight)
         }
     } catch (e: Exception) {
         null

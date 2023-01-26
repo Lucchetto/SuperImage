@@ -7,6 +7,7 @@ import androidx.work.Configuration
 import androidx.work.Logger
 import androidx.work.WorkManager
 import com.zhenxiang.superimage.work.RealESRGANWorker
+import com.zhenxiang.superimage.work.RealESRGANWorkerManager
 
 /**
  * Initializes [androidx.work.WorkManager] using `androidx.startup`.
@@ -21,7 +22,7 @@ class SuperImageWorkManagerInitializer : Initializer<WorkManager> {
         val instance = WorkManager.getInstance(context)
 
         // Don't try to restart RealESRGANWorker
-        instance.cancelUniqueWork(RealESRGANWorker.UNIQUE_WORK_ID)
+        instance.cancelUniqueWork(RealESRGANWorkerManager.UNIQUE_WORK_ID)
 
         return instance
     }
