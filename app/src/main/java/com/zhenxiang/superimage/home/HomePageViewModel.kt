@@ -1,7 +1,6 @@
 package com.zhenxiang.superimage.home
 
 import android.app.Application
-import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
@@ -9,7 +8,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.model.DataState
-import com.zhenxiang.superimage.model.InputImagePreview
+import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.model.OutputFormat
 import com.zhenxiang.superimage.work.RealESRGANWorker
 import com.zhenxiang.superimage.work.RealESRGANWorkerManager
@@ -18,52 +17,71 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import org.koin.core.component.get
+import java.io.File
+import java.io.InputStream
 
 class HomePageViewModel(application: Application): AndroidViewModel(application), KoinComponent {
 
-    private val realESRGANWorkerManager by inject<RealESRGANWorkerManager>()
+    private val realESRGANWorkerManager = get<RealESRGANWorkerManager>()
 
-    private val _selectedImageFlow = MutableStateFlow<DataState<InputImagePreview, Unit>?>(null)
+    private val _selectedImageFlow = MutableStateFlow<DataState<InputImage, Unit>?>(null)
 
     val selectedOutputFormatFlow = MutableStateFlow(OutputFormat.PNG)
     val selectedUpscalingModelFlow = MutableStateFlow(UpscalingModel.X4_PLUS)
-    val selectedImageFlow: StateFlow<DataState<InputImagePreview, Unit>?> = _selectedImageFlow
+    val selectedImageFlow: StateFlow<DataState<InputImage, Unit>?> = _selectedImageFlow
 
     fun loadImage(imageUri: Uri) {
         _selectedImageFlow.apply {
+            val currentTempImageFile = (value as? DataState.Success)?.data?.tempFile
             tryEmit(DataState.Loading())
             viewModelScope.launch(Dispatchers.IO) {
-                imageUri.toInputImagePreview(getApplication())?.let {
+                currentTempImageFile?.let { realESRGANWorkerManager.deleteTempImageFile(it) }
+                createInputImage(imageUri)?.let {
                     emit(DataState.Success(it))
                 } ?: emit(DataState.Error(Unit))
             }
         }
     }
 
+    private fun createInputImage(imageUri: Uri): InputImage? {
+        val application = getApplication<Application>()
+        val imageFileName = DocumentFile.fromSingleUri(application, imageUri)?.name ?: return null
+        val tempImageFile = application.contentResolver.openInputStream(imageUri)?.use {
+            copyToTempFile(it)
+        } ?: return null
+        val options = BitmapFactory.Options()
+        options.inJustDecodeBounds = true
+        tempImageFile.inputStream().use {
+            BitmapFactory.decodeStream(it, null, options)
+        }
+        return InputImage(imageFileName, tempImageFile, options.outWidth, options.outHeight)
+    }
+
+    private fun copyToTempFile(inputStream: InputStream): File = realESRGANWorkerManager.createTempImageFile().apply {
+        outputStream().use { outputStream ->
+            inputStream.copyTo(outputStream)
+        }
+    }
+
     fun upscale() {
         (selectedImageFlow.value as DataState.Success).data.let {
             realESRGANWorkerManager.beginWork(
-                RealESRGANWorker.InputData(it.fileName, it.fileUri, selectedOutputFormatFlow.value, selectedUpscalingModelFlow.value)
+                RealESRGANWorker.InputData(it.fileName, it.tempFile.name, selectedOutputFormatFlow.value, selectedUpscalingModelFlow.value)
             )
         }
     }
 
+    override fun onCleared() {
+        viewModelScope.launch(Dispatchers.IO) {
+            (selectedImageFlow.value as? DataState.Success)?.data?.tempFile?.let {
+                realESRGANWorkerManager.deleteTempImageFile(it)
+            }
+        }
+        super.onCleared()
+    }
+
     companion object {
         const val IMAGE_MIME_TYPE = "image/*"
-    }
-}
-
-private fun Uri.toInputImagePreview(context: Context): InputImagePreview? = DocumentFile.fromSingleUri(context, this)?.let {
-    val fileName = it.name ?: return null
-    return try {
-        context.contentResolver.openInputStream(this)?.use { inputStream ->
-            val options = BitmapFactory.Options()
-            options.inJustDecodeBounds = true
-            BitmapFactory.decodeStream(inputStream, null, options)
-            InputImagePreview(fileName, this, options.outWidth, options.outHeight)
-        }
-    } catch (e: Exception) {
-        null
     }
 }

@@ -20,14 +20,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.request.ImageRequest
 import coil.transition.CrossfadeTransition
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.model.DataState
-import com.zhenxiang.superimage.model.InputImagePreview
+import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.model.OutputFormat
 import com.zhenxiang.superimage.ui.form.MonoDropDownMenu
 import com.zhenxiang.superimage.ui.mono.*
@@ -36,6 +35,7 @@ import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.spacing
 import com.zhenxiang.superimage.ui.utils.RowSpacer
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,7 +94,7 @@ private fun TopBar() {
 @Composable
 private fun ImagePreview(
     modifier: Modifier,
-    selectedImageState: DataState<InputImagePreview, Unit>?,
+    selectedImageState: DataState<InputImage, Unit>?,
     selectedModelState: State<UpscalingModel>,
     onSelectImageClick: () -> Unit
 ) {
@@ -110,7 +110,7 @@ private fun ImagePreview(
             is DataState.Success -> selectedImageState.data.let {
                 BlurShadowImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(it.fileUri)
+                        .data(it.tempFile)
                         .transitionFactory(crossfadeTransition)
                         .build(),
                     contentDescription = it.fileName,
@@ -220,7 +220,7 @@ private fun ModelSelection(
 private fun Options(
     upscalingModelFlow: MutableStateFlow<UpscalingModel>,
     outputFormatFlow: MutableStateFlow<OutputFormat>,
-    selectedImageState: DataState<InputImagePreview, Unit>?,
+    selectedImageState: DataState<InputImage, Unit>?,
     onSelectImageClick: () -> Unit,
     onUpscaleClick: () -> Unit
 ) {
@@ -308,7 +308,7 @@ private fun OptionsPreview() = MonoTheme {
         Options(
             upscalingModelFlow = MutableStateFlow(UpscalingModel.X4_PLUS),
             outputFormatFlow = MutableStateFlow(OutputFormat.PNG),
-            selectedImageState = DataState.Success(InputImagePreview("", "".toUri(), 0, 0)),
+            selectedImageState = DataState.Success(InputImage("", File(""), 0, 0)),
             onSelectImageClick = { },
             onUpscaleClick = { }
         )

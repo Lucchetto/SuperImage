@@ -1,10 +1,10 @@
 package com.zhenxiang.superimage.model
 
-import android.net.Uri
+import java.io.File
 
-data class InputImagePreview(
+data class InputImage(
     val fileName: String,
-    val fileUri: Uri,
+    val tempFile: File,
     val width: Int,
     val height: Int
 )

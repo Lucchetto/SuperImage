@@ -12,17 +12,6 @@ import java.io.OutputStream
 
 object BitmapUtils {
 
-    fun loadImageFromUri(contentResolver: ContentResolver, uri: Uri): Bitmap? = try {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            ImageDecoder.decodeBitmap(ImageDecoder.createSource(contentResolver, uri))
-        } else {
-            MediaStore.Images.Media.getBitmap(contentResolver, uri)
-        }
-    } catch (e: Exception) {
-        Timber.e(e)
-        null
-    }
-
     /**
      * Copy hardware bitmap to software.
      * It will simply return the input bitmap if it's not a hardware bitmap

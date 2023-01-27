@@ -7,6 +7,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -24,7 +25,6 @@ import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.MainActivity
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.model.OutputFormat
-import com.zhenxiang.superimage.utils.BitmapUtils
 import com.zhenxiang.superimage.utils.compress
 import com.zhenxiang.superimage.utils.replaceFileExtension
 import kotlinx.coroutines.CoroutineScope
@@ -47,7 +47,9 @@ class RealESRGANWorker(
     private val notificationManager = NotificationManagerCompat.from(context)
     private val progressNotificationBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
 
-    private val inputImageUri = params.inputData.getString(INPUT_IMAGE_URI_PARAM)?.let { Uri.parse(it) }
+    private val inputImageTempFile = params.inputData.getString(INPUT_IMAGE_TEMP_FILE_NAME_PARAM)?.let {
+        RealESRGANWorkerManager.getTempFile(context, it)
+    }
     private val inputImageName = params.inputData.getString(INPUT_IMAGE_NAME_PARAM) ?: throw IllegalArgumentException(
         "INPUT_IMAGE_NAME_PARAM must not be null"
     )
@@ -147,10 +149,11 @@ class RealESRGANWorker(
         }
     }
 
-    private fun getInputBitmap(): Bitmap? = inputImageUri?.let { uri ->
-        BitmapUtils.loadImageFromUri(applicationContext.contentResolver, uri)?.let { bitmap ->
-            BitmapUtils.copyToSoftware(bitmap, true)
+    private fun getInputBitmap(): Bitmap? = inputImageTempFile?.inputStream()?.use {
+        val options = BitmapFactory.Options().apply {
+            inPreferredConfig = Bitmap.Config.ARGB_8888
         }
+        BitmapFactory.decodeStream(it, null, options)
     }
 
     private fun createForegroundInfo(): ForegroundInfo {
@@ -240,14 +243,14 @@ class RealESRGANWorker(
     }
 
     data class InputData(
-        val fileName: String,
-        val fileUri: Uri,
+        val originalFileName: String,
+        val tempFileName: String,
         val outputFormat: OutputFormat,
         val upscalingModel: UpscalingModel
     ) {
         fun toWorkData(): Data = workDataOf(
-            INPUT_IMAGE_URI_PARAM to fileUri.toString(),
-            INPUT_IMAGE_NAME_PARAM to fileName,
+            INPUT_IMAGE_TEMP_FILE_NAME_PARAM to tempFileName,
+            INPUT_IMAGE_NAME_PARAM to originalFileName,
             OUTPUT_IMAGE_FORMAT_PARAM to outputFormat.formatName,
             UPSCALING_MODEL_PATH_PARAM to upscalingModel.assetPath,
             UPSCALING_SCALE_PARAM to upscalingModel.scale
@@ -278,7 +281,7 @@ class RealESRGANWorker(
 
     companion object {
 
-        private const val INPUT_IMAGE_URI_PARAM = "input_image_uri"
+        private const val INPUT_IMAGE_TEMP_FILE_NAME_PARAM = "input_image_uri"
         private const val INPUT_IMAGE_NAME_PARAM = "input_image_name"
         private const val PROGRESS_VALUE_PARAM = "progress"
         private const val OUTPUT_IMAGE_FORMAT_PARAM = "output_format"
