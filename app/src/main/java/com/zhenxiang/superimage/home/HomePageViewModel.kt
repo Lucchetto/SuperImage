@@ -1,6 +1,7 @@
 package com.zhenxiang.superimage.home
 
 import android.app.Application
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
@@ -25,11 +26,25 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
 
     private val realESRGANWorkerManager = get<RealESRGANWorkerManager>()
 
-    private val _selectedImageFlow = MutableStateFlow<DataState<InputImage, Unit>?>(null)
+    private val _selectedImageFlow: MutableStateFlow<DataState<InputImage, Unit>?>
 
-    val selectedOutputFormatFlow = MutableStateFlow(OutputFormat.PNG)
-    val selectedUpscalingModelFlow = MutableStateFlow(UpscalingModel.X4_PLUS)
-    val selectedImageFlow: StateFlow<DataState<InputImage, Unit>?> = _selectedImageFlow
+    val selectedOutputFormatFlow: MutableStateFlow<OutputFormat>
+    val selectedUpscalingModelFlow: MutableStateFlow<UpscalingModel>
+    val selectedImageFlow: StateFlow<DataState<InputImage, Unit>?>
+
+    init {
+        val inputData = realESRGANWorkerManager.workProgressFlow.value?.first
+        if (inputData != null) {
+            _selectedImageFlow = MutableStateFlow(DataState.Success(inputData.toInputImage(application)))
+            selectedOutputFormatFlow = MutableStateFlow(inputData.outputFormat)
+            selectedUpscalingModelFlow = MutableStateFlow(inputData.upscalingModel)
+        } else {
+            _selectedImageFlow = MutableStateFlow(null)
+            selectedOutputFormatFlow = MutableStateFlow(OutputFormat.PNG)
+            selectedUpscalingModelFlow = MutableStateFlow(UpscalingModel.X4_PLUS)
+        }
+        selectedImageFlow = _selectedImageFlow
+    }
 
     fun loadImage(imageUri: Uri) {
         _selectedImageFlow.apply {
@@ -83,5 +98,14 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
 
     companion object {
         const val IMAGE_MIME_TYPE = "image/*"
+    }
+}
+
+private fun RealESRGANWorker.InputData.toInputImage(context: Context) = with(RealESRGANWorkerManager.getTempFile(context, tempFileName)) {
+    inputStream().use {
+        val options = BitmapFactory.Options()
+        options.inJustDecodeBounds = true
+        BitmapFactory.decodeStream(it, null, options)
+        InputImage(originalFileName, this, options.outWidth, options.outHeight)
     }
 }
