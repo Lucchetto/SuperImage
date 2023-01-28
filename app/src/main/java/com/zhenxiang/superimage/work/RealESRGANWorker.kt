@@ -261,7 +261,7 @@ class RealESRGANWorker(
 
         data class Running(val progress: Float): Progress
 
-        object Success: Progress
+        data class Success(val outputFileUri: Uri): Progress
 
         object Failed: Progress
 
@@ -272,7 +272,9 @@ class RealESRGANWorker(
                 WorkInfo.State.RUNNING -> Running(
                     workInfo.progress.getFloat(PROGRESS_VALUE_PARAM, JNIProgressTracker.INDETERMINATE)
                 )
-                WorkInfo.State.SUCCEEDED -> Success
+                WorkInfo.State.SUCCEEDED -> Success(
+                    workInfo.outputData.getString(OUTPUT_FILE_URI_PARAM)!!.toUri()
+                )
                 WorkInfo.State.FAILED -> Failed
                 WorkInfo.State.CANCELLED -> null
             }

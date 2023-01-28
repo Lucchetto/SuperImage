@@ -2,8 +2,10 @@ package com.zhenxiang.superimage.home
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,6 +25,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.request.ImageRequest
 import coil.transition.CrossfadeTransition
+import com.zhenxiang.realesrgan.JNIProgressTracker
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.model.DataState
@@ -34,8 +37,10 @@ import com.zhenxiang.superimage.ui.theme.MonoTheme
 import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.spacing
 import com.zhenxiang.superimage.ui.utils.RowSpacer
+import com.zhenxiang.superimage.work.RealESRGANWorker
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,13 +79,21 @@ fun HomePage(viewModel: HomePageViewModel) = Scaffold(
             selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
         ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
 
-        Options(
-            upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
-            outputFormatFlow = viewModel.selectedOutputFormatFlow,
-            selectedImageState = selectedImageState,
-            onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
-            onUpscaleClick = { viewModel.upscale() }
-        )
+        val workProgressState by viewModel.workProgressFlow.collectAsStateWithLifecycle()
+
+        workProgressState?.let {
+            UpscalingWork(it.first, it.second) {
+                viewModel.upscale()
+            }
+        } ?: run {
+            Options(
+                upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
+                outputFormatFlow = viewModel.selectedOutputFormatFlow,
+                selectedImageState = selectedImageState,
+                onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
+                onUpscaleClick = { viewModel.upscale() }
+            )
+        }
     }
 }
 
@@ -169,7 +182,9 @@ private fun ColumnScope.StartWizard(onSelectImageClick: () -> Unit) {
 private fun SetupWizardPreview() = MonoTheme {
     Scaffold {
         Column(
-            modifier = Modifier.padding(MaterialTheme.spacing.level5).fillMaxSize(),
+            modifier = Modifier
+                .padding(MaterialTheme.spacing.level5)
+                .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -214,6 +229,112 @@ private fun ModelSelection(
     ) {
         flow.tryEmit(it)
     }
+}
+
+@Composable
+private fun UpscalingWork(
+    inputData: RealESRGANWorker.InputData,
+    progress: RealESRGANWorker.Progress,
+    onRetryClicked: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .drawTopBorder(MaterialTheme.border.regular)
+            .padding(MaterialTheme.spacing.level5),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        when (progress) {
+            RealESRGANWorker.Progress.Failed -> {
+                Text(
+                    text = stringResource(id = R.string.upscaling_worker_error_notification_title, inputData.originalFileName),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelLarge
+                )
+                MonoButton(
+                    modifier = Modifier.padding(top = MaterialTheme.spacing.level4),
+                    onClick = onRetryClicked
+                ) {
+                    MonoButtonIcon(
+                        painterResource(id = R.drawable.ic_arrow_clockwise_24),
+                        contentDescription = null
+                    )
+                    Text(
+                        stringResource(id = R.string.retry)
+                    )
+                }
+            }
+            is RealESRGANWorker.Progress.Running -> {
+                Text(
+                    text = stringResource(id = R.string.upscaling_worker_notification_title, inputData.originalFileName),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelLarge
+                )
+                Text(
+                    modifier = Modifier.padding(top = MaterialTheme.spacing.level4),
+                    text = if (progress.progress == JNIProgressTracker.INDETERMINATE) {
+                        stringResource(id = R.string.progress_indeterminate)
+                    } else {
+                        stringResource(id = R.string.progress_template, progress.progress.coerceAtMost(100f).roundToInt())
+                    },
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+            is RealESRGANWorker.Progress.Success -> {
+                Text(
+                    text = stringResource(id = R.string.upscaling_worker_success_notification_title, inputData.originalFileName),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelLarge
+                )
+                val context = LocalContext.current
+                MonoButton(
+                    modifier = Modifier.padding(top = MaterialTheme.spacing.level4),
+                    onClick = {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW).apply { data = progress.outputFileUri }
+                        )
+                    }
+                ) {
+                    MonoButtonIcon(
+                        painterResource(id = R.drawable.outline_launch_24),
+                        contentDescription = null
+                    )
+                    Text(
+                        stringResource(id = R.string.open)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun UpscalingWorkRunningPreview() = MonoTheme {
+    UpscalingWork(
+        inputData = RealESRGANWorker.InputData("Bliss.jpg", "", OutputFormat.PNG, UpscalingModel.X4_PLUS),
+        progress = RealESRGANWorker.Progress.Running(69f)
+    ) {}
+}
+
+@Preview
+@Composable
+private fun UpscalingWorkFailedPreview() = MonoTheme {
+    UpscalingWork(
+        inputData = RealESRGANWorker.InputData("Bliss.jpg", "", OutputFormat.PNG, UpscalingModel.X4_PLUS),
+        progress = RealESRGANWorker.Progress.Failed
+    ) {}
+}
+
+@Preview
+@Composable
+private fun UpscalingWorkSuccessPreview() = MonoTheme {
+    UpscalingWork(
+        inputData = RealESRGANWorker.InputData("Bliss.jpg", "", OutputFormat.PNG, UpscalingModel.X4_PLUS),
+        progress = RealESRGANWorker.Progress.Success(Uri.EMPTY)
+    ) {}
 }
 
 @Composable
@@ -279,7 +400,7 @@ private fun Options(
                     Text(
                         stringResource(id = R.string.change_image_label)
                     )
-                }   
+                }
             } else {
                 RowSpacer()
             }

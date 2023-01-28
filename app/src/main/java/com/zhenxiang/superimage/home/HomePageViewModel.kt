@@ -31,9 +31,10 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
     val selectedOutputFormatFlow: MutableStateFlow<OutputFormat>
     val selectedUpscalingModelFlow: MutableStateFlow<UpscalingModel>
     val selectedImageFlow: StateFlow<DataState<InputImage, Unit>?>
+    val workProgressFlow = realESRGANWorkerManager.workProgressFlow
 
     init {
-        val inputData = realESRGANWorkerManager.workProgressFlow.value?.first
+        val inputData = workProgressFlow.value?.first
         if (inputData != null) {
             _selectedImageFlow = MutableStateFlow(DataState.Success(inputData.toInputImage(application)))
             selectedOutputFormatFlow = MutableStateFlow(inputData.outputFormat)
@@ -81,11 +82,15 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
 
     fun upscale() {
         (selectedImageFlow.value as DataState.Success).data.let {
-            realESRGANWorkerManager.beginWork(
-                RealESRGANWorker.InputData(it.fileName, it.tempFile.name, selectedOutputFormatFlow.value, selectedUpscalingModelFlow.value)
-            )
+            viewModelScope.launch(Dispatchers.IO) {
+                realESRGANWorkerManager.beginWork(
+                    RealESRGANWorker.InputData(it.fileName, it.tempFile.name, selectedOutputFormatFlow.value, selectedUpscalingModelFlow.value)
+                )
+            }
         }
     }
+
+    fun consumeWorkCompleted() = realESRGANWorkerManager.clearCurrentWorkProgress()
 
     override fun onCleared() {
         viewModelScope.launch(Dispatchers.IO) {

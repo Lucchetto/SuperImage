@@ -5,10 +5,7 @@ import android.os.SystemClock
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
+import androidx.work.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -59,11 +56,22 @@ class RealESRGANWorkerManager(private val context: Context) {
         }
     }
 
-    fun beginWork(input: RealESRGANWorker.InputData) {
+    suspend fun beginWork(input: RealESRGANWorker.InputData) {
         // TODO: Check if worker is already running
         val request = OneTimeWorkRequestBuilder<RealESRGANWorker>().setInputData(input.toWorkData()).build()
+        workManager.enqueueUniqueWork(UNIQUE_WORK_ID, ExistingWorkPolicy.KEEP, request).await()
         currentWorkerLiveData.value = Pair(request.id, input)
-        workManager.enqueueUniqueWork(UNIQUE_WORK_ID, ExistingWorkPolicy.KEEP, request)
+    }
+
+    /**
+     * Clear currently tracked [RealESRGANWorker] if it's no longer running
+     */
+    fun clearCurrentWorkProgress() {
+        workProgressFlow.value?.let {
+            if (it.second !is RealESRGANWorker.Progress.Running) {
+                currentWorkerLiveData.value = null
+            }
+        }
     }
 
     /**
