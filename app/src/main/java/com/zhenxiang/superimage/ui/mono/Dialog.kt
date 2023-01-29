@@ -27,9 +27,9 @@ fun MonoAlertDialog(
         dismissOnClickOutside = false,
         usePlatformDefaultWidth = false
     ),
-    title: (@Composable () -> Unit)? = null,
+    title: @Composable (() -> Unit)? = null,
     content: @Composable ColumnScope.(PaddingValues) -> Unit,
-    dismissButton: Boolean = true,
+    dismissButton: @Composable (() -> Unit)? = null,
     buttons: @Composable RowScope.() -> Unit = { },
 ) {
     AlertDialog(
@@ -74,8 +74,8 @@ fun MonoAlertDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.level4, Alignment.End)
                 ) {
-                    if (dismissButton) {
-                        MonoCloseDialogButton(onDismissRequest)
+                    if (dismissButton != null) {
+                        dismissButton()
                         RowSpacer()
                     }
                     buttons()
@@ -92,6 +92,15 @@ fun MonoCloseDialogButton(onClick: () -> Unit) = MonoButton(onClick = onClick) {
         contentDescription = stringResource(id = R.string.close)
     )
     Text(stringResource(id = R.string.close))
+}
+
+@Composable
+fun MonoCancelDialogButton(onClick: () -> Unit) = MonoButton(onClick = onClick) {
+    MonoButtonIcon(
+        Icons.Outlined.Close,
+        contentDescription = stringResource(id = R.string.cancel)
+    )
+    Text(stringResource(id = R.string.cancel))
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")

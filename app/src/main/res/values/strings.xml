@@ -6,6 +6,7 @@
     <string name="open">Open</string>
     <string name="retry">Retry</string>
     <string name="close">Close</string>
+    <string name="cancel">Cancel</string>
 
     <string name="original_image_resolution_label">Original resolution: %1$sx%2$s</string>
     <string name="output_image_resolution_label">Output resolution: %1$sx%2$s</string>
@@ -16,6 +17,12 @@
     <string name="selected_mode_label">Selected mode</string>
     <string name="upscaling_options_title">Upscaling options</string>
     <string name="output_format_title">Output format</string>
+
+    <string name="permission_denied_title">Permission denied</string>
+    <string name="storage_permission_denied_desc">Please grant permission to write files on the device</string>
+    <string name="storage_permission_denied_forever_desc">Please grant permission to write files on the device in the settings</string>
+    <string name="open_settings_label">Open settings</string>
+    <string name="grant_permission_label">Grant permission</string>
 
     <string name="upscaling_worker_notification_title">Upscaling %1$s</string>
     <string name="upscaling_worker_error_notification_title">An error occurred while upscaling %1$s</string>

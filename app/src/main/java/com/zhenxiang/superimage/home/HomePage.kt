@@ -284,7 +284,11 @@ private fun UpscalingWork(
             )
         }
     },
-    dismissButton = progress !is RealESRGANWorker.Progress.Running,
+    dismissButton = if (progress is RealESRGANWorker.Progress.Running) {
+        null
+    } else {
+        { MonoCloseDialogButton(onDismissRequest) }
+    },
     buttons = {
         when (progress) {
             RealESRGANWorker.Progress.Failed -> {
@@ -426,16 +430,7 @@ private fun Options(
                 RowSpacer()
             }
 
-            MonoButton(
-                enabled = imageSelected,
-                onClick = onUpscaleClick,
-            ) {
-                MonoButtonIcon(
-                    painterResource(id = R.drawable.outline_auto_awesome_24),
-                    contentDescription = null
-                )
-                Text(stringResource(id = R.string.upscale_label))
-            }
+            UpscaleButton(enabled = imageSelected, onClick = onUpscaleClick)
         }
     }
 }
