@@ -21,6 +21,7 @@ import com.zhenxiang.superimage.ui.mono.MonoAlertDialog
 import com.zhenxiang.superimage.ui.mono.MonoButton
 import com.zhenxiang.superimage.ui.mono.MonoButtonIcon
 import com.zhenxiang.superimage.ui.mono.MonoCancelDialogButton
+import com.zhenxiang.superimage.ui.utils.RowSpacer
 import com.zhenxiang.superimage.utils.IntentUtils
 import com.zhenxiang.superimage.utils.writeStoragePermission
 
@@ -101,8 +102,9 @@ internal fun UpscaleButton(enabled: Boolean, onClick: () -> Unit) {
                     )
                 )
             },
-            dismissButton = { MonoCancelDialogButton{ retryRequestPermission = false } },
             buttons = {
+                MonoCancelDialogButton{ retryRequestPermission = false }
+                RowSpacer()
                 if (showPermissionRational) {
                     MonoButton(
                         onClick = {

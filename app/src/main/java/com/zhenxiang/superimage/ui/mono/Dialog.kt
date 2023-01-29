@@ -17,7 +17,6 @@ import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.ui.theme.MonoTheme
 import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.spacing
-import com.zhenxiang.superimage.ui.utils.RowSpacer
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -29,7 +28,6 @@ fun MonoAlertDialog(
     ),
     title: @Composable (() -> Unit)? = null,
     content: @Composable ColumnScope.(PaddingValues) -> Unit,
-    dismissButton: @Composable (() -> Unit)? = null,
     buttons: @Composable RowScope.() -> Unit = { },
 ) {
     AlertDialog(
@@ -72,14 +70,9 @@ fun MonoAlertDialog(
                         .padding(MaterialTheme.spacing.level5)
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.level4, Alignment.End)
-                ) {
-                    if (dismissButton != null) {
-                        dismissButton()
-                        RowSpacer()
-                    }
-                    buttons()
-                }
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.level4, Alignment.End),
+                    content = buttons
+                )
             }
         }
     }

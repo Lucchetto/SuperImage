@@ -97,7 +97,12 @@ fun HomePage(viewModel: HomePageViewModel) = Scaffold(
             UpscalingWork(
                 inputData = it.first,
                 progress = it.second,
-                onDismissRequest = { viewModel.consumeWorkCompleted() },
+                onDismissRequest = {
+                    viewModel.consumeWorkCompleted()
+                    if (it.second is RealESRGANWorker.Progress.Success) {
+                        viewModel.clearSelectedImage()
+                    }
+                },
                 onRetryClicked = { viewModel.upscale() },
                 onOpenOutputImageClicked = { intent -> openOutputImageLauncher.launch(intent) }
             )
@@ -284,14 +289,11 @@ private fun UpscalingWork(
             )
         }
     },
-    dismissButton = if (progress is RealESRGANWorker.Progress.Running) {
-        null
-    } else {
-        { MonoCloseDialogButton(onDismissRequest) }
-    },
     buttons = {
         when (progress) {
             RealESRGANWorker.Progress.Failed -> {
+                MonoCancelDialogButton(onDismissRequest)
+                RowSpacer()
                 MonoButton(onClick = onRetryClicked) {
                     MonoButtonIcon(
                         painterResource(id = R.drawable.ic_arrow_clockwise_24),
@@ -304,6 +306,8 @@ private fun UpscalingWork(
             }
             is RealESRGANWorker.Progress.Running -> {}
             is RealESRGANWorker.Progress.Success -> {
+                MonoCloseDialogButton(onDismissRequest)
+                RowSpacer()
                 MonoButton(
                     onClick = {
                         onOpenOutputImageClicked(IntentUtils.actionViewNewTask(progress.outputFileUri))

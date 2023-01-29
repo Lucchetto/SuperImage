@@ -91,9 +91,10 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
     }
 
     fun consumeWorkCompleted() {
-        if (realESRGANWorkerManager.clearCurrentWorkProgress()) {
-            _selectedImageFlow.tryEmit(null)
-        }
+        realESRGANWorkerManager.clearCurrentWorkProgress()
+    }
+    fun clearSelectedImage() {
+        _selectedImageFlow.tryEmit(null)
     }
 
     override fun onCleared() {
