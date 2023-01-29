@@ -292,10 +292,7 @@ private fun UpscalingWork(
     buttons = {
         when (progress) {
             RealESRGANWorker.Progress.Failed -> {
-                MonoButton(
-                    modifier = Modifier.padding(top = MaterialTheme.spacing.level4),
-                    onClick = onRetryClicked
-                ) {
+                MonoButton(onClick = onRetryClicked) {
                     MonoButtonIcon(
                         painterResource(id = R.drawable.ic_arrow_clockwise_24),
                         contentDescription = null
@@ -308,7 +305,6 @@ private fun UpscalingWork(
             is RealESRGANWorker.Progress.Running -> {}
             is RealESRGANWorker.Progress.Success -> {
                 MonoButton(
-                    modifier = Modifier.padding(top = MaterialTheme.spacing.level4),
                     onClick = {
                         onOpenOutputImageClicked(IntentUtils.actionViewNewTask(progress.outputFileUri))
                     }
@@ -317,9 +313,7 @@ private fun UpscalingWork(
                         painterResource(id = R.drawable.outline_launch_24),
                         contentDescription = null
                     )
-                    Text(
-                        stringResource(id = R.string.open)
-                    )
+                    Text(stringResource(id = R.string.open))
                 }
             }
         }
