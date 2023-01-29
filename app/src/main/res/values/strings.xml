@@ -1,10 +1,11 @@
 <resources>
     <string name="app_name">SuperImage</string>
 
-    <string name="progress_template">%d %%</string>
+    <string name="progress_template">%d%%</string>
     <string name="progress_indeterminate">Initialising…</string>
     <string name="open">Open</string>
     <string name="retry">Retry</string>
+    <string name="close">Close</string>
 
     <string name="original_image_resolution_label">Original resolution: %1$sx%2$s</string>
     <string name="output_image_resolution_label">Output resolution: %1$sx%2$s</string>

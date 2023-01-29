@@ -90,7 +90,11 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
         }
     }
 
-    fun consumeWorkCompleted() = realESRGANWorkerManager.clearCurrentWorkProgress()
+    fun consumeWorkCompleted() {
+        if (realESRGANWorkerManager.clearCurrentWorkProgress()) {
+            _selectedImageFlow.tryEmit(null)
+        }
+    }
 
     override fun onCleared() {
         viewModelScope.launch(Dispatchers.IO) {

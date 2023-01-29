@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
 
@@ -60,18 +61,23 @@ class RealESRGANWorkerManager(private val context: Context) {
         // TODO: Check if worker is already running
         val request = OneTimeWorkRequestBuilder<RealESRGANWorker>().setInputData(input.toWorkData()).build()
         workManager.enqueueUniqueWork(UNIQUE_WORK_ID, ExistingWorkPolicy.KEEP, request).await()
-        currentWorkerLiveData.value = Pair(request.id, input)
+        withContext(Dispatchers.Main) {
+            currentWorkerLiveData.value = Pair(request.id, input)
+        }
     }
 
     /**
      * Clear currently tracked [RealESRGANWorker] if it's no longer running
+     * @return whether the tracked worker has been cleared
      */
-    fun clearCurrentWorkProgress() {
+    fun clearCurrentWorkProgress(): Boolean {
         workProgressFlow.value?.let {
             if (it.second !is RealESRGANWorker.Progress.Running) {
                 currentWorkerLiveData.value = null
+                return true
             }
         }
+        return false
     }
 
     /**

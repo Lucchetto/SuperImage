@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.zhenxiang.superimage.R
@@ -50,6 +51,19 @@ fun MonoButtonIcon(
     modifier: Modifier = Modifier,
 ) = Icon(
     painter,
+    contentDescription = contentDescription,
+    modifier = modifier
+        .padding(end = MaterialTheme.spacing.level3)
+        .size(MonoButtonDefaults.IconSize)
+)
+
+@Composable
+fun MonoButtonIcon(
+    imageVector: ImageVector,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+) = Icon(
+    imageVector,
     contentDescription = contentDescription,
     modifier = modifier
         .padding(end = MaterialTheme.spacing.level3)

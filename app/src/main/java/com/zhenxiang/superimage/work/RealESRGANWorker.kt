@@ -25,6 +25,7 @@ import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.MainActivity
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.model.OutputFormat
+import com.zhenxiang.superimage.utils.IntentUtils
 import com.zhenxiang.superimage.utils.compress
 import com.zhenxiang.superimage.utils.replaceFileExtension
 import kotlinx.coroutines.CoroutineScope
@@ -66,11 +67,13 @@ class RealESRGANWorker(
                 setSmallIcon(R.drawable.outline_photo_size_select_large_24)
                 setContentText(applicationContext.getString(R.string.upscaling_worker_success_notification_desc))
                 setAutoCancel(true)
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    data = it
-                }
                 setContentIntent(
-                    PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT)
+                    PendingIntent.getActivity(
+                        applicationContext,
+                        0,
+                        IntentUtils.actionViewNewTask(it),
+                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
+                    )
                 )
             }.build().apply {
                 notificationManager.notifyAutoId(this)

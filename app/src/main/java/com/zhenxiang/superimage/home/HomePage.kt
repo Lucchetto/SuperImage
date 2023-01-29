@@ -37,6 +37,7 @@ import com.zhenxiang.superimage.ui.theme.MonoTheme
 import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.spacing
 import com.zhenxiang.superimage.ui.utils.RowSpacer
+import com.zhenxiang.superimage.utils.IntentUtils
 import com.zhenxiang.superimage.work.RealESRGANWorker
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
@@ -52,6 +53,9 @@ fun HomePage(viewModel: HomePageViewModel) = Scaffold(
         it?.let { viewModel.loadImage(it) }
     }
     val requestPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+    }
+    val openOutputImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        viewModel.consumeWorkCompleted()
     }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -79,19 +83,23 @@ fun HomePage(viewModel: HomePageViewModel) = Scaffold(
             selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
         ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
 
+        Options(
+            upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
+            outputFormatFlow = viewModel.selectedOutputFormatFlow,
+            selectedImageState = selectedImageState,
+            onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
+            onUpscaleClick = { viewModel.upscale() }
+        )
+
         val workProgressState by viewModel.workProgressFlow.collectAsStateWithLifecycle()
 
         workProgressState?.let {
-            UpscalingWork(it.first, it.second) {
-                viewModel.upscale()
-            }
-        } ?: run {
-            Options(
-                upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
-                outputFormatFlow = viewModel.selectedOutputFormatFlow,
-                selectedImageState = selectedImageState,
-                onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
-                onUpscaleClick = { viewModel.upscale() }
+            UpscalingWork(
+                inputData = it.first,
+                progress = it.second,
+                onDismissRequest = { viewModel.consumeWorkCompleted() },
+                onRetryClicked = { viewModel.upscale() },
+                onOpenOutputImageClicked = { intent -> openOutputImageLauncher.launch(intent) }
             )
         }
     }
@@ -235,23 +243,51 @@ private fun ModelSelection(
 private fun UpscalingWork(
     inputData: RealESRGANWorker.InputData,
     progress: RealESRGANWorker.Progress,
-    onRetryClicked: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primaryContainer)
-            .drawTopBorder(MaterialTheme.border.regular)
-            .padding(MaterialTheme.spacing.level5),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    onDismissRequest: () -> Unit,
+    onRetryClicked: () -> Unit,
+    onOpenOutputImageClicked: (Intent) -> Unit,
+) = MonoAlertDialog(
+    onDismissRequest = onDismissRequest,
+    content = {
+        when (progress) {
+            RealESRGANWorker.Progress.Failed -> Text(
+                modifier = Modifier.padding(it),
+                text = stringResource(id = R.string.upscaling_worker_error_notification_title, inputData.originalFileName)
+            )
+            is RealESRGANWorker.Progress.Running -> {
+                Column(
+                    modifier = Modifier
+                        .padding(it)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.upscaling_worker_notification_title, inputData.originalFileName),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                    Text(
+                        modifier = Modifier.padding(top = MaterialTheme.spacing.level3),
+                        text = if (progress.progress == JNIProgressTracker.INDETERMINATE) {
+                            stringResource(id = R.string.progress_indeterminate)
+                        } else {
+                            stringResource(id = R.string.progress_template, progress.progress.coerceAtMost(100f).roundToInt())
+                        },
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+            is RealESRGANWorker.Progress.Success -> Text(
+                modifier = Modifier.padding(it),
+                text = stringResource(id = R.string.upscaling_worker_success_notification_title, inputData.originalFileName)
+            )
+        }
+    },
+    dismissButton = progress !is RealESRGANWorker.Progress.Running,
+    buttons = {
         when (progress) {
             RealESRGANWorker.Progress.Failed -> {
-                Text(
-                    text = stringResource(id = R.string.upscaling_worker_error_notification_title, inputData.originalFileName),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelLarge
-                )
                 MonoButton(
                     modifier = Modifier.padding(top = MaterialTheme.spacing.level4),
                     onClick = onRetryClicked
@@ -265,36 +301,12 @@ private fun UpscalingWork(
                     )
                 }
             }
-            is RealESRGANWorker.Progress.Running -> {
-                Text(
-                    text = stringResource(id = R.string.upscaling_worker_notification_title, inputData.originalFileName),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelLarge
-                )
-                Text(
-                    modifier = Modifier.padding(top = MaterialTheme.spacing.level4),
-                    text = if (progress.progress == JNIProgressTracker.INDETERMINATE) {
-                        stringResource(id = R.string.progress_indeterminate)
-                    } else {
-                        stringResource(id = R.string.progress_template, progress.progress.coerceAtMost(100f).roundToInt())
-                    },
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
+            is RealESRGANWorker.Progress.Running -> {}
             is RealESRGANWorker.Progress.Success -> {
-                Text(
-                    text = stringResource(id = R.string.upscaling_worker_success_notification_title, inputData.originalFileName),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelLarge
-                )
-                val context = LocalContext.current
                 MonoButton(
                     modifier = Modifier.padding(top = MaterialTheme.spacing.level4),
                     onClick = {
-                        context.startActivity(
-                            Intent(Intent.ACTION_VIEW).apply { data = progress.outputFileUri }
-                        )
+                        onOpenOutputImageClicked(IntentUtils.actionViewNewTask(progress.outputFileUri))
                     }
                 ) {
                     MonoButtonIcon(
@@ -308,15 +320,18 @@ private fun UpscalingWork(
             }
         }
     }
-}
+)
 
 @Preview
 @Composable
 private fun UpscalingWorkRunningPreview() = MonoTheme {
     UpscalingWork(
         inputData = RealESRGANWorker.InputData("Bliss.jpg", "", OutputFormat.PNG, UpscalingModel.X4_PLUS),
-        progress = RealESRGANWorker.Progress.Running(69f)
-    ) {}
+        progress = RealESRGANWorker.Progress.Running(69f),
+        onDismissRequest = {},
+        onRetryClicked = {},
+        onOpenOutputImageClicked = {}
+    )
 }
 
 @Preview
@@ -324,8 +339,11 @@ private fun UpscalingWorkRunningPreview() = MonoTheme {
 private fun UpscalingWorkFailedPreview() = MonoTheme {
     UpscalingWork(
         inputData = RealESRGANWorker.InputData("Bliss.jpg", "", OutputFormat.PNG, UpscalingModel.X4_PLUS),
-        progress = RealESRGANWorker.Progress.Failed
-    ) {}
+        progress = RealESRGANWorker.Progress.Failed,
+        onDismissRequest = {},
+        onRetryClicked = {},
+        onOpenOutputImageClicked = {}
+    )
 }
 
 @Preview
@@ -333,8 +351,11 @@ private fun UpscalingWorkFailedPreview() = MonoTheme {
 private fun UpscalingWorkSuccessPreview() = MonoTheme {
     UpscalingWork(
         inputData = RealESRGANWorker.InputData("Bliss.jpg", "", OutputFormat.PNG, UpscalingModel.X4_PLUS),
-        progress = RealESRGANWorker.Progress.Success(Uri.EMPTY)
-    ) {}
+        progress = RealESRGANWorker.Progress.Success(Uri.EMPTY),
+        onDismissRequest = {},
+        onRetryClicked = {},
+        onOpenOutputImageClicked = {}
+    )
 }
 
 @Composable
