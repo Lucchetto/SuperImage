@@ -18,6 +18,8 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.*
 import com.zhenxiang.realesrgan.JNIProgressTracker
 import com.zhenxiang.realesrgan.RealESRGAN
@@ -64,43 +66,18 @@ class RealESRGANWorker(
         val startMillis = SystemClock.elapsedRealtime()
         val outputUri = actualWork()
         val executionTime = SystemClock.elapsedRealtime() - startMillis
+        // Don't send result notification if app is in foreground
+        if (!ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+            notificationManager.notifyAutoId(buildResultNotification(outputUri))
+        }
         outputUri?.let {
-            NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID).apply {
-                setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_success_notification_title, inputImageName))
-                setSmallIcon(R.drawable.outline_photo_size_select_large_24)
-                setContentText(applicationContext.getString(R.string.upscaling_worker_success_notification_desc))
-                setAutoCancel(true)
-                setContentIntent(
-                    PendingIntent.getActivity(
-                        applicationContext,
-                        0,
-                        IntentUtils.actionViewNewTask(it),
-                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
-                    )
-                )
-            }.build().apply {
-                notificationManager.notifyAutoId(this)
-            }
             Result.success(
                 workDataOf(
                     OUTPUT_FILE_URI_PARAM to it.toString(),
                     OUTPUT_EXECUTION_TIME_PARAM to executionTime
                 )
             )
-        } ?: run {
-            NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID).apply {
-                setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_error_notification_title, inputImageName))
-                setSmallIcon(R.drawable.outline_photo_size_select_large_24)
-                val intent = Intent(applicationContext, MainActivity::class.java)
-                setAutoCancel(true)
-                setContentIntent(
-                    PendingIntent.getActivity(applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT)
-                )
-            }.build().apply {
-                notificationManager.notifyAutoId(this)
-            }
-            Result.failure()
-        }
+        } ?: Result.failure()
     }
 
     /**
@@ -197,6 +174,38 @@ class RealESRGANWorker(
             NOTIFICATION_CHANNEL_ID,
             NotificationManagerCompat.IMPORTANCE_LOW
         ).setName(applicationContext.getString(R.string.upscaling_worker_notification_channel_name)).build()
+
+    private fun buildResultNotification(outputUri: Uri?) = outputUri?.let {
+        NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID).apply {
+            setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_success_notification_title, inputImageName))
+            setSmallIcon(R.drawable.outline_photo_size_select_large_24)
+            setContentText(applicationContext.getString(R.string.upscaling_worker_success_notification_desc))
+            setAutoCancel(true)
+            setContentIntent(
+                PendingIntent.getActivity(
+                    applicationContext,
+                    0,
+                    IntentUtils.actionViewNewTask(it),
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
+                )
+            )
+        }.build()
+    } ?: run {
+        NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID).apply {
+            setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_error_notification_title, inputImageName))
+            setSmallIcon(R.drawable.outline_photo_size_select_large_24)
+            val intent = Intent(applicationContext, MainActivity::class.java)
+            setAutoCancel(true)
+            setContentIntent(
+                PendingIntent.getActivity(
+                    applicationContext,
+                    0,
+                    intent,
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
+                )
+            )
+        }.build()
+    }
 
     private fun getOutputStream(): Pair<OutputStream, Uri>? {
         val outputFileName = inputImageName.replaceFileExtension(outputFormat.formatExtension)
