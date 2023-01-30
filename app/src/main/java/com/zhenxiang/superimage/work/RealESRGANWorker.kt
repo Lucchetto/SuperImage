@@ -5,7 +5,6 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.ContentValues
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -24,7 +23,6 @@ import androidx.work.*
 import com.zhenxiang.realesrgan.JNIProgressTracker
 import com.zhenxiang.realesrgan.RealESRGAN
 import com.zhenxiang.realesrgan.UpscalingModel
-import com.zhenxiang.superimage.MainActivity
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.model.OutputFormat
 import com.zhenxiang.superimage.utils.IntentUtils
@@ -124,6 +122,12 @@ class RealESRGANWorker(
             setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_notification_title, inputImageName))
             setSmallIcon(R.drawable.outline_photo_size_select_large_24)
             setOngoing(true)
+            setContentIntent(
+                IntentUtils.mainActivityPendingIntent(
+                    applicationContext,
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                )
+            )
         }
     }
 
@@ -175,36 +179,25 @@ class RealESRGANWorker(
             NotificationManagerCompat.IMPORTANCE_LOW
         ).setName(applicationContext.getString(R.string.upscaling_worker_notification_channel_name)).build()
 
-    private fun buildResultNotification(outputUri: Uri?) = outputUri?.let {
-        NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID).apply {
-            setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_success_notification_title, inputImageName))
-            setSmallIcon(R.drawable.outline_photo_size_select_large_24)
-            setContentText(applicationContext.getString(R.string.upscaling_worker_success_notification_desc))
-            setAutoCancel(true)
-            setContentIntent(
-                PendingIntent.getActivity(
-                    applicationContext,
-                    0,
-                    IntentUtils.actionViewNewTask(it),
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
+    private fun buildResultNotification(outputUri: Uri?) = with(applicationContext) {
+        outputUri?.let {
+            NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID).apply {
+                setTitleAndTicker(getString(R.string.upscaling_worker_success_notification_title, inputImageName))
+                setSmallIcon(R.drawable.outline_photo_size_select_large_24)
+                setContentText(getString(R.string.upscaling_worker_success_notification_desc))
+                setAutoCancel(true)
+                setContentIntent(
+                    IntentUtils.notificationPendingIntent(this@with, IntentUtils.actionViewNewTask(it))
                 )
-            )
-        }.build()
-    } ?: run {
-        NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID).apply {
-            setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_error_notification_title, inputImageName))
-            setSmallIcon(R.drawable.outline_photo_size_select_large_24)
-            val intent = Intent(applicationContext, MainActivity::class.java)
-            setAutoCancel(true)
-            setContentIntent(
-                PendingIntent.getActivity(
-                    applicationContext,
-                    0,
-                    intent,
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
-                )
-            )
-        }.build()
+            }.build()
+        } ?: run {
+            NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID).apply {
+                setTitleAndTicker(getString(R.string.upscaling_worker_error_notification_title, inputImageName))
+                setSmallIcon(R.drawable.outline_photo_size_select_large_24)
+                setAutoCancel(true)
+                setContentIntent(IntentUtils.mainActivityPendingIntent(this@with))
+            }.build()
+        }
     }
 
     private fun getOutputStream(): Pair<OutputStream, Uri>? {
