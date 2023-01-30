@@ -16,6 +16,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.ui.theme.MonoTheme
 import com.zhenxiang.superimage.ui.theme.border
+import com.zhenxiang.superimage.ui.theme.elevation
 import com.zhenxiang.superimage.ui.theme.spacing
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
@@ -39,7 +40,9 @@ fun MonoAlertDialog(
             modifier = Modifier
                 .wrapContentWidth()
                 .wrapContentHeight(),
-            shape = MaterialTheme.shapes.medium,
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = MaterialTheme.elevation.container,
+            shadowElevation = MaterialTheme.elevation.container,
             border = MaterialTheme.border.thin
         ) {
             Column {

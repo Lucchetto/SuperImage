@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.ui.mono.drawTopBorder
 import com.zhenxiang.superimage.ui.theme.border
+import com.zhenxiang.superimage.ui.theme.elevation
 
 @Suppress("ModifierParameter")
 @Composable
@@ -89,8 +90,8 @@ internal fun DropdownMenuContent(
         },
         shape = ShapeKeyTokens.CornerSmall.toShape(),
         color = MaterialTheme.colorScheme.fromToken(MenuTokens.ContainerColor),
-        tonalElevation = MonoDropDownMenuDefaults.ContainerElevation,
-        shadowElevation = MonoDropDownMenuDefaults.ContainerElevation,
+        tonalElevation = MaterialTheme.elevation.container,
+        shadowElevation = MaterialTheme.elevation.container,
         border = MaterialTheme.border.regular
     ) {
         Column(
@@ -206,8 +207,6 @@ fun <T> MonoDropDownMenu(
 }
 
 object MonoDropDownMenuDefaults {
-
-    val ContainerElevation = 5.dp
 
     @Composable
     fun ExpandIcon(expanded: Boolean) {
