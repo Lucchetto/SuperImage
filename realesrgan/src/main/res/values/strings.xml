@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="x2_plus_model_label">x2 general</string>
-    <string name="x4_plus_model_label">x4 general</string>
+
+    <!-- Model scale multipliers are actually referred to each dimension
+        So pixels multiplier that we should show to the user is actually (model scale multiplier) * 2
+        -->
+    <string name="x2_plus_model_label">x4 (generic)</string>
+    <string name="x4_plus_model_label">x8 (generic)</string>
 </resources>
