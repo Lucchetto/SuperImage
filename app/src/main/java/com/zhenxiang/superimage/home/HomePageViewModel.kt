@@ -82,11 +82,9 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
 
     fun upscale() {
         (selectedImageFlow.value as DataState.Success).data.let {
-            viewModelScope.launch(Dispatchers.IO) {
-                realESRGANWorkerManager.beginWork(
-                    RealESRGANWorker.InputData(it.fileName, it.tempFile.name, selectedOutputFormatFlow.value, selectedUpscalingModelFlow.value)
-                )
-            }
+            realESRGANWorkerManager.beginWork(
+                RealESRGANWorker.InputData(it.fileName, it.tempFile.name, selectedOutputFormatFlow.value, selectedUpscalingModelFlow.value)
+            )
         }
     }
 

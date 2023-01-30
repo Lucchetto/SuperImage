@@ -7,6 +7,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.work.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -18,6 +19,9 @@ private typealias InputAndProgress = Pair<RealESRGANWorker.InputData, RealESRGAN
 
 class RealESRGANWorkerManager(private val context: Context) {
 
+    private var queueWorkJob: Job? = null
+
+    private val processLifecycle = ProcessLifecycleOwner.get()
     private val workManager = WorkManager.getInstance(context)
     private val currentWorkerLiveData = MutableLiveData<Pair<UUID, RealESRGANWorker.InputData>?>()
     private val workInfosLiveData = MutableLiveData<List<WorkInfo>>()
@@ -25,7 +29,6 @@ class RealESRGANWorkerManager(private val context: Context) {
     val workProgressFlow: StateFlow<InputAndProgress?>
 
     init {
-        val processLifecycle = ProcessLifecycleOwner.get()
         processLifecycle.lifecycleScope.launch(Dispatchers.IO) {
             getTempDir(context).deleteRecursively()
         }
@@ -57,12 +60,24 @@ class RealESRGANWorkerManager(private val context: Context) {
         }
     }
 
-    suspend fun beginWork(input: RealESRGANWorker.InputData) {
-        // TODO: Check if worker is already running
-        val request = OneTimeWorkRequestBuilder<RealESRGANWorker>().setInputData(input.toWorkData()).build()
-        workManager.enqueueUniqueWork(UNIQUE_WORK_ID, ExistingWorkPolicy.KEEP, request).await()
-        withContext(Dispatchers.Main) {
-            currentWorkerLiveData.value = Pair(request.id, input)
+    fun beginWork(input: RealESRGANWorker.InputData) {
+        if (queueWorkJob?.isCompleted != false) {
+            queueWorkJob = processLifecycle.lifecycleScope.launch(Dispatchers.IO) {
+                /**
+                 * Ensure [RealESRGANWorker] isn't running already
+                 */
+                val running = workManager.getWorkInfosForUniqueWork(UNIQUE_WORK_ID).await().firstOrNull()?.let {
+                    RealESRGANWorker.Progress.fromWorkInfo(it) is RealESRGANWorker.Progress.Running
+                } == true
+                if (!running) {
+                    val request = OneTimeWorkRequestBuilder<RealESRGANWorker>().setInputData(input.toWorkData()).build()
+                    workManager.enqueueUniqueWork(UNIQUE_WORK_ID, ExistingWorkPolicy.KEEP, request).await()
+                    withContext(Dispatchers.Main) {
+                        currentWorkerLiveData.value = Pair(request.id, input)
+                    }
+                }
+                queueWorkJob = null
+            }
         }
     }
 
