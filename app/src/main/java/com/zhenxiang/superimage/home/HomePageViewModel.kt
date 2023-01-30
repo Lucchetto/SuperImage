@@ -93,17 +93,9 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
     fun consumeWorkCompleted() {
         realESRGANWorkerManager.clearCurrentWorkProgress()
     }
+
     fun clearSelectedImage() {
         _selectedImageFlow.tryEmit(null)
-    }
-
-    override fun onCleared() {
-        viewModelScope.launch(Dispatchers.IO) {
-            (selectedImageFlow.value as? DataState.Success)?.data?.tempFile?.let {
-                realESRGANWorkerManager.deleteTempImageFile(it)
-            }
-        }
-        super.onCleared()
     }
 
     companion object {
