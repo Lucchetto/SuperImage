@@ -440,13 +440,11 @@ private fun Options(
     }
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview(showBackground = true)
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun OptionsPreview() = MonoTheme {
-    Scaffold {
+    Surface {
         Options(
             upscalingModelFlow = MutableStateFlow(UpscalingModel.X4_PLUS),
             outputFormatFlow = MutableStateFlow(OutputFormat.PNG),
