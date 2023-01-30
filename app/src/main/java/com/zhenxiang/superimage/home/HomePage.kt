@@ -38,9 +38,11 @@ import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.spacing
 import com.zhenxiang.superimage.ui.utils.RowSpacer
 import com.zhenxiang.superimage.utils.IntentUtils
+import com.zhenxiang.superimage.utils.TimeUtils
 import com.zhenxiang.superimage.work.RealESRGANWorker
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
+import java.util.*
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -283,10 +285,15 @@ private fun UpscalingWork(
                     )
                 }
             }
-            is RealESRGANWorker.Progress.Success -> Text(
-                modifier = Modifier.padding(it),
-                text = stringResource(id = R.string.upscaling_worker_success_notification_title, inputData.originalFileName)
-            )
+            is RealESRGANWorker.Progress.Success -> Column(modifier = Modifier.padding(it)) {
+                Text(stringResource(id = R.string.upscaling_worker_success_notification_title, inputData.originalFileName))
+                Text(
+                    stringResource(
+                        id = R.string.execution_time_template,
+                        TimeUtils.periodToString(LocalContext.current, progress.executionTime)
+                    )
+                )
+            }
         }
     },
     buttons = {
@@ -353,7 +360,7 @@ private fun UpscalingWorkFailedPreview() = MonoTheme {
 private fun UpscalingWorkSuccessPreview() = MonoTheme {
     UpscalingWork(
         inputData = RealESRGANWorker.InputData("Bliss.jpg", "", OutputFormat.PNG, UpscalingModel.X4_PLUS),
-        progress = RealESRGANWorker.Progress.Success(Uri.EMPTY),
+        progress = RealESRGANWorker.Progress.Success(Uri.EMPTY, 125000),
         onDismissRequest = {},
         onRetryClicked = {},
         onOpenOutputImageClicked = {}

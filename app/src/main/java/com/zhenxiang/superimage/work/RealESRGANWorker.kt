@@ -61,7 +61,10 @@ class RealESRGANWorker(
     private val upscalingScale = params.inputData.getInt(UPSCALING_SCALE_PARAM, -1)
     
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        actualWork()?.let {
+        val startMillis = SystemClock.elapsedRealtime()
+        val outputUri = actualWork()
+        val executionTime = SystemClock.elapsedRealtime() - startMillis
+        outputUri?.let {
             NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID).apply {
                 setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_success_notification_title, inputImageName))
                 setSmallIcon(R.drawable.outline_photo_size_select_large_24)
@@ -78,7 +81,12 @@ class RealESRGANWorker(
             }.build().apply {
                 notificationManager.notifyAutoId(this)
             }
-            Result.success(workDataOf(OUTPUT_FILE_URI_PARAM to it.toString()))
+            Result.success(
+                workDataOf(
+                    OUTPUT_FILE_URI_PARAM to it.toString(),
+                    OUTPUT_EXECUTION_TIME_PARAM to executionTime
+                )
+            )
         } ?: run {
             NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID).apply {
                 setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_error_notification_title, inputImageName))
@@ -264,7 +272,11 @@ class RealESRGANWorker(
 
         data class Running(val progress: Float): Progress
 
-        data class Success(val outputFileUri: Uri): Progress
+        /**
+         * @param outputFileUri the [Uri] of the output image
+         * @param executionTime execution time of the work in milliseconds
+         */
+        data class Success(val outputFileUri: Uri, val executionTime: Long): Progress
 
         object Failed: Progress
 
@@ -276,7 +288,8 @@ class RealESRGANWorker(
                     workInfo.progress.getFloat(PROGRESS_VALUE_PARAM, JNIProgressTracker.INDETERMINATE)
                 )
                 WorkInfo.State.SUCCEEDED -> Success(
-                    workInfo.outputData.getString(OUTPUT_FILE_URI_PARAM)!!.toUri()
+                    workInfo.outputData.getString(OUTPUT_FILE_URI_PARAM)!!.toUri(),
+                    workInfo.outputData.getLong(OUTPUT_EXECUTION_TIME_PARAM, 0)
                 )
                 WorkInfo.State.FAILED -> Failed
                 WorkInfo.State.CANCELLED -> null
@@ -291,6 +304,7 @@ class RealESRGANWorker(
         private const val PROGRESS_VALUE_PARAM = "progress"
         private const val OUTPUT_IMAGE_FORMAT_PARAM = "output_format"
         private const val OUTPUT_FILE_URI_PARAM = "output_uri"
+        private const val OUTPUT_EXECUTION_TIME_PARAM = "exec_time"
         private const val UPSCALING_MODEL_PATH_PARAM = "model_path"
         private const val UPSCALING_SCALE_PARAM = "scale"
 

@@ -1,6 +1,21 @@
 <resources>
     <string name="app_name">SuperImage</string>
 
+    <string name="time_unit_space">\u0020</string>
+    <string name="word_space">\u0020</string>
+    <plurals name="hour">
+        <item quantity="one">hour</item>
+        <item quantity="other">hours</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="one">min</item>
+        <item quantity="other">mins</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="one">sec</item>
+        <item quantity="other">secs</item>
+    </plurals>
+
     <string name="progress_template">%d%%</string>
     <string name="progress_indeterminate">Initialising…</string>
     <string name="open">Open</string>
@@ -17,6 +32,7 @@
     <string name="selected_mode_label">Selected mode</string>
     <string name="upscaling_options_title">Upscaling options</string>
     <string name="output_format_title">Output format</string>
+    <string name="execution_time_template">Execution time: %1$s</string>
 
     <string name="permission_denied_title">Permission denied</string>
     <string name="storage_permission_denied_desc">Please grant permission to write files on the device</string>
