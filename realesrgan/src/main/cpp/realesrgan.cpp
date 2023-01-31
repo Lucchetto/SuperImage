@@ -205,6 +205,7 @@ const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_i
     config.backendConfig = &backendConfig;
     config.type = MNN_FORWARD_VULKAN;
     config.backupType = MNN_FORWARD_OPENCL;
+    config.numThread = std::thread::hardware_concurrency();
 
     MNN::Session* session = interpreter->createSession(config);
 
