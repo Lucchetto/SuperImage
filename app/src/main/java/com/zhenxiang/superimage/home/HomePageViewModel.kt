@@ -42,7 +42,7 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
         } else {
             _selectedImageFlow = MutableStateFlow(null)
             selectedOutputFormatFlow = MutableStateFlow(OutputFormat.PNG)
-            selectedUpscalingModelFlow = MutableStateFlow(UpscalingModel.X4_PLUS)
+            selectedUpscalingModelFlow = MutableStateFlow(UpscalingModel.X2_PLUS)
         }
         selectedImageFlow = _selectedImageFlow
     }
