@@ -204,6 +204,7 @@ const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_i
     backendConfig.precision = MNN::BackendConfig::Precision_Low;
     config.backendConfig = &backendConfig;
     config.type = MNN_FORWARD_VULKAN;
+    config.backupType = MNN_FORWARD_OPENCL;
 
     MNN::Session* session = interpreter->createSession(config);
 

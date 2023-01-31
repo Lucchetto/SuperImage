@@ -14,6 +14,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
 set(CMAKE_CXX_STANDARD 14)
 
 option(MNN_VULKAN "" ON)
+option(MNN_OPENCL "" ON)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/MNN)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/MNN/include)
