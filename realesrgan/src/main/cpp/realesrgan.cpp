@@ -117,13 +117,11 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
     while (true) {
         int x = 0;
         std::pair<int, int> y_padding = calculate_axis_padding(y, height, tile_size, padding);
-        y -= y_padding.first;
-        const bool final_y = y_padding.second == 0;
 
         while (true) {
             std::pair<int, int> x_padding = calculate_axis_padding(x, width, tile_size, padding);
-            const bool final_x = x_padding.second == 0;
 
+            // Get tile of pixels to process keeping, apply left padding as offset that will be cropped later
             Eigen::MatrixXi tile = image_matrix.block(y - y_padding.first, x - x_padding.first, tile_size, tile_size);
 
             // Feed input into tensor
@@ -161,7 +159,7 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
                     tile_rgb_matrix.cols()) = tile_rgb_matrix;
 
             // Recalculate padding and position of next tile in row
-            if (final_x) {
+            if (x_padding.second == 0) {
                 break;
             } else {
                 x += tile_rgb_matrix.cols() / scale;
@@ -172,7 +170,7 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
         }
 
         // Recalculate padding and position of next column's tiles
-        if (final_y) {
+        if (y_padding.second == 0) {
             break;
         } else {
             y += last_row_height;
