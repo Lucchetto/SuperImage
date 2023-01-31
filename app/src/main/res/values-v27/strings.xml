@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">SuperImage</string>
+
+    <string name="time_unit_space">\u0020</string>
+    <string name="word_space">\u0020</string>
+    <plurals name="hour">
+        <item quantity="one">hour</item>
+        <item quantity="other">hours</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="one">min</item>
+        <item quantity="other">mins</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="one">sec</item>
+        <item quantity="other">secs</item>
+    </plurals>
+
+    <string name="progress_template">%d%%</string>
+    <string name="progress_indeterminate">Initialising…</string>
+    <string name="open">Open</string>
+    <string name="retry">Retry</string>
+    <string name="close">Close</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="original_image_resolution_label">Original resolution: %1$sx%2$s</string>
+    <string name="output_image_resolution_label">Output resolution: %1$sx%2$s</string>
+    <string name="select_image_wizard_hint">To start, select an image to upscale</string>
+    <string name="select_image_label">Select image</string>
+    <string name="change_image_label">Change image</string>
+    <string name="upscale_label">Upscale</string>
+    <string name="selected_mode_label">Selected mode</string>
+    <string name="upscaling_options_title">Upscaling options</string>
+    <string name="output_format_title">Output format</string>
+    <string name="execution_time_template">Execution time: %1$s</string>
+
+    <string name="permission_denied_title">Permission denied</string>
+    <string name="storage_permission_denied_desc">Please grant permission to write files on the device</string>
+    <string name="storage_permission_denied_forever_desc">Please grant permission to write files on the device in the settings</string>
+    <string name="open_settings_label">Open settings</string>
+    <string name="grant_permission_label">Grant permission</string>
+
+    <string name="upscaling_worker_notification_title">Upscaling %1$s</string>
+    <string name="upscaling_worker_error_notification_title">An error occurred while upscaling %1$s</string>
+    <string name="upscaling_worker_success_notification_title">%1$s upscaled successfully !</string>
+    <string name="upscaling_worker_success_notification_desc">Click here to open the image</string>
+    <string name="upscaling_worker_notification_channel_name">Upscale image</string>
+</resources>
