@@ -6,4 +6,5 @@
         -->
     <string name="x2_plus_model_label">x4 (generic)</string>
     <string name="x4_plus_model_label">x8 (generic)</string>
+    <string name="x4_plus_anime_model_label">x8 (drawing)</string>
 </resources>
