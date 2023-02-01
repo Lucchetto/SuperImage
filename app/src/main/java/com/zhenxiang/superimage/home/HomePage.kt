@@ -318,6 +318,7 @@ private fun UpscalingWork(
                 MonoButton(
                     onClick = {
                         onOpenOutputImageClicked(IntentUtils.actionViewNewTask(progress.outputFileUri))
+                        onDismissRequest()
                     }
                 ) {
                     MonoButtonIcon(
