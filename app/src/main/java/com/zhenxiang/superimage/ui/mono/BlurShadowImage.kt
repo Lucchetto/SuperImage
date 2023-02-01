@@ -9,7 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil.compose.*
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.transition.CrossfadeTransition
@@ -33,12 +33,13 @@ fun BlurShadowImage(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        BlurShadow(blurBitmap = blurShadowBitmap)
-
-        AsyncImage(
+        SubcomposeAsyncImage(
             model = model,
             contentDescription = contentDescription,
-            modifier = imageModifier,
+            success = {
+                BlurShadow(blurShadowBitmap)
+                SubcomposeAsyncImageContent(modifier = imageModifier)
+            },
             onLoading = { blurShadowBitmap = null },
             onSuccess = {
                 coroutineScope.launch(Dispatchers.IO) {
@@ -52,23 +53,20 @@ fun BlurShadowImage(
 }
 
 @Composable
-private fun BlurShadow(blurBitmap: Bitmap?) = blurBitmap?.let {
+private fun SubcomposeAsyncImageScope.BlurShadow(blurBitmap: Bitmap?) = blurBitmap?.let {
 
     val crossfade = remember { CrossfadeTransition.Factory(1000) }
 
-    Box(
-        modifier = Modifier.requiredSize(0.dp)
-    ) {
-        AsyncImage(
-            modifier = Modifier
-                .requiredSize(it.width.toDp(), it.height.toDp()),
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(it)
-                .transitionFactory(crossfade)
-                .memoryCachePolicy(CachePolicy.DISABLED)
-                .build(),
-            alpha = 0.95f,
-            contentDescription = null
+    Box(modifier = Modifier.requiredSize(0.dp)) {
+        this@BlurShadow.SubcomposeAsyncImageContent(
+            modifier = Modifier.requiredSize(it.width.toDp(), it.height.toDp()),
+            painter = rememberAsyncImagePainter(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(it)
+                    .transitionFactory(crossfade)
+                    .memoryCachePolicy(CachePolicy.DISABLED)
+                    .build()
+            )
         )
     }
 }
