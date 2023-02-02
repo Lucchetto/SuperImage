@@ -47,7 +47,7 @@ class RealESRGANWorker(
 
     private val realESRGAN = RealESRGAN()
     private val notificationManager = NotificationManagerCompat.from(context)
-    private val progressNotificationBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+    private val progressNotificationBuilder = NotificationCompat.Builder(applicationContext, PROGRESS_NOTIFICATION_CHANNEL_ID)
 
     private val inputImageTempFile = params.inputData.getString(INPUT_IMAGE_TEMP_FILE_NAME_PARAM)?.let {
         RealESRGANWorkerManager.getTempFile(context, it)
@@ -150,9 +150,16 @@ class RealESRGANWorker(
     }
 
     private fun createForegroundInfo(): ForegroundInfo {
-        // Create a Notification channel if necessary
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(buildNotificationChannel())
+            NotificationChannelCompat.Builder(
+                PROGRESS_NOTIFICATION_CHANNEL_ID,
+                NotificationManagerCompat.IMPORTANCE_LOW
+            )
+                .setName(applicationContext.getString(R.string.upscaling_worker_progress_notification_channel_name))
+                .build()
+                .let { notificationManager.createNotificationChannel(it) }
+        } else {
+            progressNotificationBuilder.priority = NotificationCompat.PRIORITY_LOW
         }
 
         return ForegroundInfo(
@@ -174,15 +181,22 @@ class RealESRGANWorker(
         notificationManager.notify(PROGRESS_NOTIFICATION_ID, buildProgressNotification(progress))
     }
 
-    private fun buildNotificationChannel(): NotificationChannelCompat =
-        NotificationChannelCompat.Builder(
-            NOTIFICATION_CHANNEL_ID,
-            NotificationManagerCompat.IMPORTANCE_LOW
-        ).setName(applicationContext.getString(R.string.upscaling_worker_notification_channel_name)).build()
-
     private fun buildResultNotification(outputUri: Uri?) = with(applicationContext) {
+        val notificationBuilder = NotificationCompat.Builder(this, RESULT_NOTIFICATION_CHANNEL_ID)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannelCompat.Builder(
+                RESULT_NOTIFICATION_CHANNEL_ID,
+                NotificationManagerCompat.IMPORTANCE_HIGH
+            )
+                .setName(applicationContext.getString(R.string.upscaling_worker_result_notification_channel_name))
+                .build()
+                .let { notificationManager.createNotificationChannel(it) }
+        } else {
+            notificationBuilder.priority = NotificationCompat.PRIORITY_HIGH
+        }
+
         outputUri?.let {
-            NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID).apply {
+            notificationBuilder.apply {
                 setTitleAndTicker(getString(R.string.upscaling_worker_success_notification_title, inputImageName))
                 setSmallIcon(R.drawable.outline_photo_size_select_large_24)
                 setContentText(getString(R.string.upscaling_worker_success_notification_desc))
@@ -192,7 +206,7 @@ class RealESRGANWorker(
                 )
             }.build()
         } ?: run {
-            NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID).apply {
+            notificationBuilder.apply {
                 setTitleAndTicker(getString(R.string.upscaling_worker_error_notification_title, inputImageName))
                 setSmallIcon(R.drawable.outline_photo_size_select_large_24)
                 setAutoCancel(true)
@@ -311,7 +325,8 @@ class RealESRGANWorker(
         private const val UPSCALING_MODEL_PATH_PARAM = "model_path"
         private const val UPSCALING_SCALE_PARAM = "scale"
 
-        private const val NOTIFICATION_CHANNEL_ID = "real_esrgan"
+        private const val PROGRESS_NOTIFICATION_CHANNEL_ID = "progress_ch"
+        private const val RESULT_NOTIFICATION_CHANNEL_ID = "result_ch"
         private const val PROGRESS_NOTIFICATION_ID = -1
 
         private const val OUTPUT_FOLDER_NAME = "SuperImage"
