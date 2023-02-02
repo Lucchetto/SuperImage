@@ -100,7 +100,6 @@ fun MonoTheme(
                     isAppearanceLightStatusBars = lightMode
                     isAppearanceLightNavigationBars = lightMode
                 }
-                WindowCompat.setDecorFitsSystemWindows(window, false)
             }
         }
     }

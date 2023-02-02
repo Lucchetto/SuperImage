@@ -6,14 +6,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.ui.theme.MonoTheme
 import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.spacing
@@ -25,6 +23,7 @@ fun MonoAppBar(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
+    leadingIcon: @Composable () -> Unit = { },
     trailingIcons: @Composable RowScope.() -> Unit = { }
 ) = Row(
     modifier = modifier
@@ -32,13 +31,16 @@ fun MonoAppBar(
         .background(MaterialTheme.colorScheme.primaryContainer)
         .windowInsetsPadding(windowInsets)
         .drawBottomBorder(MaterialTheme.border.regular)
-        .padding(MaterialTheme.spacing.level5),
+        .padding(MaterialTheme.spacing.level3),
     verticalAlignment = Alignment.CenterVertically
     ) {
-    ProvideTextStyle(
-        value = MaterialTheme.typography.displayMedium,
-        content = title
-    )
+    leadingIcon()
+    Box(modifier = Modifier.padding(MaterialTheme.spacing.level3)) {
+        ProvideTextStyle(
+            value = MaterialTheme.typography.displayMedium,
+            content = title
+        )
+    }
     RowSpacer()
     trailingIcons()
 }
@@ -52,7 +54,14 @@ private fun MonoAppBarPreview() = MonoTheme {
     Scaffold(
         topBar = {
             MonoAppBar(
-                title = { Text("AppBar") }
+                title = { Text("AppBar") },
+                leadingIcon = {
+                    IconButton(
+                        onClick = {}
+                    ) {
+                        Icon(Icons.Rounded.ArrowBack, contentDescription = null)
+                    }
+                }
             ) {
                 IconButton(
                     onClick = {}

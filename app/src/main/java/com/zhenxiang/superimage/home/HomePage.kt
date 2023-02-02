@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import coil.request.ImageRequest
 import coil.transition.CrossfadeTransition
 import com.zhenxiang.realesrgan.JNIProgressTracker
@@ -31,6 +32,7 @@ import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.model.OutputFormat
+import com.zhenxiang.superimage.navigation.RootNavigationRoutes
 import com.zhenxiang.superimage.ui.form.MonoDropDownMenu
 import com.zhenxiang.superimage.ui.mono.*
 import com.zhenxiang.superimage.ui.theme.MonoTheme
@@ -47,8 +49,8 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomePage(viewModel: HomePageViewModel) = Scaffold(
-    topBar = { TopBar() }
+fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) = Scaffold(
+    topBar = { TopBar(navController) }
 ) { padding ->
 
     val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
@@ -113,11 +115,11 @@ fun HomePage(viewModel: HomePageViewModel) = Scaffold(
 }
 
 @Composable
-private fun TopBar() = MonoAppBar(
+private fun TopBar(navController: NavHostController) = MonoAppBar(
     title = { Text(stringResource(id = R.string.app_name)) }
 ) {
     IconButton(
-        onClick = {}
+        onClick = { navController.navigate(RootNavigationRoutes.Settings.route) }
     ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_gear_24),
