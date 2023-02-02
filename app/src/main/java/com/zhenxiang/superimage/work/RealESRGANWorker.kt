@@ -5,6 +5,7 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -37,7 +38,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
-import java.io.OutputStream
 import kotlin.math.roundToInt
 
 class RealESRGANWorker(
@@ -215,28 +215,6 @@ class RealESRGANWorker(
         }
     }
 
-    private fun getOutputStream(): Pair<OutputStream, Uri>? {
-        val outputFileName = inputImageName.replaceFileExtension(outputFormat.formatExtension)
-
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val contentValues = ContentValues().apply {
-                put(MediaStore.Images.Media.DISPLAY_NAME, outputFileName)
-                put(
-                    MediaStore.Images.Media.RELATIVE_PATH,
-                    "${Environment.DIRECTORY_PICTURES}${File.separatorChar}$OUTPUT_FOLDER_NAME"
-                )
-            }
-
-            with(applicationContext.contentResolver) {
-                insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)?.let { uri ->
-                    openOutputStream(uri)?.let { Pair(it, uri) }
-                }
-            }
-        } else {
-            createOutputFilePreQ(outputFileName)?.let { Pair(it.outputStream(), it.toUri()) }
-        }
-    }
-
     private fun createOutputFilePreQ(fileName: String): File? = createOutputDirPreQ()?.let {
         FileUtils.newFileAutoSuffix(it, fileName)
     }
@@ -258,14 +236,43 @@ class RealESRGANWorker(
         return if (!outputDirCreated) null else outputDir
     }
 
-    private fun saveOutputImage(pixels: IntArray, width: Int, height: Int): Uri? = getOutputStream()?.let {
-        it.first.use { outputStream ->
-            Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).run {
-                setPixels(pixels, 0, width, 0, 0, width, height)
-                val success = compress(outputFormat, 100, outputStream)
-                recycle()
+    private fun saveOutputImage(pixels: IntArray, width: Int, height: Int): Uri? {
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
+            setPixels(pixels, 0, width, 0, 0, width, height)
+        }
+        val outputFileName = inputImageName.replaceFileExtension(outputFormat.formatExtension)
 
-                if (success) it.second else null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val contentValues = ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, outputFileName)
+                put(
+                    MediaStore.Images.Media.RELATIVE_PATH,
+                    "${Environment.DIRECTORY_PICTURES}${File.separatorChar}$OUTPUT_FOLDER_NAME"
+                )
+            }
+
+            return with(applicationContext.contentResolver) {
+                val uri = insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                uri?.let { openOutputStream(it) }?.let {
+                    val success = bitmap.compress(outputFormat, 100, it)
+                    bitmap.recycle()
+                    if (success) uri else null
+                }
+            }
+        } else {
+            val outputFile = createOutputFilePreQ(outputFileName)
+            return outputFile?.outputStream()?.use {
+                val success = bitmap.compress(outputFormat, 100, it)
+                bitmap.recycle()
+                if (success) {
+                    val uri = outputFile.toUri()
+                    applicationContext.sendBroadcast(
+                        Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri)
+                    )
+                    uri
+                } else {
+                    null
+                }
             }
         }
     }
