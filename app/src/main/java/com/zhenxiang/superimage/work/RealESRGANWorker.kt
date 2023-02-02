@@ -25,6 +25,7 @@ import com.zhenxiang.realesrgan.RealESRGAN
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.model.OutputFormat
+import com.zhenxiang.superimage.utils.FileUtils
 import com.zhenxiang.superimage.utils.IntentUtils
 import com.zhenxiang.superimage.utils.compress
 import com.zhenxiang.superimage.utils.replaceFileExtension
@@ -223,7 +224,7 @@ class RealESRGANWorker(
     }
 
     private fun createOutputFilePreQ(fileName: String): File? = createOutputDirPreQ()?.let {
-        File(it, fileName)
+        FileUtils.newFileAutoSuffix(it, fileName)
     }
 
     private fun createOutputDirPreQ(): File? {
