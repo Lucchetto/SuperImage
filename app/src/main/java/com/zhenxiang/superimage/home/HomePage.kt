@@ -113,10 +113,17 @@ fun HomePage(viewModel: HomePageViewModel) = Scaffold(
 }
 
 @Composable
-private fun TopBar() {
-    MonoAppBar(
-        title = { Text(stringResource(id = R.string.app_name)) }
-    )
+private fun TopBar() = MonoAppBar(
+    title = { Text(stringResource(id = R.string.app_name)) }
+) {
+    IconButton(
+        onClick = {}
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_gear_24),
+            contentDescription = stringResource(id = R.string.settings)
+        )
+    }
 }
 
 @Composable
