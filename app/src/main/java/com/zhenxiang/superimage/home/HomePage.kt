@@ -39,6 +39,7 @@ import com.zhenxiang.superimage.ui.theme.MonoTheme
 import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.spacing
 import com.zhenxiang.superimage.ui.utils.RowSpacer
+import com.zhenxiang.superimage.ui.utils.isLandscape
 import com.zhenxiang.superimage.utils.IntentUtils
 import com.zhenxiang.superimage.utils.TimeUtils
 import com.zhenxiang.superimage.work.RealESRGANWorker
@@ -49,10 +50,7 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) = Scaffold(
-    topBar = { TopBar(navController) }
-) { padding ->
-
+fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
     val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
         it?.let { viewModel.loadImage(it) }
     }
@@ -75,42 +73,80 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) = S
         }
     }
 
-    Column(modifier = Modifier.padding(padding)) {
+    BoxWithConstraints {
+        if (constraints.isLandscape) {
+            Scaffold(
+                topBar = { TopBar(navController) }
+            ) { padding ->
+                Column(modifier = Modifier.padding(padding)) {
 
-        val selectedImageState by viewModel.selectedImageFlow.collectAsStateWithLifecycle()
+                    val selectedImageState by viewModel.selectedImageFlow.collectAsStateWithLifecycle()
 
-        ImagePreview(
-            modifier = Modifier
-                .weight(1f, true)
-                .fillMaxWidth(),
-            selectedImageState = selectedImageState,
-            selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
-        ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
+                    ImagePreview(
+                        modifier = Modifier
+                            .weight(1f, true)
+                            .fillMaxWidth(),
+                        selectedImageState = selectedImageState,
+                        selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
+                    ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
 
-        Options(
-            upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
-            outputFormatFlow = viewModel.selectedOutputFormatFlow,
-            selectedImageState = selectedImageState,
-            onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
-            onUpscaleClick = { viewModel.upscale() }
-        )
+                    Options(
+                        modifier = Modifier.drawTopBorder(MaterialTheme.border.regular),
+                        upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
+                        outputFormatFlow = viewModel.selectedOutputFormatFlow,
+                        selectedImageState = selectedImageState,
+                        onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
+                        onUpscaleClick = { viewModel.upscale() }
+                    )
+                }
+            }
+        } else {
+            Row {
+                val selectedImageState by viewModel.selectedImageFlow.collectAsStateWithLifecycle()
 
-        val workProgressState by viewModel.workProgressFlow.collectAsStateWithLifecycle()
+                Surface(
+                    modifier = Modifier
+                        .weight(1f, true)
+                        .fillMaxHeight()
+                ) {
+                    ImagePreview(
+                        selectedImageState = selectedImageState,
+                        selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
+                    ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
+                }
 
-        workProgressState?.let {
-            UpscalingWork(
-                inputData = it.first,
-                progress = it.second,
-                onDismissRequest = {
-                    viewModel.consumeWorkCompleted()
-                    if (it.second is RealESRGANWorker.Progress.Success) {
-                        viewModel.clearSelectedImage()
-                    }
-                },
-                onRetryClicked = { viewModel.upscale() },
-                onOpenOutputImageClicked = { intent -> openOutputImageLauncher.launch(intent) }
-            )
+                Scaffold(
+                    modifier = Modifier.weight(1f),
+                    topBar = { TopBar(navController) }
+                ) { padding ->
+                    Options(
+                        modifier = Modifier.fillMaxHeight().weight(1f).padding(padding),
+                        upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
+                        outputFormatFlow = viewModel.selectedOutputFormatFlow,
+                        selectedImageState = selectedImageState,
+                        onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
+                        onUpscaleClick = { viewModel.upscale() }
+                    )
+                }
+            }
         }
+    }
+
+    val workProgressState by viewModel.workProgressFlow.collectAsStateWithLifecycle()
+
+    workProgressState?.let {
+        UpscalingWork(
+            inputData = it.first,
+            progress = it.second,
+            onDismissRequest = {
+                viewModel.consumeWorkCompleted()
+                if (it.second is RealESRGANWorker.Progress.Success) {
+                    viewModel.clearSelectedImage()
+                }
+            },
+            onRetryClicked = { viewModel.upscale() },
+            onOpenOutputImageClicked = { intent -> openOutputImageLauncher.launch(intent) }
+        )
     }
 }
 
@@ -130,7 +166,7 @@ private fun TopBar(navController: NavHostController) = MonoAppBar(
 
 @Composable
 private fun ImagePreview(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     selectedImageState: DataState<InputImage, Unit>?,
     selectedModelState: State<UpscalingModel>,
     onSelectImageClick: () -> Unit
@@ -379,6 +415,7 @@ private fun UpscalingWorkSuccessPreview() = MonoTheme {
 
 @Composable
 private fun Options(
+    modifier: Modifier = Modifier,
     upscalingModelFlow: MutableStateFlow<UpscalingModel>,
     outputFormatFlow: MutableStateFlow<OutputFormat>,
     selectedImageState: DataState<InputImage, Unit>?,
@@ -386,13 +423,13 @@ private fun Options(
     onUpscaleClick: () -> Unit
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .background(MaterialTheme.colorScheme.primaryContainer)
-            .drawTopBorder(MaterialTheme.border.regular)
             .padding(
                 horizontal = MaterialTheme.spacing.level3,
                 vertical = MaterialTheme.spacing.level4
-            )
+            ),
+        verticalArrangement = Arrangement.Bottom
     ) {
         Text(
             modifier = Modifier.padding(
