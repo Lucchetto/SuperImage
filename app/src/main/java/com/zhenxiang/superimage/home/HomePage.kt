@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -35,9 +36,7 @@ import com.zhenxiang.superimage.model.OutputFormat
 import com.zhenxiang.superimage.navigation.RootNavigationRoutes
 import com.zhenxiang.superimage.ui.form.MonoDropDownMenu
 import com.zhenxiang.superimage.ui.mono.*
-import com.zhenxiang.superimage.ui.theme.MonoTheme
-import com.zhenxiang.superimage.ui.theme.border
-import com.zhenxiang.superimage.ui.theme.spacing
+import com.zhenxiang.superimage.ui.theme.*
 import com.zhenxiang.superimage.ui.utils.RowSpacer
 import com.zhenxiang.superimage.ui.utils.isLandscape
 import com.zhenxiang.superimage.utils.IntentUtils
@@ -101,32 +100,47 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
                 }
             }
         } else {
-            Row {
-                val selectedImageState by viewModel.selectedImageFlow.collectAsStateWithLifecycle()
+            Scaffold { padding ->
+                val topPadding = padding.calculateTopPadding()
+                val bottomPadding = padding.calculateBottomPadding()
+                val layoutDirection = LocalLayoutDirection.current
 
-                Surface(
-                    modifier = Modifier
-                        .weight(1f, true)
+                Row {
+                    val selectedImageState by viewModel.selectedImageFlow.collectAsStateWithLifecycle()
+                    val baseModifier = Modifier
+                        .weight(1f)
                         .fillMaxHeight()
-                ) {
+                        .padding(bottom = bottomPadding)
+
                     ImagePreview(
+                        modifier = baseModifier.padding(
+                            top = topPadding,
+                            start = padding.calculateStartPadding(layoutDirection)
+                        ),
                         selectedImageState = selectedImageState,
                         selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
                     ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
-                }
 
-                Scaffold(
-                    modifier = Modifier.weight(1f),
-                    topBar = { TopBar(navController) }
-                ) { padding ->
-                    Options(
-                        modifier = Modifier.fillMaxHeight().weight(1f).padding(padding),
-                        upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
-                        outputFormatFlow = viewModel.selectedOutputFormatFlow,
-                        selectedImageState = selectedImageState,
-                        onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
-                        onUpscaleClick = { viewModel.upscale() }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .width(BorderThickness.regular)
+                            .background(MaterialTheme.colorScheme.outline)
                     )
+
+                    Column(
+                        modifier = baseModifier
+                    ) {
+                        TopBar(navController)
+                        Options(
+                            modifier = Modifier.fillMaxHeight().padding(end = padding.calculateEndPadding(layoutDirection)),
+                            upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
+                            outputFormatFlow = viewModel.selectedOutputFormatFlow,
+                            selectedImageState = selectedImageState,
+                            onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
+                            onUpscaleClick = { viewModel.upscale() }
+                        )
+                    }
                 }
             }
         }
