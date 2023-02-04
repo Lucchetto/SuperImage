@@ -5,6 +5,6 @@
         <item name="windowSplashScreenBackground">@android:color/black</item>
         <item name="android:textColorPrimary">@android:color/white</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
-        <item name="postSplashScreenTheme">@android:style/Theme.Material.NoActionBar</item>
+        <item name="postSplashScreenTheme">@style/Theme.AppCompat.DayNight.NoActionBar</item>
     </style>
 </resources>

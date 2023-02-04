@@ -7,11 +7,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -21,18 +22,42 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import com.zhenxiang.superimage.BuildConfig
 import com.zhenxiang.superimage.R
-import com.zhenxiang.superimage.ui.mono.MonoAppBar
-import com.zhenxiang.superimage.ui.mono.drawBottomBorder
+import com.zhenxiang.superimage.model.Identifiable
+import com.zhenxiang.superimage.ui.daynight.DayNightMode
+import com.zhenxiang.superimage.ui.mono.*
 import com.zhenxiang.superimage.ui.theme.MonoTheme
 import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.spacing
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsPage(viewModel: SettingsPageViewModel, navController: NavHostController) = Scaffold(
     topBar = { TopBar(navController) }
-) {
-    LazyColumn(modifier = Modifier.padding(it)) {
+) { padding ->
+    LazyColumn(modifier = Modifier.padding(padding)) {
+        item {
+            SelectionPreferenceItem(
+                state = viewModel.themeMode,
+                mapToString = { stringResource(id = (DayNightMode.fromId(it) ?: DayNightMode.AUTO).stringRes) },
+                values = DayNightMode.VALUES.toList(),
+                valueToString = { stringResource(id = it.stringRes) },
+                leadingIcon = {
+                    if ((DayNightMode.fromId(it) ?: DayNightMode.AUTO).lightMode) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_sun_24),
+                            contentDescription = stringResource(id = R.string.light_label)
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_moon_stars_24),
+                            contentDescription = stringResource(id = R.string.dark_label)
+                        )
+                    }
+                },
+                label = { Text(stringResource(id = R.string.theme_title)) }
+            )
+        }
         item {
             val context = LocalContext.current
             ListItem(
@@ -97,6 +122,80 @@ private fun ListItem(
             content = label
         )
         content()
+    }
+}
+
+@Composable
+private fun <T: Identifiable> SelectionPreferenceDialog(
+    onDismissRequest: () -> Unit,
+    title: @Composable () -> Unit,
+    state: IntPreferenceState,
+    values: List<T>,
+    valueToString: @Composable (T) -> String,
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val selectedValue by state.state
+
+    MonoAlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = title,
+        content = { padding ->
+            LazyColumn(
+                modifier = Modifier.padding(padding)
+            ) {
+                items(values) {
+                    MonoRadioButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(),
+                        label = { Text(valueToString(it)) },
+                        selected = selectedValue == it.id
+                    ) {
+                        coroutineScope.launch { state.setValue(it.id) }
+                        onDismissRequest()
+                    }
+                }
+            }
+        },
+        buttons = {
+            MonoCancelDialogButton(onClick = onDismissRequest)
+        }
+    )
+}
+
+@Composable
+private fun <T: Identifiable> SelectionPreferenceItem(
+    state: IntPreferenceState,
+    mapToString: @Composable (Int) -> String,
+    values: List<T>,
+    valueToString: @Composable (T) -> String,
+    modifier: Modifier = Modifier,
+    leadingIcon: (@Composable (Int) -> Unit)? = null,
+    label: @Composable () -> Unit,
+) {
+
+    val value by state.state
+    var dialogOpen by remember { mutableStateOf(false) }
+
+    ListItem(
+        modifier = modifier,
+        leadingIcon = { leadingIcon?.invoke(value) },
+        label = label,
+        content = {
+            Text(mapToString(value))
+        }
+    ) {
+        dialogOpen = true
+    }
+
+    if (dialogOpen) {
+        SelectionPreferenceDialog(
+            onDismissRequest = { dialogOpen = false },
+            title = label,
+            state = state,
+            values = values,
+            valueToString = valueToString
+        )
     }
 }
 

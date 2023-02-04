@@ -42,6 +42,10 @@
     <string name="open_settings_label">Open settings</string>
     <string name="grant_permission_label">Grant permission</string>
 
+    <string name="theme_title">Theme</string>
+    <string name="auto_label">Follow system</string>
+    <string name="light_label">Light</string>
+    <string name="dark_label">Dark</string>
     <string name="project_page_title">SuperImage\'s Github repo</string>
     <string name="project_page_desc">Ask questions or contribute to the project</string>
     <string name="version_title">Version</string>
