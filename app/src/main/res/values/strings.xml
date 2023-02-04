@@ -42,6 +42,8 @@
     <string name="open_settings_label">Open settings</string>
     <string name="grant_permission_label">Grant permission</string>
 
+    <string name="project_page_title">SuperImage\'s Github repo</string>
+    <string name="project_page_desc">Ask questions or contribute to the project</string>
     <string name="version_title">Version</string>
 
     <string name="upscaling_worker_notification_title">Upscaling %1$s</string>

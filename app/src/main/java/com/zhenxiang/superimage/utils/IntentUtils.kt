@@ -6,11 +6,17 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import androidx.core.content.ContextCompat.startActivity
+import androidx.core.net.toUri
 import androidx.core.view.ContentInfoCompat
 import com.zhenxiang.superimage.MainActivity
 
 
 object IntentUtils {
+
+    fun actionViewNewTask(string: String) = Intent(Intent.ACTION_VIEW).apply {
+        data = string.toUri()
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
 
     fun actionViewNewTask(uri: Uri) = Intent(Intent.ACTION_VIEW).apply {
         data = uri

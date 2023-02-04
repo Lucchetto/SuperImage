@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,6 +33,18 @@ fun SettingsPage(viewModel: SettingsPageViewModel, navController: NavHostControl
     topBar = { TopBar(navController) }
 ) {
     LazyColumn(modifier = Modifier.padding(it)) {
+        item {
+            val context = LocalContext.current
+            ListItem(
+                leadingIcon = {
+                    Icon(painterResource(id = R.drawable.ic_github_24), contentDescription = null)
+                },
+                label = { Text(stringResource(id = R.string.project_page_title)) },
+                content = { Text(stringResource(id = R.string.project_page_desc)) }
+            ) {
+                SettingsPageViewModel.openGithubPage(context)
+            }
+        }
         item {
             ListItem(
                 leadingIcon = { Icon(Icons.Outlined.Info, contentDescription = null) },
