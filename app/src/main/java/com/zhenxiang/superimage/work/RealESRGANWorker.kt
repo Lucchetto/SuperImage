@@ -1,11 +1,13 @@
 package com.zhenxiang.superimage.work
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.PendingIntent
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -47,6 +49,8 @@ class RealESRGANWorker(
 
     private val realESRGAN = RealESRGAN()
     private val notificationManager = NotificationManagerCompat.from(context)
+    private val notificationPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+            || context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
     private val progressNotificationBuilder = NotificationCompat.Builder(applicationContext, PROGRESS_NOTIFICATION_CHANNEL_ID)
 
     private val inputImageTempFile = params.inputData.getString(INPUT_IMAGE_TEMP_FILE_NAME_PARAM)?.let {
@@ -61,12 +65,13 @@ class RealESRGANWorker(
     private val upscalingModelAssetPath = params.inputData.getString(UPSCALING_MODEL_PATH_PARAM)
     private val upscalingScale = params.inputData.getInt(UPSCALING_SCALE_PARAM, -1)
     
+    @SuppressLint("MissingPermission")
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val startMillis = SystemClock.elapsedRealtime()
         val outputUri = actualWork()
         val executionTime = SystemClock.elapsedRealtime() - startMillis
-        // Don't send result notification if app is in foreground
-        if (!ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+        // Don't send result notification if app is in foreground or permission denied
+        if (!ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) && notificationPermission) {
             notificationManager.notifyAutoId(buildResultNotification(outputUri))
         }
         outputUri?.let {
@@ -176,9 +181,12 @@ class RealESRGANWorker(
         }
     }.build()
 
+    @SuppressLint("MissingPermission")
     private suspend fun updateProgress(progress: Float) {
         setProgress(workDataOf(PROGRESS_VALUE_PARAM to progress))
-        notificationManager.notify(PROGRESS_NOTIFICATION_ID, buildProgressNotification(progress))
+        if (notificationPermission) {
+            notificationManager.notify(PROGRESS_NOTIFICATION_ID, buildProgressNotification(progress))
+        }
     }
 
     private fun buildResultNotification(outputUri: Uri?) = with(applicationContext) {
