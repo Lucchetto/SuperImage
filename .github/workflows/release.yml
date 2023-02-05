@@ -1,0 +1,35 @@
+name: Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Release APK
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+
+      - name: Build signed APK
+        uses: victorbnl/build-signed-apk@468e42e6202df7657edb32bad92261c10e24f582
+        with:
+          keystore_b64: ${{ secrets.keystore }}
+          keystore_password: ${{ secrets.keystore_password }}
+          key_alias: ${{ secrets.key_alias }}
+          key_password: ${{ secrets.key_password }}
+
+      - name: Release APK
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: true
+          files: |
+            app/build/outputs/apk/release/app-release.apk
