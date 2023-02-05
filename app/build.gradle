@@ -75,6 +75,7 @@ dependencies {
     implementation "io.coil-kt:coil-compose:2.2.2"
     implementation "io.insert-koin:koin-android:$koin_android_version"
     implementation 'joda-time:joda-time:2.12.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.6.4'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
