@@ -75,33 +75,6 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
     BoxWithConstraints {
         if (constraints.isLandscape) {
             Scaffold(
-                topBar = { TopBar(navController) },
-                contentWindowInsets = WindowInsets.safeDrawing
-            ) { padding ->
-                Column(modifier = Modifier.padding(padding)) {
-
-                    val selectedImageState by viewModel.selectedImageFlow.collectAsStateWithLifecycle()
-
-                    ImagePreview(
-                        modifier = Modifier
-                            .weight(1f, true)
-                            .fillMaxWidth(),
-                        selectedImageState = selectedImageState,
-                        selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
-                    ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
-
-                    Options(
-                        modifier = Modifier.drawTopBorder(MaterialTheme.border.regular),
-                        upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
-                        outputFormatFlow = viewModel.selectedOutputFormatFlow,
-                        selectedImageState = selectedImageState,
-                        onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
-                        onUpscaleClick = { viewModel.upscale() }
-                    )
-                }
-            }
-        } else {
-            Scaffold(
                 contentWindowInsets = WindowInsets.safeDrawing
             ) { padding ->
                 val topPadding = padding.calculateTopPadding()
@@ -147,6 +120,33 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
                             onUpscaleClick = { viewModel.upscale() }
                         )
                     }
+                }
+            }
+        } else {
+            Scaffold(
+                topBar = { TopBar(navController) },
+                contentWindowInsets = WindowInsets.safeDrawing
+            ) { padding ->
+                Column(modifier = Modifier.padding(padding)) {
+
+                    val selectedImageState by viewModel.selectedImageFlow.collectAsStateWithLifecycle()
+
+                    ImagePreview(
+                        modifier = Modifier
+                            .weight(1f, true)
+                            .fillMaxWidth(),
+                        selectedImageState = selectedImageState,
+                        selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
+                    ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
+
+                    Options(
+                        modifier = Modifier.drawTopBorder(MaterialTheme.border.regular),
+                        upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
+                        outputFormatFlow = viewModel.selectedOutputFormatFlow,
+                        selectedImageState = selectedImageState,
+                        onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
+                        onUpscaleClick = { viewModel.upscale() }
+                    )
                 }
             }
         }
