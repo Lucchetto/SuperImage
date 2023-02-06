@@ -2,7 +2,7 @@
 #include <string>
 
 #include "mnn_model.h"
-#include "realesrgan.h"
+#include "upscaling.h"
 
 extern "C" JNIEXPORT jintArray JNICALL
 Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(

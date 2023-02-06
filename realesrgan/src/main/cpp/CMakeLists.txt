@@ -33,8 +33,8 @@ add_library( # Sets the name of the library.
         # Provides a relative path to your source file(s).
         mnn_model.cpp
         progress_tracker.cpp
-        realesrgan.cpp
-        realesrgan_jni.cpp)
+        realesrgan_jni.cpp
+        upscaling.cpp)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by

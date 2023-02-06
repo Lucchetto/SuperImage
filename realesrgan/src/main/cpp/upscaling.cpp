@@ -12,7 +12,7 @@
 #include "unsupported/Eigen/CXX11/Tensor"
 
 #include "progress_tracker.h"
-#include "realesrgan.h"
+#include "upscaling.h"
 
 void pixels_matrix_to_float_array(const Eigen::MatrixXi& tile, float* float_buffer) {
 
