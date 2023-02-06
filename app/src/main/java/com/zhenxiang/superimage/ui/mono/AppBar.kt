@@ -17,19 +17,18 @@ import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.spacing
 import com.zhenxiang.superimage.ui.utils.RowSpacer
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MonoAppBar(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
+    windowInsets: WindowInsets = MonoAppBarDefaults.windowInsets,
     leadingIcon: @Composable () -> Unit = { },
     trailingIcons: @Composable RowScope.() -> Unit = { }
 ) = Row(
     modifier = modifier
+        .windowInsetsPadding(windowInsets)
         .fillMaxWidth()
         .background(MaterialTheme.colorScheme.primaryContainer)
-        .windowInsetsPadding(windowInsets)
         .drawBottomBorder(MaterialTheme.border.regular)
         .padding(MaterialTheme.spacing.level3),
     verticalAlignment = Alignment.CenterVertically
@@ -43,6 +42,14 @@ fun MonoAppBar(
     }
     RowSpacer()
     trailingIcons()
+}
+
+object MonoAppBarDefaults {
+
+    val windowInsets: WindowInsets
+        @Composable
+        get() = WindowInsets.safeDrawing
+            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")

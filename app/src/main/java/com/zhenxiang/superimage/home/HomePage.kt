@@ -75,7 +75,8 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
     BoxWithConstraints {
         if (constraints.isLandscape) {
             Scaffold(
-                topBar = { TopBar(navController) }
+                topBar = { TopBar(navController) },
+                contentWindowInsets = WindowInsets.safeDrawing
             ) { padding ->
                 Column(modifier = Modifier.padding(padding)) {
 
@@ -100,7 +101,9 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
                 }
             }
         } else {
-            Scaffold { padding ->
+            Scaffold(
+                contentWindowInsets = WindowInsets.safeDrawing
+            ) { padding ->
                 val topPadding = padding.calculateTopPadding()
                 val bottomPadding = padding.calculateBottomPadding()
                 val layoutDirection = LocalLayoutDirection.current
@@ -129,11 +132,14 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
                     )
 
                     Column(
-                        modifier = baseModifier
+                        modifier = baseModifier.padding(end = padding.calculateEndPadding(layoutDirection))
                     ) {
-                        TopBar(navController)
+                        TopBar(
+                            navController,
+                            MonoAppBarDefaults.windowInsets.only(WindowInsetsSides.Top)
+                        )
                         Options(
-                            modifier = Modifier.fillMaxHeight().padding(end = padding.calculateEndPadding(layoutDirection)),
+                            modifier = Modifier.fillMaxHeight(),
                             upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
                             outputFormatFlow = viewModel.selectedOutputFormatFlow,
                             selectedImageState = selectedImageState,
@@ -165,8 +171,12 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
 }
 
 @Composable
-private fun TopBar(navController: NavHostController) = MonoAppBar(
-    title = { Text(stringResource(id = R.string.app_name)) }
+private fun TopBar(
+    navController: NavHostController,
+    windowInsets: WindowInsets = MonoAppBarDefaults.windowInsets,
+) = MonoAppBar(
+    title = { Text(stringResource(id = R.string.app_name)) },
+    windowInsets = windowInsets
 ) {
     IconButton(
         onClick = { navController.navigate(RootNavigationRoutes.Settings.route) }
