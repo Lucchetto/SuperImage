@@ -10,6 +10,8 @@
 
 #include "Eigen/Core"
 
+#include "mnn_model.h"
+
 #define REALESRGAN_IMAGE_CHANNELS 3
 #define REALESRGAN_INPUT_TILE_SIZE 84
 #define REALESRGAN_INPUT_TILE_PADDING 10
@@ -24,8 +26,7 @@
 const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_inference(
         JNIEnv* jni_env,
         jobject progress_tracker,
-        const void* model_data,
-        const long model_size,
+        const mnn_model* model,
         int scale,
         const Eigen::MatrixXi& input_image);
 

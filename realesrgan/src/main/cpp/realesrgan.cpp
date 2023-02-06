@@ -183,12 +183,11 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
 const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_inference(
         JNIEnv* jni_env,
         jobject progress_tracker,
-        const void* model_data,
-        const long model_size,
+        const mnn_model* model,
         int scale,
         const Eigen::MatrixXi& input_image) {
 
-    MNN::Interpreter* interpreter = MNN::Interpreter::createFromBuffer(model_data, model_size);
+    MNN::Interpreter* interpreter = MNN::Interpreter::createFromBuffer(model->data, model->size);
 
     if (!interpreter) {
         LOGE("Failed to create MNN interpreter");
