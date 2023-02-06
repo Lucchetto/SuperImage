@@ -26,9 +26,9 @@ fun MonoAppBar(
     trailingIcons: @Composable RowScope.() -> Unit = { }
 ) = Row(
     modifier = modifier
+        .background(MaterialTheme.colorScheme.primaryContainer)
         .windowInsetsPadding(windowInsets)
         .fillMaxWidth()
-        .background(MaterialTheme.colorScheme.primaryContainer)
         .drawBottomBorder(MaterialTheme.border.regular)
         .padding(MaterialTheme.spacing.level3),
     verticalAlignment = Alignment.CenterVertically
