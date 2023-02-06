@@ -12,16 +12,8 @@
 
 #include "mnn_model.h"
 
-#define REALESRGAN_IMAGE_CHANNELS 3
 #define REALESRGAN_INPUT_TILE_SIZE 84
 #define REALESRGAN_INPUT_TILE_PADDING 10
-
-#define LOG_TAG "RealESRGAN"
-#define LOGI(...) \
-  ((void)__android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__))
-#define LOGE(...) \
-  ((void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__))
-
 
 const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_inference(
         JNIEnv* jni_env,

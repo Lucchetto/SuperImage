@@ -2,17 +2,12 @@
 // Created by Zhenxiang Chen on 04/01/23.
 //
 
-#include <algorithm>
-#include <array>
-#include <cmath>
-#include <memory>
-
-#include "MNN/Interpreter.hpp"
+#include "upscaling.h"
 
 #include "unsupported/Eigen/CXX11/Tensor"
 
+#include "image_tile_interpreter.h"
 #include "progress_tracker.h"
-#include "upscaling.h"
 
 void pixels_matrix_to_float_array(const Eigen::MatrixXi& tile, float* float_buffer) {
 
@@ -89,25 +84,15 @@ std::pair<int, int> calculate_axis_padding(const int position, const int axis_si
 Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_tiles(
         JNIEnv* jni_env,
         jobject progress_tracker,
-        MNN::Interpreter* interpreter,
-        MNN::Session* session,
+        const ImageTileInterpreter& interpreter,
         const Eigen::MatrixXi& image_matrix,
         const int scale,
-        const int tile_size,
         const int padding) {
 
+    const int tile_size = interpreter.tile_size;
     const int height = image_matrix.rows();
     const int width = image_matrix.cols();
     const auto output_image_matrix = new Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(height * scale, width * scale);
-
-    MNN::Tensor* interpreter_input = interpreter->getSessionInput(session, nullptr);
-    interpreter->resizeTensor(interpreter_input, 1, REALESRGAN_IMAGE_CHANNELS, tile_size, tile_size);
-    interpreter->resizeSession(session);
-    MNN::Tensor* interpreter_output = interpreter->getSessionOutput(session, nullptr);
-    MNN::Tensor input_tensor(interpreter_input, MNN::Tensor::CAFFE);
-    MNN::Tensor output_tensor(interpreter_output, MNN::Tensor::CAFFE);
-    auto input_tensor_buffer = input_tensor.host<float>();
-    auto output_tensor_buffer = output_tensor.host<float>();
 
     int y = 0;
     int last_row_height = 0;
@@ -125,21 +110,16 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
             Eigen::MatrixXi tile = image_matrix.block(y - y_padding.first, x - x_padding.first, tile_size, tile_size);
 
             // Feed input into tensor
-            pixels_matrix_to_float_array(tile, input_tensor_buffer);
+            pixels_matrix_to_float_array(tile, interpreter.input_buffer);
 
-            // Feed data to the interpreter
-            interpreter_input->copyFromHostTensor(&input_tensor);
+            // Run inference on the model
+            interpreter.inference();
 
-            // Run the interpreter
-            interpreter->runSession(session);
-
-            // Extract result from interpreter
-            interpreter_output->copyToHostTensor(&output_tensor);
 
             // Read MNN tensor as Eigen tensor
             const int output_tile_size = tile_size * scale;
             const Eigen::TensorMap<Eigen::Tensor<float, 3, Eigen::RowMajor>> output_tile(
-                    output_tensor_buffer,
+                    interpreter.output_buffer,
                     REALESRGAN_IMAGE_CHANNELS,
                     output_tile_size,
                     output_tile_size);
@@ -187,38 +167,15 @@ const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_i
         int scale,
         const Eigen::MatrixXi& input_image) {
 
-    MNN::Interpreter* interpreter = MNN::Interpreter::createFromBuffer(model->data, model->size);
-
-    if (!interpreter) {
-        LOGE("Failed to create MNN interpreter");
-        return nullptr;
-    }
-
-    MNN::ScheduleConfig config;
-    MNN::BackendConfig backendConfig;
-    backendConfig.memory = MNN::BackendConfig::Memory_High;
-    backendConfig.power = MNN::BackendConfig::Power_High;
-    backendConfig.precision = MNN::BackendConfig::Precision_Low;
-    config.backendConfig = &backendConfig;
-    config.type = MNN_FORWARD_VULKAN;
-    config.backupType = MNN_FORWARD_OPENCL;
-    config.numThread = std::thread::hardware_concurrency();
-
-    MNN::Session* session = interpreter->createSession(config);
+    const auto interpreter = ImageTileInterpreter(model, REALESRGAN_INPUT_TILE_SIZE);
 
     const auto output_image = process_tiles(
             jni_env,
             progress_tracker,
             interpreter,
-            session,
             input_image,
             scale,
-            REALESRGAN_INPUT_TILE_SIZE,
             REALESRGAN_INPUT_TILE_PADDING);
-
-    // Cleanup
-    interpreter->releaseSession(session);
-    delete interpreter;
 
     return output_image;
 }
