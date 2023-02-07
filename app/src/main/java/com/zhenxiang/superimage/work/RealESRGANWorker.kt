@@ -126,6 +126,7 @@ class RealESRGANWorker(
     private fun setupProgressNotificationBuilder() {
         progressNotificationBuilder.apply {
             setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_notification_title, inputImageName))
+            setContentText(applicationContext.getString(R.string.upscaling_worker_notification_desc))
             setSmallIcon(R.drawable.outline_photo_size_select_large_24)
             setOngoing(true)
             setContentIntent(

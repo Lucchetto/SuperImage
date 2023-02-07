@@ -340,17 +340,20 @@ private fun UpscalingWork(
                     Text(
                         text = stringResource(id = R.string.upscaling_worker_notification_title, inputData.originalFileName),
                         textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.labelLarge
                     )
                     Text(
-                        modifier = Modifier.padding(top = MaterialTheme.spacing.level3),
+                        modifier = Modifier.padding(vertical = MaterialTheme.spacing.level3),
                         text = if (progress.progress == JNIProgressTracker.INDETERMINATE) {
                             stringResource(id = R.string.progress_indeterminate)
                         } else {
                             stringResource(id = R.string.progress_template, progress.progress.coerceAtMost(100f).roundToInt())
                         },
                         textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.labelLarge
+                    )
+                    Text(
+                        text = stringResource(id = R.string.upscaling_worker_notification_desc),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }
