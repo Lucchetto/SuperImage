@@ -47,8 +47,8 @@ void ImageTileInterpreter::inference() const {
 }
 
 ImageTileInterpreter::~ImageTileInterpreter() {
-    delete input_tensor;
-    delete output_tensor;
+    MNN::Tensor::destroy(input_tensor);
+    MNN::Tensor::destroy(output_tensor);
     interpreter->releaseSession(session);
-    delete interpreter;
+    MNN::Interpreter::destroy(interpreter);
 }
