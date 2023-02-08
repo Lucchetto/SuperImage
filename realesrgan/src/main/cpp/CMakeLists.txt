@@ -31,6 +31,7 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
+        coroutine_utils.cpp
         image_tile_interpreter.cpp
         mnn_model.cpp
         progress_tracker.cpp

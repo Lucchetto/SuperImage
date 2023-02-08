@@ -1,9 +1,12 @@
 package com.zhenxiang.realesrgan
 
+import kotlinx.coroutines.CoroutineScope
+
 class RealESRGAN {
 
-    external fun runUpscaling(
+    external suspend fun runUpscaling(
         progressTracker: JNIProgressTracker,
+        coroutineScope: CoroutineScope,
         modelData: ByteArray,
         scale: Int,
         inputImage: IntArray,

@@ -108,6 +108,7 @@ class RealESRGANWorker(
 
         val outputPixels = realESRGAN.runUpscaling(
             progressTracker,
+            this,
             upscalingModel,
             upscalingScale,
             inputPixels,

@@ -9,6 +9,7 @@ Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
         JNIEnv *env,
         jobject /* thiz */,
         jobject progress_tracker,
+        jobject coroutine_scope,
         jbyteArray model_data_jarray,
         jint scale,
         jintArray input_image_jarray,
@@ -22,7 +23,7 @@ Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
             input_image_height,
             input_image_width);
 
-    const auto output_image = run_inference(env, progress_tracker, &model, scale, input_image);
+    const auto output_image = run_inference(env, progress_tracker, coroutine_scope, &model, scale, input_image);
 
     // Cleanup and return data
     env->ReleaseByteArrayElements(model_data_jarray, model.data, JNI_OK);

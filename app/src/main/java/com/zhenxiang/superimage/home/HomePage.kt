@@ -164,6 +164,7 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
                     viewModel.clearSelectedImage()
                 }
             },
+            onCancelClicked = { viewModel.cancelWork() },
             onRetryClicked = { viewModel.upscale() },
             onOpenOutputImageClicked = { intent -> openOutputImageLauncher.launch(intent) }
         )
@@ -320,6 +321,7 @@ private fun UpscalingWork(
     inputData: RealESRGANWorker.InputData,
     progress: RealESRGANWorker.Progress,
     onDismissRequest: () -> Unit,
+    onCancelClicked: () -> Unit,
     onRetryClicked: () -> Unit,
     onOpenOutputImageClicked: (Intent) -> Unit,
 ) = MonoAlertDialog(
@@ -383,7 +385,10 @@ private fun UpscalingWork(
                     )
                 }
             }
-            is RealESRGANWorker.Progress.Running -> {}
+            is RealESRGANWorker.Progress.Running -> {
+                MonoCancelDialogButton(onCancelClicked)
+                RowSpacer()
+            }
             is RealESRGANWorker.Progress.Success -> {
                 MonoCloseDialogButton(onDismissRequest)
                 RowSpacer()
@@ -411,6 +416,7 @@ private fun UpscalingWorkRunningPreview() = MonoTheme {
         inputData = RealESRGANWorker.InputData("Bliss.jpg", "", OutputFormat.PNG, UpscalingModel.X4_PLUS),
         progress = RealESRGANWorker.Progress.Running(69f),
         onDismissRequest = {},
+        onCancelClicked = {},
         onRetryClicked = {},
         onOpenOutputImageClicked = {}
     )
@@ -423,6 +429,7 @@ private fun UpscalingWorkFailedPreview() = MonoTheme {
         inputData = RealESRGANWorker.InputData("Bliss.jpg", "", OutputFormat.PNG, UpscalingModel.X4_PLUS),
         progress = RealESRGANWorker.Progress.Failed,
         onDismissRequest = {},
+        onCancelClicked = {},
         onRetryClicked = {},
         onOpenOutputImageClicked = {}
     )
@@ -435,6 +442,7 @@ private fun UpscalingWorkSuccessPreview() = MonoTheme {
         inputData = RealESRGANWorker.InputData("Bliss.jpg", "", OutputFormat.PNG, UpscalingModel.X4_PLUS),
         progress = RealESRGANWorker.Progress.Success(Uri.EMPTY, 125000),
         onDismissRequest = {},
+        onCancelClicked = {},
         onRetryClicked = {},
         onOpenOutputImageClicked = {}
     )

@@ -18,6 +18,7 @@
 const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_inference(
         JNIEnv* jni_env,
         jobject progress_tracker,
+        jobject coroutine_scope,
         const mnn_model* model,
         int scale,
         const Eigen::MatrixXi& input_image);

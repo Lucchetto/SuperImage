@@ -82,6 +82,10 @@ class RealESRGANWorkerManager(private val context: Context) {
         }
     }
 
+    fun cancelWork() {
+        workManager.cancelUniqueWork(UNIQUE_WORK_ID)
+    }
+
     /**
      * Clear currently tracked [RealESRGANWorker] if it's no longer running
      * @return whether the tracked worker has been cleared

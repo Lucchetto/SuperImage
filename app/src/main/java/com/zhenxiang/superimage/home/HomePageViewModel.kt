@@ -88,6 +88,10 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
         }
     }
 
+    fun cancelWork() {
+        realESRGANWorkerManager.cancelWork()
+    }
+
     fun consumeWorkCompleted() {
         realESRGANWorkerManager.clearCurrentWorkProgress()
     }

@@ -6,6 +6,7 @@
 
 #include "unsupported/Eigen/CXX11/Tensor"
 
+#include "coroutine_utils.h"
 #include "image_tile_interpreter.h"
 #include "progress_tracker.h"
 
@@ -84,6 +85,7 @@ std::pair<int, int> calculate_axis_padding(const int position, const int axis_si
 Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_tiles(
         JNIEnv* jni_env,
         jobject progress_tracker,
+        jobject coroutine_scope,
         const ImageTileInterpreter& interpreter,
         const Eigen::MatrixXi& image_matrix,
         const int scale,
@@ -99,11 +101,11 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
     int processed_pixels = 0;
     set_progress_percentage(jni_env, progress_tracker, 0);
 
-    while (true) {
+    while (is_coroutine_scope_active(jni_env, coroutine_scope)) {
         int x = 0;
         std::pair<int, int> y_padding = calculate_axis_padding(y, height, tile_size, padding);
 
-        while (true) {
+        while (is_coroutine_scope_active(jni_env, coroutine_scope)) {
             std::pair<int, int> x_padding = calculate_axis_padding(x, width, tile_size, padding);
 
             // Get tile of pixels to process keeping, apply left padding as offset that will be cropped later
@@ -114,7 +116,6 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
 
             // Run inference on the model
             interpreter.inference();
-
 
             // Read MNN tensor as Eigen tensor
             const int output_tile_size = tile_size * scale;
@@ -163,6 +164,7 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
 const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_inference(
         JNIEnv* jni_env,
         jobject progress_tracker,
+        jobject coroutine_scope,
         const mnn_model* model,
         int scale,
         const Eigen::MatrixXi& input_image) {
@@ -172,6 +174,7 @@ const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_i
     const auto output_image = process_tiles(
             jni_env,
             progress_tracker,
+            coroutine_scope,
             interpreter,
             input_image,
             scale,
