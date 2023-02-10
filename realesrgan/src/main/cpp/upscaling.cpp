@@ -139,14 +139,16 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
                     tile_rgb_matrix.rows(),
                     tile_rgb_matrix.cols()) = tile_rgb_matrix;
 
+            // Calculate progress
+            processed_pixels += tile_rgb_matrix.size();
+            set_progress_percentage(jni_env, progress_tracker, 100.0 * processed_pixels / output_image_matrix->size());
+
             // Recalculate padding and position of next tile in row
             if (x_padding.second == 0) {
                 break;
             } else {
                 x += tile_rgb_matrix.cols() / scale;
                 last_row_height = tile_rgb_matrix.rows() / scale;
-                processed_pixels += tile_rgb_matrix.size();
-                set_progress_percentage(jni_env, progress_tracker, 100.0 * processed_pixels / output_image_matrix->size());
             }
         }
 
