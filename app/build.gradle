@@ -53,6 +53,7 @@ android {
 
 dependencies {
 
+    implementation project(path: ':common')
     implementation project(path: ':realesrgan')
 
     implementation 'androidx.core:core-ktx:1.9.0'

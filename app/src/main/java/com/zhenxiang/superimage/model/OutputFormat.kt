@@ -1,13 +1,19 @@
 package com.zhenxiang.superimage.model
 
-enum class OutputFormat(val formatExtension: String, val formatName: String) {
+import com.zhenxiang.superimage.common.Identifiable
 
-    JPEG("jpg", "JPEG"),
-    PNG("png", "PNG");
+enum class OutputFormat(
+    override val id: Int,
+    val formatExtension: String,
+    val formatName: String,
+): Identifiable<Int> {
 
-    companion object {
+    JPEG(0, "jpg", "JPEG"),
+    PNG(1, "png", "PNG");
 
-        val VALUES = values()
+    companion object: Identifiable.EnumCompanion<OutputFormat> {
+
+        override val VALUES = values()
 
         fun fromFormatName(name: String): OutputFormat? = VALUES.firstOrNull { it.formatName == name }
     }

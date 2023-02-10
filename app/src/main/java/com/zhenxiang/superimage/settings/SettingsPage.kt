@@ -19,7 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import com.zhenxiang.superimage.BuildConfig
 import com.zhenxiang.superimage.R
-import com.zhenxiang.superimage.model.Identifiable
+import com.zhenxiang.superimage.common.Identifiable
 import com.zhenxiang.superimage.ui.daynight.DayNightMode
 import com.zhenxiang.superimage.ui.mono.*
 import com.zhenxiang.superimage.ui.theme.MonoTheme
@@ -124,7 +124,7 @@ private fun ListItem(
 }
 
 @Composable
-private fun <T: Identifiable> SelectionPreferenceDialog(
+private fun <T: Identifiable<Int>> SelectionPreferenceDialog(
     onDismissRequest: () -> Unit,
     title: @Composable () -> Unit,
     state: IntPreferenceState,
@@ -162,7 +162,7 @@ private fun <T: Identifiable> SelectionPreferenceDialog(
 }
 
 @Composable
-private fun <T: Identifiable> SelectionPreferenceItem(
+private fun <T: Identifiable<Int>> SelectionPreferenceItem(
     state: IntPreferenceState,
     mapToString: @Composable (Int) -> String,
     values: List<T>,

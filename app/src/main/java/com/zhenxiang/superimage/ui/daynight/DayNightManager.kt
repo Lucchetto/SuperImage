@@ -12,7 +12,7 @@ class DayNightManager(private val dataStore: DataStore<Preferences>) {
 
     val themeModeFlow: Flow<DayNightMode>
         get() = dataStore.data.map { prefs ->
-            prefs[themeModeKey]?.let { DayNightMode.fromId(it) } ?: DayNightMode.AUTO
+            DayNightMode.fromId(prefs[themeModeKey]) ?: DayNightMode.AUTO
         }
 
     companion object {

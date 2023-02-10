@@ -6,9 +6,9 @@ import androidx.appcompat.app.AppCompatDelegate.NightMode
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import com.zhenxiang.superimage.R
-import com.zhenxiang.superimage.model.Identifiable
+import com.zhenxiang.superimage.common.Identifiable
 
-enum class DayNightMode(override val id: Int, @StringRes val stringRes: Int): Identifiable {
+enum class DayNightMode(override val id: Int, @StringRes val stringRes: Int): Identifiable<Int> {
     AUTO(0, R.string.auto_label),
     DAY(1, R.string.light_label),
     NIGHT(2, R.string.dark_label);
@@ -28,11 +28,9 @@ enum class DayNightMode(override val id: Int, @StringRes val stringRes: Int): Id
             NIGHT -> false
         }
 
-    companion object {
+    companion object: Identifiable.EnumCompanion<DayNightMode> {
 
-        val VALUES = values()
-
-        fun fromId(id: Int) = VALUES.firstOrNull { it.id == id }
+        override val VALUES = values()
 
         fun fromDelegateNightMode(@NightMode mode: Int) = when (mode) {
             AppCompatDelegate.MODE_NIGHT_YES -> NIGHT

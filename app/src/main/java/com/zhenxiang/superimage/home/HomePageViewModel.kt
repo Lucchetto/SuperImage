@@ -4,10 +4,15 @@ import android.app.Application
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.zhenxiang.realesrgan.UpscalingModel
+import com.zhenxiang.superimage.datastore.SETTINGS_DATA_STORE
+import com.zhenxiang.superimage.datastore.writeIntIdentifiable
 import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.model.OutputFormat
@@ -16,15 +21,22 @@ import com.zhenxiang.superimage.work.RealESRGANWorkerManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import org.koin.core.component.inject
+import org.koin.core.qualifier.named
 import java.io.File
 import java.io.InputStream
 
 class HomePageViewModel(application: Application): AndroidViewModel(application), KoinComponent {
 
     private val realESRGANWorkerManager = get<RealESRGANWorkerManager>()
+    private val dataStore by inject<DataStore<Preferences>>(named(SETTINGS_DATA_STORE))
+    private val outputFormatPrefKey = intPreferencesKey("output_format")
+    private val upscalingModelPrefKey = intPreferencesKey("upscaling_model")
 
     private val _selectedImageFlow: MutableStateFlow<DataState<InputImage, Unit>?>
 
@@ -41,8 +53,23 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
             selectedUpscalingModelFlow = MutableStateFlow(inputData.upscalingModel)
         } else {
             _selectedImageFlow = MutableStateFlow(null)
-            selectedOutputFormatFlow = MutableStateFlow(OutputFormat.PNG)
-            selectedUpscalingModelFlow = MutableStateFlow(UpscalingModel.X2_PLUS)
+            val prefs = runBlocking { dataStore.data.first() }
+            selectedOutputFormatFlow = MutableStateFlow(
+                OutputFormat.fromId(prefs[outputFormatPrefKey]) ?: OutputFormat.PNG
+            )
+            selectedUpscalingModelFlow = MutableStateFlow(
+                UpscalingModel.fromId(prefs[upscalingModelPrefKey]) ?: UpscalingModel.X2_PLUS
+            )
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            selectedOutputFormatFlow.collect {
+                dataStore.writeIntIdentifiable(outputFormatPrefKey, it)
+            }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            selectedUpscalingModelFlow.collect {
+                dataStore.writeIntIdentifiable(upscalingModelPrefKey, it)
+            }
         }
         selectedImageFlow = _selectedImageFlow
     }
