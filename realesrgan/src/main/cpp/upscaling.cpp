@@ -4,6 +4,7 @@
 
 #include "upscaling.h"
 
+#include <chrono>
 #include "unsupported/Eigen/CXX11/Tensor"
 
 #include "coroutine_utils.h"
@@ -91,6 +92,8 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
         const int scale,
         const int padding) {
 
+    const auto start = std::chrono::high_resolution_clock::now();
+
     const int tile_size = interpreter.tile_size;
     const int height = image_matrix.rows();
     const int width = image_matrix.cols();
@@ -106,6 +109,7 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
         std::pair<int, int> y_padding = calculate_axis_padding(y, height, tile_size, padding);
 
         while (is_coroutine_scope_active(jni_env, coroutine_scope)) {
+
             std::pair<int, int> x_padding = calculate_axis_padding(x, width, tile_size, padding);
 
             // Get tile of pixels to process keeping, apply left padding as offset that will be cropped later
@@ -139,9 +143,17 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
                     tile_rgb_matrix.rows(),
                     tile_rgb_matrix.cols()) = tile_rgb_matrix;
 
-            // Calculate progress
+            // Update progress
             processed_pixels += tile_rgb_matrix.size();
-            set_progress_percentage(jni_env, progress_tracker, 100.0 * processed_pixels / output_image_matrix->size());
+            const float progress = 100 * ((float)processed_pixels / output_image_matrix->size());
+            // Calculate execution time per 1%
+            const double percentage_execution_millis = std::chrono::duration<double, std::milli>(
+                    std::chrono::high_resolution_clock::now() - start).count() / progress;
+            set_progress_percentage(
+                    jni_env,
+                    progress_tracker,
+                    progress,
+                    lround((100 - progress) * percentage_execution_millis));
 
             // Recalculate padding and position of next tile in row
             if (x_padding.second == 0) {

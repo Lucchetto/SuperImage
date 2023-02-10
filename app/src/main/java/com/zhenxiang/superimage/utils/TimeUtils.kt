@@ -6,6 +6,7 @@ import androidx.annotation.PluralsRes
 import com.zhenxiang.superimage.R
 import org.joda.time.Period
 import org.joda.time.format.PeriodFormatterBuilder
+import kotlin.math.roundToLong
 
 object TimeUtils {
 
@@ -19,11 +20,13 @@ object TimeUtils {
             .appendMinutes()
             .appendPluralSuffix(this, R.plurals.minute, unitSpace)
             .appendSeparator(wordSpace)
+            .printZeroAlways()
             .appendSeconds()
             .appendPluralSuffix(this, R.plurals.second, unitSpace)
             .toFormatter()
 
-        formatter.print(Period(millis))
+        // Round to nearest second
+        formatter.print(Period((millis / 1000.0).roundToLong() * 1000))
     }
 
     private fun PeriodFormatterBuilder.appendPluralSuffix(

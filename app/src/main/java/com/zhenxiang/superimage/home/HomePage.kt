@@ -345,10 +345,17 @@ private fun UpscalingWork(
                     )
                     Text(
                         modifier = Modifier.padding(vertical = MaterialTheme.spacing.level3),
-                        text = if (progress.progress == JNIProgressTracker.INDETERMINATE) {
-                            stringResource(id = R.string.progress_indeterminate)
-                        } else {
-                            stringResource(id = R.string.progress_template, progress.progress.coerceAtMost(100f).roundToInt())
+                        text = when {
+                            progress.progress == JNIProgressTracker.INDETERMINATE_PROGRESS -> stringResource(id = R.string.progress_indeterminate)
+                            progress.estimatedMillisLeft == JNIProgressTracker.INDETERMINATE_TIME -> stringResource(
+                                id = R.string.progress_template,
+                                progress.progress.coerceAtMost(100f).roundToInt(),
+                            )
+                            else ->  stringResource(
+                                id = R.string.progress_and_estimated_time_template,
+                                progress.progress.coerceAtMost(100f).roundToInt(),
+                                TimeUtils.periodToString(LocalContext.current, progress.estimatedMillisLeft)
+                            )
                         },
                         textAlign = TextAlign.Center,
                     )
@@ -414,7 +421,7 @@ private fun UpscalingWork(
 private fun UpscalingWorkRunningPreview() = MonoTheme {
     UpscalingWork(
         inputData = RealESRGANWorker.InputData("Bliss.jpg", "", OutputFormat.PNG, UpscalingModel.X4_PLUS),
-        progress = RealESRGANWorker.Progress.Running(69f),
+        progress = RealESRGANWorker.Progress.Running(69f, 57000),
         onDismissRequest = {},
         onCancelClicked = {},
         onRetryClicked = {},

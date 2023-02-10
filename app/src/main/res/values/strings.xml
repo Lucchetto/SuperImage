@@ -17,6 +17,7 @@
     </plurals>
 
     <string name="progress_template">%d%%</string>
+    <string name="progress_and_estimated_time_template">%1$d%% (approx. %2$s left)</string>
     <string name="progress_indeterminate">Initialising…</string>
     <string name="open">Open</string>
     <string name="retry">Retry</string>

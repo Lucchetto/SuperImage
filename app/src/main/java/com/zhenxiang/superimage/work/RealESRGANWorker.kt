@@ -103,7 +103,7 @@ class RealESRGANWorker(
 
         val progressTracker = JNIProgressTracker()
         val progressUpdateJob = progressTracker.progressFlow.onEach {
-            updateProgress(it.coerceAtMost(100f))
+            updateProgress(it)
         }.launchIn(this)
 
         val outputPixels = realESRGAN.runUpscaling(
@@ -171,12 +171,12 @@ class RealESRGANWorker(
 
         return ForegroundInfo(
             PROGRESS_NOTIFICATION_ID,
-            buildProgressNotification(JNIProgressTracker.INDETERMINATE)
+            buildProgressNotification(JNIProgressTracker.INDETERMINATE_PROGRESS)
         )
     }
 
     private fun buildProgressNotification(progress: Float): Notification = progressNotificationBuilder.apply {
-        if (progress == JNIProgressTracker.INDETERMINATE) {
+        if (progress == JNIProgressTracker.INDETERMINATE_PROGRESS) {
             setProgress(100, 0, true)
         } else {
             setProgress(100, progress.roundToInt(), false)
@@ -184,10 +184,15 @@ class RealESRGANWorker(
     }.build()
 
     @SuppressLint("MissingPermission")
-    private suspend fun updateProgress(progress: Float) {
-        setProgress(workDataOf(PROGRESS_VALUE_PARAM to progress))
+    private suspend fun updateProgress(progress: JNIProgressTracker.Progress) {
+        setProgress(
+            workDataOf(
+                PROGRESS_VALUE_PARAM to progress.value,
+                ESTIMATED_MILLIS_LEFT_PARAM to progress.estimatedMillisLeft
+            )
+        )
         if (notificationPermission) {
-            notificationManager.notify(PROGRESS_NOTIFICATION_ID, buildProgressNotification(progress))
+            notificationManager.notify(PROGRESS_NOTIFICATION_ID, buildProgressNotification(progress.value))
         }
     }
 
@@ -304,7 +309,11 @@ class RealESRGANWorker(
 
     sealed interface Progress {
 
-        data class Running(val progress: Float): Progress
+        /**
+         * @param progress progress in range 0 to 100 or [INDETERMINATE_PROGRESS]
+         * @param estimatedMillisLeft estimated time left in milliseconds
+         */
+        data class Running(val progress: Float, val estimatedMillisLeft: Long): Progress
 
         /**
          * @param outputFileUri the [Uri] of the output image
@@ -317,10 +326,16 @@ class RealESRGANWorker(
         companion object {
 
             fun fromWorkInfo(workInfo: WorkInfo): Progress? = when (workInfo.state) {
-                WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED -> Running(JNIProgressTracker.INDETERMINATE)
-                WorkInfo.State.RUNNING -> Running(
-                    workInfo.progress.getFloat(PROGRESS_VALUE_PARAM, JNIProgressTracker.INDETERMINATE)
+                WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED -> Running(
+                    JNIProgressTracker.INDETERMINATE_PROGRESS,
+                    JNIProgressTracker.INDETERMINATE_TIME
                 )
+                WorkInfo.State.RUNNING -> workInfo.progress.let {
+                    Running(
+                        it.getFloat(PROGRESS_VALUE_PARAM, JNIProgressTracker.INDETERMINATE_PROGRESS),
+                        it.getLong(ESTIMATED_MILLIS_LEFT_PARAM, JNIProgressTracker.INDETERMINATE_TIME),
+                    )
+                }
                 WorkInfo.State.SUCCEEDED -> Success(
                     workInfo.outputData.getString(OUTPUT_FILE_URI_PARAM)!!.toUri(),
                     workInfo.outputData.getLong(OUTPUT_EXECUTION_TIME_PARAM, 0)
@@ -336,6 +351,7 @@ class RealESRGANWorker(
         private const val INPUT_IMAGE_TEMP_FILE_NAME_PARAM = "input_image_uri"
         private const val INPUT_IMAGE_NAME_PARAM = "input_image_name"
         private const val PROGRESS_VALUE_PARAM = "progress"
+        private const val ESTIMATED_MILLIS_LEFT_PARAM = "est_time"
         private const val OUTPUT_IMAGE_FORMAT_PARAM = "output_format"
         private const val OUTPUT_FILE_URI_PARAM = "output_uri"
         private const val OUTPUT_EXECUTION_TIME_PARAM = "exec_time"

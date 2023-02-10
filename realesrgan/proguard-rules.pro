@@ -22,5 +22,5 @@
 
 # Rules for native calls to Java function
 -keepclassmembers class com.zhenxiang.realesrgan.JNIProgressTracker {
-    void setProgress(float);
+    void setProgress(float, long);
 }

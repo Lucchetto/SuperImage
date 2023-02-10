@@ -8,6 +8,6 @@
 #include <jni.h>
 
 extern "C" JNIEXPORT void JNICALL
-set_progress_percentage(JNIEnv* env, jobject progress_tracker, float percentage);
+set_progress_percentage(JNIEnv* env, jobject progress_tracker, float percentage, long estimated_time = -1);
 
 #endif //REALESRGAN_PROGRESS_TRACKER_H
