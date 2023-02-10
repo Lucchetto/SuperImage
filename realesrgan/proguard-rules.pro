@@ -24,3 +24,6 @@
 -keepclassmembers class com.zhenxiang.realesrgan.JNIProgressTracker {
     void setProgress(float, long);
 }
+-keep class kotlinx.coroutines.CoroutineScopeKt {
+    boolean isActive(kotlinx.coroutines.CoroutineScope);
+}
