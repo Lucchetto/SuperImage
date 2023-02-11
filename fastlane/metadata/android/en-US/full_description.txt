@@ -1,0 +1,3 @@
+SuperImage is a neural network-based image upscaling build with the MNN deep learning framework and the Real-ESRGAN algorithm.
+
+By leveraging the power of your device's GPU, SuperImage is able to upscale and restore the details of your images without uploading them to the internet, keeping your data secure.

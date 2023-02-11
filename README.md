@@ -23,9 +23,9 @@ Results on Qualcomm Snapdragon 855 (Vulkan)
 ## 📱 Screenshots
 <p>
   <span>&nbsp;</span>
-  <img src="assets/screenshot_light.png" width="230">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_light.png" width="230">
   <span>&nbsp;&nbsp;</span>
-  <img src="assets/screenshot_dark.png" width="230">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_dark.png" width="230">
   <span>&nbsp;</span>
 </p>
 
