@@ -3,6 +3,7 @@ import com.android.build.gradle.internal.tasks.factory.dependsOn
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -92,6 +93,7 @@ dependencies {
     implementation(project(":realesrgan"))
 
     val compose_version = "1.3.3"
+    val decompose_version = "1.0.0"
     val lifecycle_version = "2.6.0-alpha05"
     val koin_android_version= "3.3.2"
 
@@ -99,16 +101,16 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.0")
     implementation("androidx.lifecycle:lifecycle-process:$lifecycle_version")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version")
     implementation("androidx.activity:activity-compose:1.6.1")
     implementation("androidx.compose.ui:ui:$compose_version")
     implementation("androidx.compose.ui:ui-tooling-preview:$compose_version")
     implementation("androidx.compose.material3:material3:1.1.0-alpha05")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
-    implementation("androidx.navigation:navigation-compose:2.5.3")
 
     implementation("androidx.documentfile:documentfile:1.0.1")
     implementation("androidx.work:work-runtime-ktx:2.7.1")
+    implementation("com.arkivanov.decompose:decompose:$decompose_version")
+    implementation("com.arkivanov.decompose:extensions-compose-jetbrains:$decompose_version")
     implementation("com.github.Dimezis:BlurView:version-2.0.3")
     implementation("com.google.accompanist:accompanist-navigation-animation:0.29.1-alpha")
     implementation("com.jakewharton.timber:timber:5.0.1")
