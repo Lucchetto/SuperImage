@@ -24,16 +24,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavHostController
 import coil.request.ImageRequest
 import coil.transition.CrossfadeTransition
+import com.arkivanov.decompose.router.stack.StackNavigation
+import com.arkivanov.decompose.router.stack.push
 import com.zhenxiang.realesrgan.JNIProgressTracker
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.model.OutputFormat
-import com.zhenxiang.superimage.navigation.RootNavigationRoutes
+import com.zhenxiang.superimage.navigation.RootComponent
 import com.zhenxiang.superimage.ui.form.MonoDropDownMenu
 import com.zhenxiang.superimage.ui.mono.*
 import com.zhenxiang.superimage.ui.theme.*
@@ -49,7 +50,7 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
+fun HomePage(component: HomePageComponent) = component.viewModel.let { viewModel ->
     val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
         it?.let { viewModel.loadImage(it) }
     }
@@ -60,10 +61,11 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
     }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val context = LocalContext.current
         LaunchedEffect(Unit) {
             if (
                 ContextCompat.checkSelfPermission(
-                    viewModel.getApplication(),
+                    context,
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
@@ -95,7 +97,7 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
                         ),
                         selectedImageState = selectedImageState,
                         selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
-                    ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
+                    ) { imagePicker.launch(HomePageComponent.IMAGE_MIME_TYPE) }
 
                     Box(
                         modifier = Modifier
@@ -108,7 +110,7 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
                         modifier = baseModifier.padding(end = padding.calculateEndPadding(layoutDirection))
                     ) {
                         TopBar(
-                            navController,
+                            component.navigation,
                             MonoAppBarDefaults.windowInsets.only(WindowInsetsSides.Top)
                         )
                         Options(
@@ -116,7 +118,7 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
                             upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
                             outputFormatFlow = viewModel.selectedOutputFormatFlow,
                             selectedImageState = selectedImageState,
-                            onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
+                            onSelectImageClick = { imagePicker.launch(HomePageComponent.IMAGE_MIME_TYPE) },
                             onUpscaleClick = { viewModel.upscale() }
                         )
                     }
@@ -124,7 +126,7 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
             }
         } else {
             Scaffold(
-                topBar = { TopBar(navController) },
+                topBar = { TopBar(component.navigation) },
                 contentWindowInsets = WindowInsets.safeDrawing
             ) { padding ->
                 Column(modifier = Modifier.padding(padding)) {
@@ -137,14 +139,14 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
                             .fillMaxWidth(),
                         selectedImageState = selectedImageState,
                         selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
-                    ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
+                    ) { imagePicker.launch(HomePageComponent.IMAGE_MIME_TYPE) }
 
                     Options(
                         modifier = Modifier.drawTopBorder(MaterialTheme.border.regular),
                         upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
                         outputFormatFlow = viewModel.selectedOutputFormatFlow,
                         selectedImageState = selectedImageState,
-                        onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
+                        onSelectImageClick = { imagePicker.launch(HomePageComponent.IMAGE_MIME_TYPE) },
                         onUpscaleClick = { viewModel.upscale() }
                     )
                 }
@@ -173,14 +175,14 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
 
 @Composable
 private fun TopBar(
-    navController: NavHostController,
+    navigation: StackNavigation<RootComponent.Config>,
     windowInsets: WindowInsets = MonoAppBarDefaults.windowInsets,
 ) = MonoAppBar(
     title = { Text(stringResource(id = R.string.app_name)) },
     windowInsets = windowInsets
 ) {
     IconButton(
-        onClick = { navController.navigate(RootNavigationRoutes.Settings.route) }
+        onClick = { navigation.push(RootComponent.Config.Settings) }
     ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_gear_24),

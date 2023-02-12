@@ -16,10 +16,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavHostController
+import com.arkivanov.decompose.router.stack.StackNavigation
+import com.arkivanov.decompose.router.stack.pop
 import com.zhenxiang.superimage.BuildConfig
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.common.Identifiable
+import com.zhenxiang.superimage.navigation.RootComponent
 import com.zhenxiang.superimage.ui.daynight.DayNightMode
 import com.zhenxiang.superimage.ui.mono.*
 import com.zhenxiang.superimage.ui.theme.MonoTheme
@@ -29,14 +31,14 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsPage(viewModel: SettingsPageViewModel, navController: NavHostController) = Scaffold(
-    topBar = { TopBar(navController) },
+fun SettingsPage(component: SettingsPageComponent) = Scaffold(
+    topBar = { TopBar(component.navigation) },
     contentWindowInsets = WindowInsets.safeDrawing
 ) { padding ->
     LazyColumn(modifier = Modifier.padding(padding)) {
         item {
             SelectionPreferenceItem(
-                state = viewModel.themeMode,
+                state = component.viewModel.themeMode,
                 mapToString = { stringResource(id = (DayNightMode.fromId(it) ?: DayNightMode.AUTO).stringRes) },
                 values = DayNightMode.VALUES.toList(),
                 valueToString = { stringResource(id = it.stringRes) },
@@ -65,7 +67,7 @@ fun SettingsPage(viewModel: SettingsPageViewModel, navController: NavHostControl
                 label = { Text(stringResource(id = R.string.project_page_title)) },
                 content = { Text(stringResource(id = R.string.project_page_desc)) }
             ) {
-                SettingsPageViewModel.openGithubPage(context)
+                SettingsPageComponent.openGithubPage(context)
             }
         }
         item {
@@ -79,11 +81,11 @@ fun SettingsPage(viewModel: SettingsPageViewModel, navController: NavHostControl
 }
 
 @Composable
-private fun TopBar(navController: NavHostController) = MonoAppBar(
+private fun TopBar(navigation: StackNavigation<RootComponent.Config>) = MonoAppBar(
     title = { Text(stringResource(id = R.string.settings)) },
     leadingIcon = {
         IconButton(
-            onClick = { navController.popBackStack() }
+            onClick = { navigation.pop() }
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_back_24),
