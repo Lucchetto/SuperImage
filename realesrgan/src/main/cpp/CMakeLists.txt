@@ -13,6 +13,9 @@ set(EIGEN_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/eigen")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
 set(CMAKE_CXX_STANDARD 14)
 
+# Reproducible builds
+add_link_options("LINKER:--hash-style=gnu,--build-id=none")
+
 option(MNN_VULKAN "" ON)
 option(MNN_OPENCL "" ON)
 
