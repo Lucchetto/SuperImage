@@ -49,6 +49,8 @@
     <string name="dark_label">Dark</string>
     <string name="project_page_title">Project page</string>
     <string name="project_page_desc">Ask questions or contribute on GitHub</string>
+    <string name="telegram_group_title">Telegram group</string>
+    <string name="telegram_group_desc">Join the group for support, discussions about AI image processing, and off-topic stuff</string>
     <string name="version_title">Version</string>
 
     <string name="upscaling_worker_notification_title">Upscaling %1$s</string>

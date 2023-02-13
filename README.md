@@ -29,6 +29,9 @@ Results on Qualcomm Snapdragon 855 (Vulkan)
   <span>&nbsp;</span>
 </p>
 
+## 💬 Community
+You can join the [Telegram group](https://t.me/super_image) for support, discussions about AI image processing, and off-topic stuff
+
 ## 協 Contribute
 You can submit feedbacks or bug reports by [opening an issue](https://github.com/Lucchetto/SuperImage/issues/new). Pull requests are welcome !
 

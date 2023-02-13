@@ -26,5 +26,9 @@ class SettingsPageViewModel(application: Application): AndroidViewModel(applicat
         fun openGithubPage(context: Context) {
             context.startActivity(IntentUtils.actionViewNewTask("https://$GITHUB_PAGE_URL"))
         }
+
+        fun openTelegramGroup(context: Context) {
+            context.startActivity(IntentUtils.actionViewNewTask("https://t.me/super_image"))
+        }
     }
 }

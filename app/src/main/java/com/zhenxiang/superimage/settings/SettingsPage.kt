@@ -60,6 +60,18 @@ fun SettingsPage(viewModel: SettingsPageViewModel, navController: NavHostControl
             val context = LocalContext.current
             ListItem(
                 leadingIcon = {
+                    Icon(painterResource(id = R.drawable.ic_telegram_24), contentDescription = null)
+                },
+                label = { Text(stringResource(id = R.string.telegram_group_title)) },
+                content = { Text(stringResource(id = R.string.telegram_group_desc)) }
+            ) {
+                SettingsPageViewModel.openTelegramGroup(context)
+            }
+        }
+        item {
+            val context = LocalContext.current
+            ListItem(
+                leadingIcon = {
                     Icon(painterResource(id = R.drawable.ic_github_24), contentDescription = null)
                 },
                 label = { Text(stringResource(id = R.string.project_page_title)) },
