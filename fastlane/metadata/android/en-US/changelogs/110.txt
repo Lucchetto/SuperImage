@@ -1,3 +1,0 @@
-Support cancel upscaling operation
-Add execution time estimation
-User interface improvements
