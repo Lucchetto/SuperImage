@@ -1,3 +1,5 @@
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+
 package com.zhenxiang.superimage.ui.mono
 
 import android.annotation.SuppressLint
@@ -8,10 +10,12 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.ui.theme.MonoTheme
@@ -19,7 +23,6 @@ import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.elevation
 import com.zhenxiang.superimage.ui.theme.spacing
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun MonoAlertDialog(
     onDismissRequest: () -> Unit,
@@ -31,51 +34,59 @@ fun MonoAlertDialog(
     content: @Composable ColumnScope.(PaddingValues) -> Unit,
     buttons: @Composable RowScope.() -> Unit = { },
 ) {
-    AlertDialog(
-        modifier = Modifier.padding(MaterialTheme.spacing.level5),
+    val dialogPaneDescription = getString(Strings.Dialog)
+    Dialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
-        Surface(
+        Box(
             modifier = Modifier
-                .wrapContentWidth()
-                .wrapContentHeight(),
-            shape = MaterialTheme.shapes.large,
-            tonalElevation = MaterialTheme.elevation.container,
-            shadowElevation = MaterialTheme.elevation.container,
-            border = MaterialTheme.border.thin
+                .padding(MaterialTheme.spacing.level5)
+                .sizeIn(minWidth = DialogMinWidth, maxWidth = DialogMaxWidth)
+                .then(Modifier.semantics { paneTitle = dialogPaneDescription }),
+            propagateMinConstraints = true
         ) {
-            Column {
-                title?.let {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .drawBottomBorder(MaterialTheme.border.regular)
-                            .padding(MaterialTheme.spacing.level5)
-                    ) {
-                        ProvideTextStyle(
-                            value = MaterialTheme.typography.headlineSmall,
-                            content = it
+            Surface(
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .wrapContentHeight(),
+                shape = MaterialTheme.shapes.large,
+                tonalElevation = MaterialTheme.elevation.container,
+                shadowElevation = MaterialTheme.elevation.container,
+                border = MaterialTheme.border.thin
+            ) {
+                Column {
+                    title?.let {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .drawBottomBorder(MaterialTheme.border.regular)
+                                .padding(MaterialTheme.spacing.level5)
+                        ) {
+                            ProvideTextStyle(
+                                value = MaterialTheme.typography.headlineSmall,
+                                content = it
+                            )
+                        }
+                    }
+                    ProvideTextStyle(value = MaterialTheme.typography.labelLarge) {
+                        content(
+                            PaddingValues(
+                                start = MaterialTheme.spacing.level5,
+                                end = MaterialTheme.spacing.level5,
+                                top = MaterialTheme.spacing.level5
+                            )
                         )
                     }
-                }
-                ProvideTextStyle(value = MaterialTheme.typography.labelLarge) {
-                    content(
-                        PaddingValues(
-                            start = MaterialTheme.spacing.level5,
-                            end = MaterialTheme.spacing.level5,
-                            top = MaterialTheme.spacing.level5
-                        )
+                    Row(
+                        modifier = Modifier
+                            .padding(MaterialTheme.spacing.level5)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.level4, Alignment.End),
+                        content = buttons
                     )
                 }
-                Row(
-                    modifier = Modifier
-                        .padding(MaterialTheme.spacing.level5)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.level4, Alignment.End),
-                    content = buttons
-                )
             }
         }
     }
