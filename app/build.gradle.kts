@@ -1,8 +1,9 @@
-import com.android.build.gradle.internal.tasks.factory.dependsOn
+import org.jetbrains.compose.ExperimentalComposeLibrary
 
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.compose")
     id("kotlin-parcelize")
 }
 
@@ -85,6 +86,7 @@ android {
     }
 }
 
+@OptIn(ExperimentalComposeLibrary::class)
 dependencies {
 
     implementation(project(":common"))
@@ -92,7 +94,6 @@ dependencies {
     "playstoreImplementation"(project(":playstore:impl"))
     implementation(project(":realesrgan"))
 
-    val compose_version = "1.3.3"
     val decompose_version = "1.0.0"
     val lifecycle_version = "2.6.0-alpha05"
     val koin_android_version= "3.3.2"
@@ -101,10 +102,10 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.0")
     implementation("androidx.lifecycle:lifecycle-process:$lifecycle_version")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version")
-    implementation("androidx.activity:activity-compose:1.6.1")
-    implementation("androidx.compose.ui:ui:$compose_version")
-    implementation("androidx.compose.ui:ui-tooling-preview:$compose_version")
-    implementation("androidx.compose.material3:material3:1.1.0-alpha05")
+    implementation(compose.runtime)
+    implementation(compose.foundation)
+    implementation(compose.material3)
+    implementation(compose.preview)
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
     implementation("androidx.documentfile:documentfile:1.0.1")
@@ -122,7 +123,6 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:$compose_version")
-    debugImplementation("androidx.compose.ui:ui-tooling:$compose_version")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:$compose_version")
+    androidTestImplementation(compose.uiTestJUnit4)
+    debugImplementation(compose.uiTooling)
 }

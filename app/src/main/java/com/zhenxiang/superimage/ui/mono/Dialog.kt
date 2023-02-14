@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.zhenxiang.superimage.R
@@ -33,63 +34,65 @@ fun MonoAlertDialog(
     title: @Composable (() -> Unit)? = null,
     content: @Composable ColumnScope.(PaddingValues) -> Unit,
     buttons: @Composable RowScope.() -> Unit = { },
+) = Dialog(
+    onDismissRequest = onDismissRequest,
+    properties = properties
 ) {
     val dialogPaneDescription = getString(Strings.Dialog)
-    Dialog(
-        onDismissRequest = onDismissRequest,
-        properties = properties
+    Box(
+        modifier = Modifier
+            .padding(MaterialTheme.spacing.level5)
+            .sizeIn(minWidth = MonoAlertDialogDefaults.DialogMinWidth, maxWidth = MonoAlertDialogDefaults.DialogMaxWidth)
+            .then(Modifier.semantics { paneTitle = dialogPaneDescription }),
+        propagateMinConstraints = true
     ) {
-        Box(
+        Surface(
             modifier = Modifier
-                .padding(MaterialTheme.spacing.level5)
-                .sizeIn(minWidth = DialogMinWidth, maxWidth = DialogMaxWidth)
-                .then(Modifier.semantics { paneTitle = dialogPaneDescription }),
-            propagateMinConstraints = true
+                .wrapContentWidth()
+                .wrapContentHeight(),
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = MaterialTheme.elevation.container,
+            shadowElevation = MaterialTheme.elevation.container,
+            border = MaterialTheme.border.thin
         ) {
-            Surface(
-                modifier = Modifier
-                    .wrapContentWidth()
-                    .wrapContentHeight(),
-                shape = MaterialTheme.shapes.large,
-                tonalElevation = MaterialTheme.elevation.container,
-                shadowElevation = MaterialTheme.elevation.container,
-                border = MaterialTheme.border.thin
-            ) {
-                Column {
-                    title?.let {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .drawBottomBorder(MaterialTheme.border.regular)
-                                .padding(MaterialTheme.spacing.level5)
-                        ) {
-                            ProvideTextStyle(
-                                value = MaterialTheme.typography.headlineSmall,
-                                content = it
-                            )
-                        }
-                    }
-                    ProvideTextStyle(value = MaterialTheme.typography.labelLarge) {
-                        content(
-                            PaddingValues(
-                                start = MaterialTheme.spacing.level5,
-                                end = MaterialTheme.spacing.level5,
-                                top = MaterialTheme.spacing.level5
-                            )
+            Column {
+                title?.let {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .drawBottomBorder(MaterialTheme.border.regular)
+                            .padding(MaterialTheme.spacing.level5)
+                    ) {
+                        ProvideTextStyle(
+                            value = MaterialTheme.typography.headlineSmall,
+                            content = it
                         )
                     }
-                    Row(
-                        modifier = Modifier
-                            .padding(MaterialTheme.spacing.level5)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.level4, Alignment.End),
-                        content = buttons
+                }
+                ProvideTextStyle(value = MaterialTheme.typography.labelLarge) {
+                    content(
+                        PaddingValues(
+                            start = MaterialTheme.spacing.level5,
+                            end = MaterialTheme.spacing.level5,
+                            top = MaterialTheme.spacing.level5
+                        )
                     )
                 }
+                Row(
+                    modifier = Modifier
+                        .padding(MaterialTheme.spacing.level5)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.level4, Alignment.End),
+                    content = buttons
+                )
             }
         }
     }
+}
+object MonoAlertDialogDefaults {
+    val DialogMinWidth = 280.dp
+    val DialogMaxWidth = 560.dp
 }
 
 @Composable
