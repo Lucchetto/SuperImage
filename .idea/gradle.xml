@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
@@ -12,6 +11,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/common" />
+            <option value="$PROJECT_DIR$/decompose" />
             <option value="$PROJECT_DIR$/playstore" />
             <option value="$PROJECT_DIR$/playstore/base" />
             <option value="$PROJECT_DIR$/playstore/impl" />

@@ -90,18 +90,16 @@ android {
 dependencies {
 
     implementation(project(":common"))
+    implementation(project(":decompose"))
     "freeImplementation"(project(":playstore:no-op"))
     "playstoreImplementation"(project(":playstore:impl"))
     implementation(project(":realesrgan"))
 
-    val decompose_version = "1.0.0"
-    val lifecycle_version = "2.6.0-alpha05"
     val koin_android_version= "3.3.2"
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.core:core-splashscreen:1.0.0")
-    implementation("androidx.lifecycle:lifecycle-process:$lifecycle_version")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version")
+    implementation("androidx.lifecycle:lifecycle-process:2.6.0-beta01")
     implementation(compose.runtime)
     implementation(compose.foundation)
     implementation(compose.material3)
@@ -110,8 +108,6 @@ dependencies {
 
     implementation("androidx.documentfile:documentfile:1.0.1")
     implementation("androidx.work:work-runtime-ktx:2.7.1")
-    implementation("com.arkivanov.decompose:decompose:$decompose_version")
-    implementation("com.arkivanov.decompose:extensions-compose-jetbrains:$decompose_version")
     implementation("com.github.Dimezis:BlurView:version-2.0.3")
     implementation("com.google.accompanist:accompanist-navigation-animation:0.29.1-alpha")
     implementation("com.jakewharton.timber:timber:5.0.1")

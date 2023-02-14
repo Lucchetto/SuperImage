@@ -27,12 +27,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.request.ImageRequest
 import coil.transition.CrossfadeTransition
 import com.zhenxiang.realesrgan.InterpreterError
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.push
+import com.arkivanov.essenty.lifecycle.ext.collectAsStateWithLifecycle
 import com.zhenxiang.realesrgan.JNIProgressTracker
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.BuildConfig

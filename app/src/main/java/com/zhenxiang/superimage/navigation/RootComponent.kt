@@ -30,9 +30,11 @@ class RootComponent(componentContext: ComponentContext): ComponentContext by com
 
     sealed interface Child {
 
-        class Home(val component: HomePageComponent) : Child
+        val component: ChildComponent<*>
 
-        class Settings(val component: SettingsPageComponent) : Child
+        class Home(override val component: HomePageComponent) : Child
+
+        class Settings(override val component: SettingsPageComponent) : Child
     }
 
     sealed interface Config : Parcelable {
