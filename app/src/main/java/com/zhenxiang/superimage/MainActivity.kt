@@ -36,7 +36,11 @@ class MainActivity : AppCompatActivity(), KoinComponent {
                 delegate.localNightMode = it.delegateNightMode
             }
         }
-        intent?.let {  inputImageIntentManager.notifyNewIntent(it) }
+        intent?.let {
+            if (inputImageIntentManager.notifyNewIntent(it)) {
+                startActivity(InputImageIntentManager.markAsConsumed(intent))
+            }
+        }
         // Handle the splash screen transition.
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -57,6 +61,8 @@ class MainActivity : AppCompatActivity(), KoinComponent {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        inputImageIntentManager.notifyNewIntent(intent)
+        if (inputImageIntentManager.notifyNewIntent(intent)) {
+            startActivity(InputImageIntentManager.markAsConsumed(intent))
+        }
     }
 }

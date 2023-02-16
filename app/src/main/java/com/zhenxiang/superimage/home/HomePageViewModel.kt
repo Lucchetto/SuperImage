@@ -22,7 +22,6 @@ import com.zhenxiang.superimage.work.RealESRGANWorkerManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -77,7 +76,7 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
         selectedImageFlow = _selectedImageFlow
 
         viewModelScope.launch {
-            inputImageIntentManager.intentUriFlow.collect {
+            inputImageIntentManager.imageUriFlow.collect {
                 when (realESRGANWorkerManager.workProgressFlow.value?.second) {
                     is RealESRGANWorker.Progress.Running -> {}
                     RealESRGANWorker.Progress.Failed, is RealESRGANWorker.Progress.Success -> {
