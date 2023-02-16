@@ -30,6 +30,7 @@ import coil.transition.CrossfadeTransition
 import com.zhenxiang.realesrgan.JNIProgressTracker
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.R
+import com.zhenxiang.superimage.intent.InputImageIntentManager
 import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.model.OutputFormat
@@ -95,7 +96,7 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
                         ),
                         selectedImageState = selectedImageState,
                         selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
-                    ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
+                    ) { imagePicker.launch(InputImageIntentManager.IMAGE_MIME_TYPE) }
 
                     Box(
                         modifier = Modifier
@@ -116,7 +117,7 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
                             upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
                             outputFormatFlow = viewModel.selectedOutputFormatFlow,
                             selectedImageState = selectedImageState,
-                            onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
+                            onSelectImageClick = { imagePicker.launch(InputImageIntentManager.IMAGE_MIME_TYPE) },
                             onUpscaleClick = { viewModel.upscale() }
                         )
                     }
@@ -137,14 +138,14 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
                             .fillMaxWidth(),
                         selectedImageState = selectedImageState,
                         selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
-                    ) { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) }
+                    ) { imagePicker.launch(InputImageIntentManager.IMAGE_MIME_TYPE) }
 
                     Options(
                         modifier = Modifier.drawTopBorder(MaterialTheme.border.regular),
                         upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
                         outputFormatFlow = viewModel.selectedOutputFormatFlow,
                         selectedImageState = selectedImageState,
-                        onSelectImageClick = { imagePicker.launch(HomePageViewModel.IMAGE_MIME_TYPE) },
+                        onSelectImageClick = { imagePicker.launch(InputImageIntentManager.IMAGE_MIME_TYPE) },
                         onUpscaleClick = { viewModel.upscale() }
                     )
                 }

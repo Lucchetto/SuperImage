@@ -2,6 +2,7 @@ package com.zhenxiang.superimage
 
 import android.app.Application
 import com.zhenxiang.superimage.datastore.DataStoreModule
+import com.zhenxiang.superimage.intent.InputImageIntentManagerModule
 import com.zhenxiang.superimage.ui.daynight.DayNightModule
 import com.zhenxiang.superimage.work.RealESRGANWorkerModule
 import org.koin.android.ext.koin.androidContext
@@ -20,7 +21,7 @@ class SuperImageApplication: Application() {
             // Reference Android context
             androidContext(this@SuperImageApplication)
 
-            modules(RealESRGANWorkerModule, DataStoreModule, DayNightModule)
+            modules(RealESRGANWorkerModule, DataStoreModule, DayNightModule, InputImageIntentManagerModule)
         }
     }
 }

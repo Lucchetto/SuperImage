@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.datastore.SETTINGS_DATA_STORE
 import com.zhenxiang.superimage.datastore.writeIntIdentifiable
+import com.zhenxiang.superimage.intent.InputImageIntentManager
 import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.model.OutputFormat
@@ -21,6 +22,7 @@ import com.zhenxiang.superimage.work.RealESRGANWorkerManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -34,6 +36,7 @@ import java.io.InputStream
 class HomePageViewModel(application: Application): AndroidViewModel(application), KoinComponent {
 
     private val realESRGANWorkerManager = get<RealESRGANWorkerManager>()
+    private val inputImageIntentManager by inject<InputImageIntentManager>()
     private val dataStore by inject<DataStore<Preferences>>(named(SETTINGS_DATA_STORE))
     private val outputFormatPrefKey = intPreferencesKey("output_format")
     private val upscalingModelPrefKey = intPreferencesKey("upscaling_model")
@@ -72,6 +75,20 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
             }
         }
         selectedImageFlow = _selectedImageFlow
+
+        viewModelScope.launch {
+            inputImageIntentManager.intentUriFlow.collect {
+                when (realESRGANWorkerManager.workProgressFlow.value?.second) {
+                    is RealESRGANWorker.Progress.Running -> {}
+                    RealESRGANWorker.Progress.Failed, is RealESRGANWorker.Progress.Success -> {
+                        consumeWorkCompleted()
+                        clearSelectedImage()
+                        loadImage(it)
+                    }
+                    null -> loadImage(it)
+                }
+            }
+        }
     }
 
     fun loadImage(imageUri: Uri) {
@@ -125,10 +142,6 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
 
     fun clearSelectedImage() {
         _selectedImageFlow.tryEmit(null)
-    }
-
-    companion object {
-        const val IMAGE_MIME_TYPE = "image/*"
     }
 }
 
