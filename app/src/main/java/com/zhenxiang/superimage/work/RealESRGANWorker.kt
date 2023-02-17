@@ -255,6 +255,7 @@ class RealESRGANWorker(
     private fun saveOutputImage(pixels: ByteBuffer, width: Int, height: Int): Uri? {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
             copyPixelsFromBuffer(pixels)
+            realESRGAN.freeDirectBuffer(pixels)
         }
         val outputFileName = inputImageName.replaceFileExtension(outputFormat.formatExtension)
 
@@ -272,7 +273,6 @@ class RealESRGANWorker(
                 uri?.let { openOutputStream(it) }?.let {
                     val success = bitmap.compress(outputFormat, 100, it)
                     bitmap.recycle()
-                    realESRGAN.freeDirectBuffer(pixels)
                     if (success) uri else null
                 }
             }
@@ -281,7 +281,6 @@ class RealESRGANWorker(
             return outputFile?.outputStream()?.use {
                 val success = bitmap.compress(outputFormat, 100, it)
                 bitmap.recycle()
-                realESRGAN.freeDirectBuffer(pixels)
                 if (success) {
                     val uri = outputFile.toUri()
                     applicationContext.sendBroadcast(
