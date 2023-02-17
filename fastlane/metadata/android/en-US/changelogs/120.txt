@@ -1,0 +1,3 @@
+Reduced memory consumption
+Support receiving input image shared from other apps
+Added link to Telegram group in settings
