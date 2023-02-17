@@ -36,6 +36,4 @@ object AppVersionUtils {
     suspend fun clearShowChangelog(dataStore: DataStore<Preferences>) = dataStore.edit {
         it.remove(showChangelogKey)
     }
-
-    const val CHANGELOG_FILE_NAME = "changelog.txt"
 }

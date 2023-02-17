@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.tasks.factory.dependsOn
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -7,6 +9,8 @@ android {
     namespace = "com.zhenxiang.superimage"
     compileSdk = 33
 
+    val changelogFileName = "changelog.txt"
+
     defaultConfig {
         applicationId = "com.zhenxiang.superimage"
         minSdk = 24
@@ -14,7 +18,21 @@ android {
         versionCode = 111
         versionName = "1.1.1"
 
+        buildConfigField("String", "CHANGELOG_ASSET_NAME", "\"$changelogFileName\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // Copy changelog for app assets
+    val copiedChangelogPath = File(buildDir, "generated/changelogAsset")
+    val copyArtifactsTask = tasks.register<Copy>("copyChangelog") {
+            delete(copiedChangelogPath)
+            from(File(rootProject.rootDir, "fastlane/metadata/android/en-US/changelogs/${defaultConfig.versionCode}.txt"))
+            into(copiedChangelogPath)
+            rename { changelogFileName }
+        }
+    tasks.preBuild {
+        dependsOn(copyArtifactsTask)
     }
 
     buildTypes {
@@ -26,6 +44,12 @@ android {
         getByName("debug") {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-DEBUG"
+        }
+    }
+    sourceSets {
+        getByName("main") {
+            // Add changelog to assets
+            assets.srcDirs(copiedChangelogPath)
         }
     }
     compileOptions {

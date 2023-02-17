@@ -11,6 +11,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.zhenxiang.realesrgan.UpscalingModel
+import com.zhenxiang.superimage.BuildConfig
 import com.zhenxiang.superimage.datastore.SETTINGS_DATA_STORE_QUALIFIER
 import com.zhenxiang.superimage.datastore.writeIntIdentifiable
 import com.zhenxiang.superimage.intent.InputImageIntentManager
@@ -157,7 +158,7 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
     }
 
     private suspend fun readChangelog(): Changelog = try {
-        getApplication<Application>().assets.open(AppVersionUtils.CHANGELOG_FILE_NAME).reader().use {
+        getApplication<Application>().assets.open(BuildConfig.CHANGELOG_ASSET_NAME).reader().use {
             val lines = mutableListOf<String>()
             it.forEachLine { line ->
                 if (line.isNotBlank()) {
