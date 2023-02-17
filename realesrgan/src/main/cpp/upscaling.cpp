@@ -29,21 +29,23 @@ void pixels_matrix_to_float_array(const Eigen::MatrixXi& tile, float* float_buff
 
 Eigen::MatrixXi output_tensor_to_pixels_matrix(const Eigen::Tensor<float, 3, Eigen::RowMajor>* tensor) {
 
+    uint8_t rgba_buffer[REALESRGAN_IMAGE_CHANNELS + 1] = {};
+    // Alpha is always 255
+    rgba_buffer[0] = 255;
+
     const float* tensor_data = tensor->data();
     const size_t pixels_count = tensor->size() / REALESRGAN_IMAGE_CHANNELS;
-    int pixel_channels[REALESRGAN_IMAGE_CHANNELS];
     int output_tile_rgb[pixels_count];
     for (int i = 0; i < pixels_count; i++) {
         for (int j = 0; j < REALESRGAN_IMAGE_CHANNELS; j++) {
-            pixel_channels[j] = std::max<float>(
-                    0, std::min<float>(255, tensor_data[i + j * pixels_count] * 255));
+            rgba_buffer[j + 1] = std::clamp<float>(tensor_data[i + j * pixels_count] * 255, 0, 255);
         }
 
-        // When we have RGB values, we pack them into output_tile single pixel.
-        // Alpha is set to 255.
-        output_tile_rgb[i] = (255u & 0xff) << 24 | (pixel_channels[0] & 0xff) << 16 |
-                             (pixel_channels[1] & 0xff) << 8 |
-                             (pixel_channels[2] & 0xff);
+        // When we have RGB values, we pack them into output_tile single pixel in RGBA.
+        // Assume little endian order since this will only run on ARM and x86
+        output_tile_rgb[i] = (rgba_buffer[0] & 0xff) << 24 | (rgba_buffer[3] & 0xff) << 16 |
+                             (rgba_buffer[2] & 0xff) << 8 |
+                             (rgba_buffer[1] & 0xff);
     }
 
     return Eigen::Map<Eigen::MatrixXi>(
@@ -83,7 +85,7 @@ std::pair<int, int> calculate_axis_padding(const int position, const int axis_si
     }
 }
 
-Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_tiles(
+output_image process_tiles(
         JNIEnv* jni_env,
         jobject progress_tracker,
         jobject coroutine_scope,
@@ -97,7 +99,14 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
     const int tile_size = interpreter.tile_size;
     const int height = image_matrix.rows();
     const int width = image_matrix.cols();
-    const auto output_image_matrix = new Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>(height * scale, width * scale);
+    const int output_height = height * scale;
+    const int output_width = width * scale;
+
+    int* output_image_pixels = (int*) malloc(output_height * output_width * sizeof(int));
+    Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> output_image_matrix(
+            output_image_pixels,
+            output_height,
+            output_width);
 
     int y = 0;
     int last_row_height = 0;
@@ -137,7 +146,7 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
 
             const Eigen::MatrixXi tile_rgb_matrix = output_tensor_to_pixels_matrix(&cropped_output_tile);
 
-            output_image_matrix->block(
+            output_image_matrix.block(
                     y * scale,
                     x * scale,
                     tile_rgb_matrix.rows(),
@@ -145,7 +154,7 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
 
             // Update progress
             processed_pixels += tile_rgb_matrix.size();
-            const float progress = 100 * ((float)processed_pixels / output_image_matrix->size());
+            const float progress = 100 * ((float)processed_pixels / output_image_matrix.size());
             // Calculate execution time per 1%
             const double percentage_execution_millis = std::chrono::duration<double, std::milli>(
                     std::chrono::high_resolution_clock::now() - start).count() / progress;
@@ -172,10 +181,13 @@ Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* process_til
         }
     }
 
-    return output_image_matrix;
+    return {
+        .data = output_image_pixels,
+        .size = output_image_matrix.size()
+    };
 }
 
-const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_inference(
+output_image run_inference(
         JNIEnv* jni_env,
         jobject progress_tracker,
         jobject coroutine_scope,
@@ -185,7 +197,7 @@ const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_i
 
     const auto interpreter = ImageTileInterpreter(model, REALESRGAN_INPUT_TILE_SIZE);
 
-    const auto output_image = process_tiles(
+    return process_tiles(
             jni_env,
             progress_tracker,
             coroutine_scope,
@@ -193,6 +205,4 @@ const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_i
             input_image,
             scale,
             REALESRGAN_INPUT_TILE_PADDING);
-
-    return output_image;
 }

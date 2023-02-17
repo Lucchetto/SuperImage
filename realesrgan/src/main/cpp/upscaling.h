@@ -15,7 +15,12 @@
 #define REALESRGAN_INPUT_TILE_SIZE 84
 #define REALESRGAN_INPUT_TILE_PADDING 10
 
-const Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>* run_inference(
+struct output_image {
+    const int* data;
+    const long size;
+};
+
+output_image run_inference(
         JNIEnv* jni_env,
         jobject progress_tracker,
         jobject coroutine_scope,

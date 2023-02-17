@@ -1,6 +1,7 @@
 package com.zhenxiang.realesrgan
 
 import kotlinx.coroutines.CoroutineScope
+import java.nio.ByteBuffer
 
 class RealESRGAN {
 
@@ -12,7 +13,12 @@ class RealESRGAN {
         inputImage: IntArray,
         inputImageWidth: Int,
         inputImageHeight: Int,
-    ): IntArray?
+    ): ByteBuffer?
+
+    /**
+     * Free a [ByteBuffer] allocated with
+     */
+    external fun freeDirectBuffer(buffer: ByteBuffer)
 
     companion object {
         // Used to load the 'realesrgan' library on application startup.

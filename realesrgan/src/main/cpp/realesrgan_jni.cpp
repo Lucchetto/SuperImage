@@ -4,7 +4,7 @@
 #include "mnn_model.h"
 #include "upscaling.h"
 
-extern "C" JNIEXPORT jintArray JNICALL
+extern "C" JNIEXPORT jobject JNICALL
 Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
         JNIEnv *env,
         jobject /* thiz */,
@@ -28,13 +28,13 @@ Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
     // Cleanup and return data
     env->ReleaseByteArrayElements(model_data_jarray, model.data, JNI_OK);
     env->ReleaseIntArrayElements(input_image_jarray, input_image.data(), JNI_OK);
-    if (!output_image) {
-        return nullptr;
-    } else {
-        jintArray output_image_jarray = env->NewIntArray(output_image->size());
-        env->SetIntArrayRegion(output_image_jarray, 0, output_image->size(), output_image->data());
-
-        delete output_image;
-        return output_image_jarray;
-    }
+    return env->NewDirectByteBuffer((void *) output_image.data, output_image.size * sizeof(int));
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_zhenxiang_realesrgan_RealESRGAN_freeDirectBuffer(
+        JNIEnv *env,
+        jobject /* thiz */,
+        jobject buffer) {
+    free(env->GetDirectBufferAddress(buffer));
 }
