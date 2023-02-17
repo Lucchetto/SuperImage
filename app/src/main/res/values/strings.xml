@@ -36,6 +36,9 @@
     <string name="upscaling_options_title">Upscaling options</string>
     <string name="output_format_title">Output format</string>
     <string name="execution_time_template">Execution time: %1$s</string>
+    <string name="changelog_dialog_title">What\'s new</string>
+    <string name="version_template">Version %1$s</string>
+    <string name="changelog_item_template">- %1$s</string>
 
     <string name="permission_denied_title">Permission denied</string>
     <string name="storage_permission_denied_desc">Please grant permission to write files on the device</string>

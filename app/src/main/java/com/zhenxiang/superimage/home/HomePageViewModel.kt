@@ -14,9 +14,11 @@ import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.datastore.SETTINGS_DATA_STORE_QUALIFIER
 import com.zhenxiang.superimage.datastore.writeIntIdentifiable
 import com.zhenxiang.superimage.intent.InputImageIntentManager
+import com.zhenxiang.superimage.model.Changelog
 import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.model.OutputFormat
+import com.zhenxiang.superimage.version.AppVersionUtils
 import com.zhenxiang.superimage.work.RealESRGANWorker
 import com.zhenxiang.superimage.work.RealESRGANWorkerManager
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +30,7 @@ import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.component.inject
+import timber.log.Timber
 import java.io.File
 import java.io.InputStream
 
@@ -45,6 +48,8 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
     val selectedUpscalingModelFlow: MutableStateFlow<UpscalingModel>
     val selectedImageFlow: StateFlow<DataState<InputImage, Unit>?>
     val workProgressFlow = realESRGANWorkerManager.workProgressFlow
+
+    val showChangelogFlow: MutableStateFlow<Changelog>
 
     init {
         val inputData = workProgressFlow.value?.first
@@ -86,6 +91,15 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
                     null -> loadImage(it)
                 }
             }
+        }
+
+        if (runBlocking { AppVersionUtils.shouldShowChangelog(dataStore) }) {
+            showChangelogFlow = MutableStateFlow(Changelog.Loading)
+            viewModelScope.launch(Dispatchers.IO) {
+                showChangelogFlow.tryEmit(readChangelog())
+            }
+        } else {
+            showChangelogFlow = MutableStateFlow(Changelog.Hide)
         }
     }
 
@@ -140,6 +154,26 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
 
     fun clearSelectedImage() {
         _selectedImageFlow.tryEmit(null)
+    }
+
+    private suspend fun readChangelog(): Changelog = try {
+        getApplication<Application>().assets.open(AppVersionUtils.CHANGELOG_FILE_NAME).reader().use {
+            val lines = mutableListOf<String>()
+            it.forEachLine { line ->
+                if (line.isNotBlank()) {
+                    lines.add(line)
+                }
+            }
+            if (lines.isEmpty()) Changelog.Hide else Changelog.Show(lines)
+        }
+    } catch (e: Exception) {
+        Timber.wtf(e)
+        Changelog.Hide
+    }
+
+    fun changelogShown() {
+        showChangelogFlow.tryEmit(Changelog.Hide)
+        viewModelScope.launch { AppVersionUtils.clearShowChangelog(dataStore) }
     }
 }
 

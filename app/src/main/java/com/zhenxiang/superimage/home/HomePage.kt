@@ -11,6 +11,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -29,8 +32,10 @@ import coil.request.ImageRequest
 import coil.transition.CrossfadeTransition
 import com.zhenxiang.realesrgan.JNIProgressTracker
 import com.zhenxiang.realesrgan.UpscalingModel
+import com.zhenxiang.superimage.BuildConfig
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.intent.InputImageIntentManager
+import com.zhenxiang.superimage.model.Changelog
 import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.model.OutputFormat
@@ -170,6 +175,52 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
             onOpenOutputImageClicked = { intent -> openOutputImageLauncher.launch(intent) }
         )
     }
+
+    val showChangelogState by viewModel.showChangelogFlow.collectAsStateWithLifecycle()
+    ChangelogDialog(showChangelogState) { viewModel.changelogShown() }
+}
+
+@Composable
+private fun ChangelogDialog(
+    changelog: Changelog,
+    onDismissRequest: () -> Unit
+) {
+    if (changelog != Changelog.Hide) {
+        MonoAlertDialog(
+            onDismissRequest = onDismissRequest,
+            properties = DialogProperties(
+                dismissOnClickOutside = true,
+                usePlatformDefaultWidth = false
+            ),
+            title = { Text(stringResource(id = R.string.changelog_dialog_title)) },
+            content = { padding ->
+                LazyColumn(modifier = Modifier.padding(padding)) {
+                    item { Text(
+                        stringResource(id = R.string.version_template, BuildConfig.VERSION_NAME),
+                        modifier = Modifier.padding(bottom = MaterialTheme.spacing.level3)
+                    ) }
+                    if (changelog is Changelog.Show) {
+                        items(changelog.items) {
+                            Text(stringResource(id = R.string.changelog_item_template, it))
+                        }
+                    }
+                }
+            },
+            buttons = {
+                RowSpacer()
+                MonoCloseDialogButton(onDismissRequest)
+            }
+        )
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun ChangelogDialogPreview() = MonoTheme {
+    ChangelogDialog(
+        Changelog.Show(listOf("IDK", "Stuff happened"))
+    ) { }
 }
 
 @Composable
