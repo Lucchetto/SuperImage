@@ -177,7 +177,7 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
     }
 
     val showChangelogState by viewModel.showChangelogFlow.collectAsStateWithLifecycle()
-    ChangelogDialog(showChangelogState) { viewModel.changelogShown() }
+    ChangelogDialog(showChangelogState) { viewModel.showChangelogFlow.tryEmit(Changelog.Hide) }
 }
 
 @Composable

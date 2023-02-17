@@ -97,6 +97,7 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
         if (runBlocking { AppVersionUtils.shouldShowChangelog(dataStore) }) {
             showChangelogFlow = MutableStateFlow(Changelog.Loading)
             viewModelScope.launch(Dispatchers.IO) {
+                AppVersionUtils.clearShowChangelog(dataStore)
                 showChangelogFlow.tryEmit(readChangelog())
             }
         } else {
@@ -170,11 +171,6 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
     } catch (e: Exception) {
         Timber.wtf(e)
         Changelog.Hide
-    }
-
-    fun changelogShown() {
-        showChangelogFlow.tryEmit(Changelog.Hide)
-        viewModelScope.launch { AppVersionUtils.clearShowChangelog(dataStore) }
     }
 }
 
