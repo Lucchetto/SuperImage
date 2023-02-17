@@ -11,7 +11,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.zhenxiang.realesrgan.UpscalingModel
-import com.zhenxiang.superimage.datastore.SETTINGS_DATA_STORE
+import com.zhenxiang.superimage.datastore.SETTINGS_DATA_STORE_QUALIFIER
 import com.zhenxiang.superimage.datastore.writeIntIdentifiable
 import com.zhenxiang.superimage.intent.InputImageIntentManager
 import com.zhenxiang.superimage.model.DataState
@@ -28,7 +28,6 @@ import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.component.inject
-import org.koin.core.qualifier.named
 import java.io.File
 import java.io.InputStream
 
@@ -36,7 +35,7 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
 
     private val realESRGANWorkerManager = get<RealESRGANWorkerManager>()
     private val inputImageIntentManager by inject<InputImageIntentManager>()
-    private val dataStore by inject<DataStore<Preferences>>(named(SETTINGS_DATA_STORE))
+    private val dataStore by inject<DataStore<Preferences>>(SETTINGS_DATA_STORE_QUALIFIER)
     private val outputFormatPrefKey = intPreferencesKey("output_format")
     private val upscalingModelPrefKey = intPreferencesKey("upscaling_model")
 
