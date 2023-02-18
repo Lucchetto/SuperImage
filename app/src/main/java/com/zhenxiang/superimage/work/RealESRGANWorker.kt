@@ -40,7 +40,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
-import java.nio.ByteBuffer
 import kotlin.math.roundToInt
 
 class RealESRGANWorker(
@@ -107,6 +106,12 @@ class RealESRGANWorker(
             updateProgress(it)
         }.launchIn(this)
 
+        val bitmap = Bitmap.createBitmap(
+            inputWidth * upscalingScale,
+            inputHeight * upscalingScale,
+            Bitmap.Config.ARGB_8888
+        )
+
         val outputPixels = realESRGAN.runUpscaling(
             progressTracker,
             this,
@@ -119,7 +124,9 @@ class RealESRGANWorker(
         progressUpdateJob.cancelAndJoin()
 
         return if (outputPixels != null) {
-            saveOutputImage(outputPixels, inputWidth * upscalingScale, inputHeight * upscalingScale)
+            bitmap.copyPixelsFromBuffer(outputPixels)
+            realESRGAN.freeDirectBuffer(outputPixels)
+            saveOutputImage(bitmap)
         } else {
             null
         }
@@ -252,11 +259,7 @@ class RealESRGANWorker(
         return if (!outputDirCreated) null else outputDir
     }
 
-    private fun saveOutputImage(pixels: ByteBuffer, width: Int, height: Int): Uri? {
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
-            copyPixelsFromBuffer(pixels)
-            realESRGAN.freeDirectBuffer(pixels)
-        }
+    private fun saveOutputImage(bitmap: Bitmap): Uri? {
         val outputFileName = inputImageName.replaceFileExtension(outputFormat.formatExtension)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
