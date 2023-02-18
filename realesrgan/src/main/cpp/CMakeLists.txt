@@ -54,6 +54,8 @@ find_library( # Sets the name of the path variable.
         # you want CMake to locate.
         log)
 
+find_library(jnigraphics-lib jnigraphics)
+
 include_directories(${EIGEN_INCLUDE})
 
 # Specifies libraries CMake should link to your target library. You
@@ -66,4 +68,5 @@ target_link_libraries( # Specifies the target library.
         # Links the target library to the log library
         # included in the NDK.
         ${log-lib}
+        ${jnigraphics-lib}
         MNN)

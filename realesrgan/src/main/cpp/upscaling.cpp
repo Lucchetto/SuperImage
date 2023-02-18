@@ -21,9 +21,9 @@ void pixels_matrix_to_float_array(const Eigen::MatrixXi& tile, float* float_buff
     const int blue_start_index = tile_size * 2;
     for (int i = 0; i < tile_size; i++) {
         // Alpha is ignored
-        float_buffer[i] = (float)((tile_data[i] >> 16) & 0xff) / 255.0;
+        float_buffer[i] = (float)((tile_data[i]) & 0xff) / 255.0;
         float_buffer[i + green_start_index] = (float)((tile_data[i] >> 8) & 0xff) / 255.0;
-        float_buffer[i + blue_start_index] = (float)((tile_data[i]) & 0xff) / 255.0;
+        float_buffer[i + blue_start_index] = (float)((tile_data[i] >> 16) & 0xff) / 255.0;;
     }
 }
 
@@ -85,28 +85,21 @@ std::pair<int, int> calculate_axis_padding(const int position, const int axis_si
     }
 }
 
-output_image process_tiles(
+void process_tiles(
         JNIEnv* jni_env,
         jobject progress_tracker,
         jobject coroutine_scope,
         const ImageTileInterpreter& interpreter,
-        const Eigen::MatrixXi& image_matrix,
+        const Eigen::MatrixXi& input_image_matrix,
+        Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>& output_image_matrix,
         const int scale,
         const int padding) {
 
     const auto start = std::chrono::high_resolution_clock::now();
 
     const int tile_size = interpreter.tile_size;
-    const int height = image_matrix.rows();
-    const int width = image_matrix.cols();
-    const int output_height = height * scale;
-    const int output_width = width * scale;
-
-    int* output_image_pixels = (int*) malloc(output_height * output_width * sizeof(int));
-    Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> output_image_matrix(
-            output_image_pixels,
-            output_height,
-            output_width);
+    const int height = input_image_matrix.rows();
+    const int width = input_image_matrix.cols();
 
     int y = 0;
     int last_row_height = 0;
@@ -122,7 +115,7 @@ output_image process_tiles(
             std::pair<int, int> x_padding = calculate_axis_padding(x, width, tile_size, padding);
 
             // Get tile of pixels to process keeping, apply left padding as offset that will be cropped later
-            Eigen::MatrixXi tile = image_matrix.block(y - y_padding.first, x - x_padding.first, tile_size, tile_size);
+            Eigen::MatrixXi tile = input_image_matrix.block(y - y_padding.first, x - x_padding.first, tile_size, tile_size);
 
             // Feed input into tensor
             pixels_matrix_to_float_array(tile, interpreter.input_buffer);
@@ -180,29 +173,26 @@ output_image process_tiles(
             y += last_row_height;
         }
     }
-
-    return {
-        .data = output_image_pixels,
-        .size = output_image_matrix.size()
-    };
 }
 
-output_image run_inference(
+void run_inference(
         JNIEnv* jni_env,
         jobject progress_tracker,
         jobject coroutine_scope,
         const mnn_model* model,
         int scale,
-        const Eigen::MatrixXi& input_image) {
+        const Eigen::MatrixXi& input_image_matrix,
+        Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>& output_image_matrix) {
 
     const auto interpreter = ImageTileInterpreter(model, REALESRGAN_INPUT_TILE_SIZE);
 
-    return process_tiles(
+    process_tiles(
             jni_env,
             progress_tracker,
             coroutine_scope,
             interpreter,
-            input_image,
+            input_image_matrix,
+            output_image_matrix,
             scale,
             REALESRGAN_INPUT_TILE_PADDING);
 }

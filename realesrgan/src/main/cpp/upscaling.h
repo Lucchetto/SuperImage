@@ -15,17 +15,13 @@
 #define REALESRGAN_INPUT_TILE_SIZE 84
 #define REALESRGAN_INPUT_TILE_PADDING 10
 
-struct output_image {
-    const int* data;
-    const long size;
-};
-
-output_image run_inference(
+void run_inference(
         JNIEnv* jni_env,
         jobject progress_tracker,
         jobject coroutine_scope,
         const mnn_model* model,
         int scale,
-        const Eigen::MatrixXi& input_image);
+        const Eigen::MatrixXi& input_image_matrix,
+        Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>& output_image_matrix);
 
 #endif //SUPERIMAGE_UPSCALING_H
