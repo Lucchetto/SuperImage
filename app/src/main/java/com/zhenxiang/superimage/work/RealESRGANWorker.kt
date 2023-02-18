@@ -93,8 +93,6 @@ class RealESRGANWorker(
         }
         val inputBitmap = getInputBitmap() ?: return null
         val upscalingModel = getUpscalingModel() ?: return null
-        val inputWidth = inputBitmap.width
-        val inputHeight = inputBitmap.height
 
         setupProgressNotificationBuilder()
         setForeground(createForegroundInfo())
@@ -105,8 +103,8 @@ class RealESRGANWorker(
         }.launchIn(this)
 
         val outputBitmap = Bitmap.createBitmap(
-            inputWidth * upscalingScale,
-            inputHeight * upscalingScale,
+            inputBitmap.width * upscalingScale,
+            inputBitmap.height * upscalingScale,
             Bitmap.Config.ARGB_8888
         )
 
@@ -116,8 +114,6 @@ class RealESRGANWorker(
             upscalingModel,
             upscalingScale,
             inputBitmap,
-            inputWidth,
-            inputHeight,
             outputBitmap
         )
         progressUpdateJob.cancelAndJoin()

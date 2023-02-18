@@ -11,8 +11,6 @@ class RealESRGAN {
         modelData: ByteArray,
         scale: Int,
         inputBitmap: Bitmap,
-        inputImageWidth: Int,
-        inputImageHeight: Int,
         outputBitmap: Bitmap
     )
 
