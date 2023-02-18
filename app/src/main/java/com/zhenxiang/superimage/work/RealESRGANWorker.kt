@@ -108,7 +108,7 @@ class RealESRGANWorker(
             Bitmap.Config.ARGB_8888
         )
 
-        realESRGAN.runUpscaling(
+        val result = realESRGAN.runUpscaling(
             progressTracker,
             this,
             upscalingModel,
@@ -118,7 +118,7 @@ class RealESRGANWorker(
         )
         progressUpdateJob.cancelAndJoin()
 
-        return saveOutputImage(outputBitmap)
+        return if (result == 0) saveOutputImage(outputBitmap) else null
     }
 
     private fun setupProgressNotificationBuilder() {

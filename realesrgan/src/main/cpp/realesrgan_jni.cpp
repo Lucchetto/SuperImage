@@ -3,10 +3,11 @@
 #include <string>
 
 #include "bitmap_utils.h"
+#include "image_tile_interpreter.h"
 #include "mnn_model.h"
 #include "upscaling.h"
 
-extern "C" JNIEXPORT void JNICALL
+extern "C" JNIEXPORT jint JNICALL
 Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
         JNIEnv *env,
         jobject /* thiz */,
@@ -36,10 +37,18 @@ Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
             input_image_matrix.rows() * scale,
             input_image_matrix.cols() * scale);
 
-    run_inference(env, progress_tracker, coroutine_scope, &model, scale, input_image_matrix, output_image_matrix);
+    int result = 0;
+
+    try {
+        run_inference(env, progress_tracker, coroutine_scope, &model, scale, input_image_matrix, output_image_matrix);
+    } catch (ImageTileInterpreterException& e) {
+        result = e.error;
+    }
 
     // Cleanup and return data
     env->ReleaseByteArrayElements(model_data_jarray, model.data, JNI_OK);
     AndroidBitmap_unlockPixels(env, input_bitmap);
     AndroidBitmap_unlockPixels(env, output_bitmap);
+
+    return result;
 }

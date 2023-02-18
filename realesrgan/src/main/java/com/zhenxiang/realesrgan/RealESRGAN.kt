@@ -12,7 +12,7 @@ class RealESRGAN {
         scale: Int,
         inputBitmap: Bitmap,
         outputBitmap: Bitmap
-    )
+    ): Int
 
     companion object {
         // Used to load the 'realesrgan' library on application startup.

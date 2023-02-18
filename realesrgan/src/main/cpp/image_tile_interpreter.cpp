@@ -19,9 +19,13 @@ ImageTileInterpreter::ImageTileInterpreter(const mnn_model* model, const int til
 
     interpreter = MNN::Interpreter::createFromBuffer(model->data, model->size);
     if (interpreter == nullptr) {
-        throw std::runtime_error("Failed to create MNN interpreter");
+        throw ImageTileInterpreterException(ImageTileInterpreterException::Error::CreateInterpreterFailed);
     }
+
     session = interpreter->createSession(config);
+    if (session == nullptr) {
+        throw ImageTileInterpreterException(ImageTileInterpreterException::Error::CreateBackendFailed);
+    }
 
     interpreter_input = interpreter->getSessionInput(session, nullptr);
     interpreter->resizeTensor(interpreter_input, 1, REALESRGAN_IMAGE_CHANNELS, tile_size, tile_size);

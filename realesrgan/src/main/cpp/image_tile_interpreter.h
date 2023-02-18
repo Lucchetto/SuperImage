@@ -11,6 +11,30 @@
 
 #define REALESRGAN_IMAGE_CHANNELS 3
 
+
+class ImageTileInterpreterException : public std::exception {
+
+public:
+
+    enum Error {
+        CreateInterpreterFailed = 1,
+        CreateBackendFailed = 2
+    };
+
+    const Error error;
+
+    ImageTileInterpreterException(Error error) : error(error) {}
+
+    const char* what() const noexcept override {
+        switch (error) {
+            case Error::CreateInterpreterFailed:
+                return "Failed to create MNN interpreter";
+            case Error::CreateBackendFailed:
+                return "Failed to create MNN backend";
+        }
+    }
+};
+
 class ImageTileInterpreter {
 
 public:
