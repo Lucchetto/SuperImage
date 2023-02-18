@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil.request.ImageRequest
 import coil.transition.CrossfadeTransition
+import com.zhenxiang.realesrgan.InterpreterError
 import com.zhenxiang.realesrgan.JNIProgressTracker
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.BuildConfig
@@ -378,11 +379,20 @@ private fun UpscalingWork(
     onOpenOutputImageClicked: (Intent) -> Unit,
 ) = MonoAlertDialog(
     onDismissRequest = onDismissRequest,
+    title = if (progress is RealESRGANWorker.Progress.Failed && progress.error == InterpreterError.CREATE_SESSION) {
+        { Text(stringResource(id = R.string.upscaling_worker_error_no_backend_title)) }
+    } else {
+        null
+    },
     content = {
         when (progress) {
-            RealESRGANWorker.Progress.Failed -> Text(
+            is RealESRGANWorker.Progress.Failed -> Text(
                 modifier = Modifier.padding(it),
-                text = stringResource(id = R.string.upscaling_worker_error_notification_title, inputData.originalFileName)
+                text = if (progress.error == InterpreterError.CREATE_SESSION) {
+                    stringResource(id = R.string.upscaling_worker_error_no_backend_desc)
+                } else {
+                    stringResource(id = R.string.upscaling_worker_error_notification_title, inputData.originalFileName)
+                }
             )
             is RealESRGANWorker.Progress.Running -> {
                 Column(
@@ -431,17 +441,21 @@ private fun UpscalingWork(
     },
     buttons = {
         when (progress) {
-            RealESRGANWorker.Progress.Failed -> {
-                MonoCancelDialogButton(onDismissRequest)
-                RowSpacer()
-                MonoButton(onClick = onRetryClicked) {
-                    MonoButtonIcon(
-                        painterResource(id = R.drawable.ic_arrow_clockwise_24),
-                        contentDescription = null
-                    )
-                    Text(
-                        stringResource(id = R.string.retry)
-                    )
+            is RealESRGANWorker.Progress.Failed -> {
+                if (progress.error != InterpreterError.CREATE_SESSION) {
+                    MonoCancelDialogButton(onDismissRequest)
+                    RowSpacer()
+                    MonoButton(onClick = onRetryClicked) {
+                        MonoButtonIcon(
+                            painterResource(id = R.drawable.ic_arrow_clockwise_24),
+                            contentDescription = null
+                        )
+                        Text(
+                            stringResource(id = R.string.retry)
+                        )
+                    }
+                } else {
+                    MonoCloseDialogButton(onDismissRequest)
                 }
             }
             is RealESRGANWorker.Progress.Running -> {
@@ -486,7 +500,21 @@ private fun UpscalingWorkRunningPreview() = MonoTheme {
 private fun UpscalingWorkFailedPreview() = MonoTheme {
     UpscalingWork(
         inputData = RealESRGANWorker.InputData("Bliss.jpg", "", OutputFormat.PNG, UpscalingModel.X4_PLUS),
-        progress = RealESRGANWorker.Progress.Failed,
+        progress = RealESRGANWorker.Progress.Failed(InterpreterError.UNKNOWN),
+        onDismissRequest = {},
+        onCancelClicked = {},
+        onRetryClicked = {},
+        onOpenOutputImageClicked = {}
+    )
+}
+
+
+@Preview
+@Composable
+private fun UpscalingWorkFailedNoBackendPreview() = MonoTheme {
+    UpscalingWork(
+        inputData = RealESRGANWorker.InputData("Bliss.jpg", "", OutputFormat.PNG, UpscalingModel.X4_PLUS),
+        progress = RealESRGANWorker.Progress.Failed(InterpreterError.CREATE_SESSION),
         onDismissRequest = {},
         onCancelClicked = {},
         onRetryClicked = {},

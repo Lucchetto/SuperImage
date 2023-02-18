@@ -84,7 +84,7 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
             inputImageIntentManager.imageUriFlow.collect {
                 when (realESRGANWorkerManager.workProgressFlow.value?.second) {
                     is RealESRGANWorker.Progress.Running -> {}
-                    RealESRGANWorker.Progress.Failed, is RealESRGANWorker.Progress.Success -> {
+                    is RealESRGANWorker.Progress.Failed, is RealESRGANWorker.Progress.Success -> {
                         consumeWorkCompleted()
                         clearSelectedImage()
                         loadImage(it)

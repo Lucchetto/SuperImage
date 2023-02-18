@@ -59,6 +59,8 @@
     <string name="upscaling_worker_notification_title">Upscaling %1$s</string>
     <string name="upscaling_worker_notification_desc">Your device may slow down during the process</string>
     <string name="upscaling_worker_error_notification_title">An error occurred while upscaling %1$s</string>
+    <string name="upscaling_worker_error_no_backend_title">Unsupported device</string>
+    <string name="upscaling_worker_error_no_backend_desc">Your device doesn\'t support Vulkan or OpenCL required to upscale images</string>
     <string name="upscaling_worker_success_notification_title">%1$s upscaled successfully !</string>
     <string name="upscaling_worker_success_notification_desc">Click here to open the image</string>
     <string name="upscaling_worker_progress_notification_channel_name">Upscaling progress</string>

@@ -23,21 +23,20 @@ import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.*
+import com.zhenxiang.realesrgan.InterpreterError
 import com.zhenxiang.realesrgan.JNIProgressTracker
 import com.zhenxiang.realesrgan.RealESRGAN
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.R
+import com.zhenxiang.superimage.model.DataResult
 import com.zhenxiang.superimage.model.OutputFormat
 import com.zhenxiang.superimage.utils.FileUtils
 import com.zhenxiang.superimage.utils.IntentUtils
 import com.zhenxiang.superimage.utils.compress
 import com.zhenxiang.superimage.utils.replaceFileExtension
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import kotlin.math.roundToInt
@@ -68,26 +67,32 @@ class RealESRGANWorker(
     @SuppressLint("MissingPermission")
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val startMillis = SystemClock.elapsedRealtime()
-        val outputUri = actualWork()
+        val resultData = actualWork()
         val executionTime = SystemClock.elapsedRealtime() - startMillis
+
         // Don't send result notification if app is in foreground or permission denied
         if (!ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) && notificationPermission) {
-            notificationManager.notifyAutoId(buildResultNotification(outputUri))
+            notificationManager.notifyAutoId(buildResultNotification(resultData))
         }
-        outputUri?.let {
-            Result.success(
+
+        when (resultData) {
+            is DataResult.Success -> Result.success(
                 workDataOf(
-                    OUTPUT_FILE_URI_PARAM to it.toString(),
+                    OUTPUT_FILE_URI_PARAM to resultData.data.toString(),
                     OUTPUT_EXECUTION_TIME_PARAM to executionTime
                 )
             )
-        } ?: Result.failure()
+            is DataResult.Error -> Result.failure(
+                workDataOf(OUTPUT_ERROR_PARAM to resultData.error)
+            )
+            null -> Result.failure()
+        }
     }
 
     /**
      * @return the uri of the saved output image
      */
-    private suspend fun CoroutineScope.actualWork(): Uri? {
+    private suspend fun CoroutineScope.actualWork(): DataResult<Uri, Int>? {
         if (upscalingScale < 2) {
             return null
         }
@@ -118,7 +123,11 @@ class RealESRGANWorker(
         )
         progressUpdateJob.cancelAndJoin()
 
-        return if (result == 0) saveOutputImage(outputBitmap) else null
+        return if (result == 0) {
+            saveOutputImage(outputBitmap)?.let { DataResult.Success(it) }
+        } else {
+            DataResult.Error(result)
+        }
     }
 
     private fun setupProgressNotificationBuilder() {
@@ -193,7 +202,7 @@ class RealESRGANWorker(
         }
     }
 
-    private fun buildResultNotification(outputUri: Uri?) = with(applicationContext) {
+    private fun buildResultNotification(dataResult: DataResult<Uri, Int>?) = with(applicationContext) {
         val notificationBuilder = NotificationCompat.Builder(this, RESULT_NOTIFICATION_CHANNEL_ID)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannelCompat.Builder(
@@ -207,19 +216,27 @@ class RealESRGANWorker(
             notificationBuilder.priority = NotificationCompat.PRIORITY_HIGH
         }
 
-        outputUri?.let {
+        if (dataResult is DataResult.Success) {
             notificationBuilder.apply {
                 setTitleAndTicker(getString(R.string.upscaling_worker_success_notification_title, inputImageName))
                 setSmallIcon(R.drawable.outline_photo_size_select_large_24)
                 setContentText(getString(R.string.upscaling_worker_success_notification_desc))
                 setAutoCancel(true)
                 setContentIntent(
-                    IntentUtils.notificationPendingIntent(this@with, IntentUtils.actionViewNewTask(it))
+                    IntentUtils.notificationPendingIntent(
+                        this@with,
+                        IntentUtils.actionViewNewTask(dataResult.data)
+                    )
                 )
             }.build()
-        } ?: run {
+        } else {
             notificationBuilder.apply {
-                setTitleAndTicker(getString(R.string.upscaling_worker_error_notification_title, inputImageName))
+                if (InterpreterError.fromNativeErrorEnum((dataResult as? DataResult.Error)?.error) == InterpreterError.CREATE_SESSION) {
+                    setTitleAndTicker(getString(R.string.upscaling_worker_error_no_backend_title))
+                    setContentText(getString(R.string.upscaling_worker_error_no_backend_desc))
+                } else {
+                    setTitleAndTicker(getString(R.string.upscaling_worker_error_notification_title, inputImageName))
+                }
                 setSmallIcon(R.drawable.outline_photo_size_select_large_24)
                 setAutoCancel(true)
                 setContentIntent(IntentUtils.mainActivityPendingIntent(this@with))
@@ -315,7 +332,7 @@ class RealESRGANWorker(
          */
         data class Success(val outputFileUri: Uri, val executionTime: Long): Progress
 
-        object Failed: Progress
+        data class Failed(val error: InterpreterError): Progress
 
         companion object {
 
@@ -334,7 +351,11 @@ class RealESRGANWorker(
                     workInfo.outputData.getString(OUTPUT_FILE_URI_PARAM)!!.toUri(),
                     workInfo.outputData.getLong(OUTPUT_EXECUTION_TIME_PARAM, 0)
                 )
-                WorkInfo.State.FAILED -> Failed
+                WorkInfo.State.FAILED -> Failed(
+                    InterpreterError.fromNativeErrorEnum(
+                        workInfo.outputData.getInt(OUTPUT_ERROR_PARAM, -1)
+                    )
+                )
                 WorkInfo.State.CANCELLED -> null
             }
         }
@@ -349,6 +370,7 @@ class RealESRGANWorker(
         private const val OUTPUT_IMAGE_FORMAT_PARAM = "output_format"
         private const val OUTPUT_FILE_URI_PARAM = "output_uri"
         private const val OUTPUT_EXECUTION_TIME_PARAM = "exec_time"
+        private const val OUTPUT_ERROR_PARAM = "output_error"
         private const val UPSCALING_MODEL_PATH_PARAM = "model_path"
         private const val UPSCALING_SCALE_PARAM = "scale"
 

@@ -5,7 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 
 class RealESRGAN {
 
-    external suspend fun runUpscaling(
+    external fun runUpscaling(
         progressTracker: JNIProgressTracker,
         coroutineScope: CoroutineScope,
         modelData: ByteArray,
