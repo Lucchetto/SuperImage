@@ -61,8 +61,9 @@ class RealESRGANWorker(
     private val outputFormat = params.inputData.getString(OUTPUT_IMAGE_FORMAT_PARAM)?.let {
         OutputFormat.fromFormatName(it)
     } ?: throw IllegalArgumentException("Invalid OUTPUT_IMAGE_FORMAT_PARAM")
-    private val upscalingModelAssetPath = params.inputData.getString(UPSCALING_MODEL_PATH_PARAM)
-    private val upscalingScale = params.inputData.getInt(UPSCALING_SCALE_PARAM, -1)
+    private val upscalingModel = UpscalingModel.fromId(
+        params.inputData.getInt(UPSCALING_MODEL_ID_PARAM, Int.MIN_VALUE)
+    ) ?: throw IllegalArgumentException("Invalid UPSCALING_MODEL_ID_PARAM")
     
     @SuppressLint("MissingPermission")
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
@@ -93,11 +94,11 @@ class RealESRGANWorker(
      * @return the uri of the saved output image
      */
     private suspend fun CoroutineScope.actualWork(): DataResult<Uri, Int>? {
-        if (upscalingScale < 2) {
+        if (upscalingModel.scale < 2) {
             return null
         }
         val inputBitmap = getInputBitmap() ?: return null
-        val upscalingModel = getUpscalingModel() ?: return null
+        val upscalingModelData = getUpscalingModelData() ?: return null
 
         setupProgressNotificationBuilder()
         setForeground(createForegroundInfo())
@@ -108,16 +109,16 @@ class RealESRGANWorker(
         }.launchIn(this)
 
         val outputBitmap = Bitmap.createBitmap(
-            inputBitmap.width * upscalingScale,
-            inputBitmap.height * upscalingScale,
+            inputBitmap.width * upscalingModel.scale,
+            inputBitmap.height * upscalingModel.scale,
             Bitmap.Config.ARGB_8888
         )
 
         val result = realESRGAN.runUpscaling(
             progressTracker,
             this,
-            upscalingModel,
-            upscalingScale,
+            upscalingModelData,
+            upscalingModel.scale,
             inputBitmap,
             outputBitmap
         )
@@ -145,7 +146,7 @@ class RealESRGANWorker(
         }
     }
 
-    private fun getUpscalingModel(): ByteArray? = upscalingModelAssetPath?.let { path ->
+    private fun getUpscalingModelData(): ByteArray? = upscalingModel.assetPath.let { path ->
         try {
             applicationContext.assets.open(path).use {
                 it.readBytes()
@@ -313,8 +314,7 @@ class RealESRGANWorker(
             INPUT_IMAGE_TEMP_FILE_NAME_PARAM to tempFileName,
             INPUT_IMAGE_NAME_PARAM to originalFileName,
             OUTPUT_IMAGE_FORMAT_PARAM to outputFormat.formatName,
-            UPSCALING_MODEL_PATH_PARAM to upscalingModel.assetPath,
-            UPSCALING_SCALE_PARAM to upscalingModel.scale
+            UPSCALING_MODEL_ID_PARAM to upscalingModel.id
         )
     }
 
@@ -371,8 +371,7 @@ class RealESRGANWorker(
         private const val OUTPUT_FILE_URI_PARAM = "output_uri"
         private const val OUTPUT_EXECUTION_TIME_PARAM = "exec_time"
         private const val OUTPUT_ERROR_PARAM = "output_error"
-        private const val UPSCALING_MODEL_PATH_PARAM = "model_path"
-        private const val UPSCALING_SCALE_PARAM = "scale"
+        private const val UPSCALING_MODEL_ID_PARAM = "model_id"
 
         private const val PROGRESS_NOTIFICATION_CHANNEL_ID = "progress_ch"
         private const val RESULT_NOTIFICATION_CHANNEL_ID = "result_ch"
