@@ -379,13 +379,6 @@ class RealESRGANWorker(
         private const val PROGRESS_NOTIFICATION_ID = -1
 
         private const val OUTPUT_FOLDER_NAME = "SuperImage"
-
-        private fun getPixels(bitmap: Bitmap): IntArray {
-            val pixels = IntArray(bitmap.width * bitmap.height)
-            bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-
-            return pixels
-        }
     }
 }
 
