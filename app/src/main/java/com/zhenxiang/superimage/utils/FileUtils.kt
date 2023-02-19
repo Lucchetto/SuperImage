@@ -18,22 +18,11 @@ object FileUtils {
                 return it
             }
         }
-        val fileNameNoExt: String
-        val extension: String
-        fileName.lastIndexOf(FILE_EXTENSION_CHAR).let {
-            if (it > -1) {
-                fileNameNoExt = fileName.substring(0, it)
-                extension = fileName.substring(it, fileName.length)
-            } else {
-                fileNameNoExt = fileName
-                extension = ""
-            }
-        }
 
         // Look for existing files with suffix until we find a free filename
         var suffixNumber = 1
         while (true) {
-            val file = File(parentDir, "$fileNameNoExt ($suffixNumber)$extension")
+            val file = File(parentDir, fileName.addFileNameSuffix(" ($suffixNumber)"))
             if (!file.exists()) {
                 return file
             }

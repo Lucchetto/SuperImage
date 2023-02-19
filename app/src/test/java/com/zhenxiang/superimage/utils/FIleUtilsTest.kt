@@ -15,17 +15,17 @@ class FIleUtilsTest {
     fun testNewFileAutoSuffix(): Unit = with(FileUtils) {
         val parentDir = folderRule.newFolder("parent")
         // Create file for first time, no suffix should be added
-        val file = newFileAutoSuffix(parentDir, "file.txt").apply {
+        val file = newFileAutoSuffix(parentDir, "..file.txt").apply {
             createNewFile()
         }
-        assertEquals("file.txt", file.name)
+        assertEquals("..file.txt", file.name)
 
         // The following files will have a suffix
         (1 until 10).forEach {
-            val suffixedFile = newFileAutoSuffix(parentDir, "file.txt").apply {
+            val suffixedFile = newFileAutoSuffix(parentDir, "..file.txt").apply {
                 createNewFile()
             }
-            assertEquals("file ($it).txt", suffixedFile.name)
+            assertEquals("..file ($it).txt", suffixedFile.name)
         }
     }
 }
