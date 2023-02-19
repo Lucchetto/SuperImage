@@ -30,10 +30,7 @@ import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.model.DataResult
 import com.zhenxiang.superimage.model.OutputFormat
-import com.zhenxiang.superimage.utils.FileUtils
-import com.zhenxiang.superimage.utils.IntentUtils
-import com.zhenxiang.superimage.utils.compress
-import com.zhenxiang.superimage.utils.replaceFileExtension
+import com.zhenxiang.superimage.utils.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -267,7 +264,9 @@ class RealESRGANWorker(
     }
 
     private fun saveOutputImage(bitmap: Bitmap): Uri? {
-        val outputFileName = inputImageName.replaceFileExtension(outputFormat.formatExtension)
+        val outputFileName = inputImageName
+            .addFileNameSuffix(upscalingModel.fileNameSuffix)
+            .replaceFileExtension(outputFormat.formatExtension)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val contentValues = ContentValues().apply {

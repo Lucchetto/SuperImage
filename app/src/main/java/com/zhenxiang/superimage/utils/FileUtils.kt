@@ -4,7 +4,7 @@ import java.io.File
 
 object FileUtils {
 
-    private val FILE_EXTENSION_CHAR = '.'
+    val FILE_EXTENSION_CHAR = '.'
 
     /**
      * Create file object with given name, if file with given name already exists append
