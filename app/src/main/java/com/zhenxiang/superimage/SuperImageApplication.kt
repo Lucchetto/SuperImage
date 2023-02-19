@@ -4,6 +4,7 @@ import android.app.Application
 import com.zhenxiang.superimage.datastore.DataStoreModule
 import com.zhenxiang.superimage.datastore.SETTINGS_DATA_STORE_QUALIFIER
 import com.zhenxiang.superimage.intent.InputImageIntentManagerModule
+import com.zhenxiang.superimage.tracking.AppTrackingModule
 import com.zhenxiang.superimage.ui.daynight.DayNightModule
 import com.zhenxiang.superimage.tracking.AppVersionTracking
 import com.zhenxiang.superimage.work.RealESRGANWorkerModule
@@ -31,6 +32,7 @@ class SuperImageApplication: Application(), KoinComponent {
                 DataStoreModule,
                 DayNightModule,
                 InputImageIntentManagerModule,
+                AppTrackingModule
             )
         }
         runBlocking {

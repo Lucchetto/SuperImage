@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.work.*
+import com.zhenxiang.superimage.tracking.AppReviewTracking
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +19,7 @@ import java.util.*
 
 private typealias InputAndProgress = Pair<RealESRGANWorker.InputData, RealESRGANWorker.Progress>
 
-class RealESRGANWorkerManager(private val context: Context) {
+class RealESRGANWorkerManager(private val context: Context, appReviewTracking: AppReviewTracking) {
 
     private var queueWorkJob: Job? = null
 
@@ -42,7 +43,17 @@ class RealESRGANWorkerManager(private val context: Context) {
                 tryEmit(workInfosLiveData.value?.let { infos -> processWorkInfo(infos, currentWorker) })
             }
             workInfosLiveData.observeForever { infos ->
-                tryEmit(currentWorkerLiveData.value?.let { currentWorker -> processWorkInfo(infos, currentWorker) })
+                tryEmit(
+                    currentWorkerLiveData.value?.let { currentWorker ->
+                        val progress = processWorkInfo(infos, currentWorker)
+                        if (progress?.second is RealESRGANWorker.Progress.Success) {
+                            processLifecycle.lifecycleScope.launch {
+                                appReviewTracking.trackUpscalingSuccess()
+                            }
+                        }
+                        progress
+                    }
+                )
             }
         }
     }
