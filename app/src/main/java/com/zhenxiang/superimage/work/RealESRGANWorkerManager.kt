@@ -94,7 +94,6 @@ class RealESRGANWorkerManager(private val context: Context) {
         workProgressFlow.value?.let {
             if (it.second !is RealESRGANWorker.Progress.Running) {
                 currentWorkerLiveData.value = null
-                deleteTempImageFile(getTempFile(context, it.first.tempFileName))
                 return true
             }
         }

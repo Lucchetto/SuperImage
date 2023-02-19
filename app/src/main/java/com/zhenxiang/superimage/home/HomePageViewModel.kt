@@ -154,10 +154,14 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
         realESRGANWorkerManager.clearCurrentWorkProgress()
     }
 
-    fun clearSelectedImage() {
+    fun clearSelectedImage() = _selectedImageFlow.value.let {
         _selectedImageFlow.tryEmit(null)
+        if (it is DataState.Success) {
+            viewModelScope.launch {
+                realESRGANWorkerManager.deleteTempImageFile(it.data.tempFile)
+            }
+        }
     }
-
     private suspend fun readChangelog(): Changelog = try {
         getApplication<Application>().assets.open(BuildConfig.CHANGELOG_ASSET_NAME).reader().use {
             val lines = mutableListOf<String>()
