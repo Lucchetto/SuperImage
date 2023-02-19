@@ -1,5 +1,6 @@
 package com.zhenxiang.superimage.home
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -19,6 +20,8 @@ import com.zhenxiang.superimage.model.Changelog
 import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.model.OutputFormat
+import com.zhenxiang.superimage.playstore.InAppReviewManager
+import com.zhenxiang.superimage.tracking.AppReviewTracking
 import com.zhenxiang.superimage.tracking.AppVersionTracking
 import com.zhenxiang.superimage.work.RealESRGANWorker
 import com.zhenxiang.superimage.work.RealESRGANWorkerManager
@@ -36,6 +39,9 @@ import java.io.File
 import java.io.InputStream
 
 class HomePageViewModel(application: Application): AndroidViewModel(application), KoinComponent {
+
+    private val appReviewTracking by inject<AppReviewTracking>()
+    private val inAppReviewManager = InAppReviewManager(application)
 
     private val realESRGANWorkerManager = get<RealESRGANWorkerManager>()
     private val inputImageIntentManager by inject<InputImageIntentManager>()
@@ -103,6 +109,13 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
         } else {
             showChangelogFlow = MutableStateFlow(Changelog.Hide)
         }
+
+        // Setup user review flow if necessary
+        viewModelScope.launch(Dispatchers.IO) {
+            if (appReviewTracking.shouldShowReview()) {
+                inAppReviewManager.prepareReviewInfo()
+            }
+        }
     }
 
     fun loadImage(imageUri: Uri) {
@@ -138,12 +151,10 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
         }
     }
 
-    fun upscale() {
-        (selectedImageFlow.value as DataState.Success).data.let {
-            realESRGANWorkerManager.beginWork(
-                RealESRGANWorker.InputData(it.fileName, it.tempFile.name, selectedOutputFormatFlow.value, selectedUpscalingModelFlow.value)
-            )
-        }
+    fun upscale() = (selectedImageFlow.value as DataState.Success).data.let {
+        realESRGANWorkerManager.beginWork(
+            RealESRGANWorker.InputData(it.fileName, it.tempFile.name, selectedOutputFormatFlow.value, selectedUpscalingModelFlow.value)
+        )
     }
 
     fun cancelWork() {
@@ -162,6 +173,7 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
             }
         }
     }
+
     private suspend fun readChangelog(): Changelog = try {
         getApplication<Application>().assets.open(BuildConfig.CHANGELOG_ASSET_NAME).reader().use {
             val lines = mutableListOf<String>()
@@ -175,6 +187,12 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
     } catch (e: Exception) {
         Timber.wtf(e)
         Changelog.Hide
+    }
+
+    fun showReviewFlowConditionally(activity: Activity) {
+        if (inAppReviewManager.readyForReview) {
+            inAppReviewManager.launchReviewFlow(activity)
+        }
     }
 }
 

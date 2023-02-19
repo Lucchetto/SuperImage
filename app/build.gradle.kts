@@ -75,6 +75,7 @@ android {
 dependencies {
 
     implementation(project(":common"))
+    implementation(project(":playstore"))
     implementation(project(":realesrgan"))
 
     val compose_version = "1.3.3"

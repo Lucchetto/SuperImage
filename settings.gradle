@@ -17,3 +17,4 @@ rootProject.name = "SuperImage"
 include ':app'
 include ':realesrgan'
 include ':common'
+include ':playstore'

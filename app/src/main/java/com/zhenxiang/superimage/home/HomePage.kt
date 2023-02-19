@@ -2,6 +2,7 @@ package com.zhenxiang.superimage.home
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -79,6 +80,8 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
         }
     }
 
+    val activity = LocalContext.current as Activity
+
     BoxWithConstraints {
         if (constraints.isLandscape) {
             Scaffold(
@@ -124,7 +127,10 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
                             outputFormatFlow = viewModel.selectedOutputFormatFlow,
                             selectedImageState = selectedImageState,
                             onSelectImageClick = { imagePicker.launch(InputImageIntentManager.IMAGE_MIME_TYPE) },
-                            onUpscaleClick = { viewModel.upscale() }
+                            onUpscaleClick = {
+                                viewModel.upscale()
+                                viewModel.showReviewFlowConditionally(activity)
+                            }
                         )
                     }
                 }
@@ -152,7 +158,10 @@ fun HomePage(viewModel: HomePageViewModel, navController: NavHostController) {
                         outputFormatFlow = viewModel.selectedOutputFormatFlow,
                         selectedImageState = selectedImageState,
                         onSelectImageClick = { imagePicker.launch(InputImageIntentManager.IMAGE_MIME_TYPE) },
-                        onUpscaleClick = { viewModel.upscale() }
+                        onUpscaleClick = {
+                            viewModel.upscale()
+                            viewModel.showReviewFlowConditionally(activity)
+                        }
                     )
                 }
             }
