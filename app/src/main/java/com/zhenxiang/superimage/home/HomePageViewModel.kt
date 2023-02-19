@@ -19,7 +19,7 @@ import com.zhenxiang.superimage.model.Changelog
 import com.zhenxiang.superimage.model.DataState
 import com.zhenxiang.superimage.model.InputImage
 import com.zhenxiang.superimage.model.OutputFormat
-import com.zhenxiang.superimage.version.AppVersionUtils
+import com.zhenxiang.superimage.tracking.AppVersionTracking
 import com.zhenxiang.superimage.work.RealESRGANWorker
 import com.zhenxiang.superimage.work.RealESRGANWorkerManager
 import kotlinx.coroutines.Dispatchers
@@ -94,10 +94,10 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
             }
         }
 
-        if (runBlocking { AppVersionUtils.shouldShowChangelog(dataStore) }) {
+        if (runBlocking { AppVersionTracking.shouldShowChangelog(dataStore) }) {
             showChangelogFlow = MutableStateFlow(Changelog.Loading)
             viewModelScope.launch(Dispatchers.IO) {
-                AppVersionUtils.clearShowChangelog(dataStore)
+                AppVersionTracking.clearShowChangelog(dataStore)
                 showChangelogFlow.tryEmit(readChangelog())
             }
         } else {

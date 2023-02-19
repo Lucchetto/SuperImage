@@ -1,4 +1,4 @@
-package com.zhenxiang.superimage.version
+package com.zhenxiang.superimage.tracking
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -10,7 +10,7 @@ import com.zhenxiang.superimage.BuildConfig
 import com.zhenxiang.superimage.utils.appNeverUpdated
 import kotlinx.coroutines.flow.first
 
-object AppVersionUtils {
+object AppVersionTracking {
 
     private val showChangelogKey: Preferences.Key<Boolean>
         get() = booleanPreferencesKey("show_changelog")

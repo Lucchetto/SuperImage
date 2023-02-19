@@ -5,7 +5,7 @@ import com.zhenxiang.superimage.datastore.DataStoreModule
 import com.zhenxiang.superimage.datastore.SETTINGS_DATA_STORE_QUALIFIER
 import com.zhenxiang.superimage.intent.InputImageIntentManagerModule
 import com.zhenxiang.superimage.ui.daynight.DayNightModule
-import com.zhenxiang.superimage.version.AppVersionUtils
+import com.zhenxiang.superimage.tracking.AppVersionTracking
 import com.zhenxiang.superimage.work.RealESRGANWorkerModule
 import kotlinx.coroutines.runBlocking
 import org.koin.android.ext.koin.androidContext
@@ -34,7 +34,7 @@ class SuperImageApplication: Application(), KoinComponent {
             )
         }
         runBlocking {
-            AppVersionUtils.refreshAppVersion(this@SuperImageApplication, get(SETTINGS_DATA_STORE_QUALIFIER))
+            AppVersionTracking.refreshAppVersion(this@SuperImageApplication, get(SETTINGS_DATA_STORE_QUALIFIER))
         }
     }
 }
