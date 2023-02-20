@@ -29,7 +29,7 @@ class InAppReviewManagerTest {
     }
 
     @Test
-    fun testPrepareReviewInfo() {
+    fun testPrepareReviewInfo_whenReviewInfoNull() {
         every { playStoreReviewManager.requestReviewFlow() } returns mockk {
             every { addOnCompleteListener(any()) } returns this
         }
@@ -37,6 +37,18 @@ class InAppReviewManagerTest {
         inAppReviewManager.prepareReviewInfo()
 
         verify(exactly = 1) { playStoreReviewManager.requestReviewFlow() }
+    }
+
+    @Test
+    fun testPrepareReviewInfo_whenReviewInfoAlreadyLoaded() {
+        every { playStoreReviewManager.requestReviewFlow() } returns mockk {
+            every { addOnCompleteListener(any()) } returns this
+        }
+        inAppReviewManager.reviewInfo = mockk()
+
+        inAppReviewManager.prepareReviewInfo()
+
+        verify(inverse = true) { playStoreReviewManager.requestReviewFlow() }
     }
 
     @Test

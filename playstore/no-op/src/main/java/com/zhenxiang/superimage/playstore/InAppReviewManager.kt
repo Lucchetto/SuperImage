@@ -6,7 +6,7 @@ import com.zhenxiang.superimage.playstore.base.BaseInAppReviewManager
 
 class InAppReviewManager(context: Context): BaseInAppReviewManager(context) {
 
-    override val readyForReview = false
+    override val reviewFlowReady = false
 
     override fun prepareReviewInfo() {}
 

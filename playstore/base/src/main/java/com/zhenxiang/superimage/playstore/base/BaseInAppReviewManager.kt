@@ -5,7 +5,7 @@ import android.content.Context
 
 abstract class BaseInAppReviewManager(context: Context) {
 
-    abstract val readyForReview: Boolean
+    abstract val reviewFlowReady: Boolean
 
     abstract fun prepareReviewInfo()
 

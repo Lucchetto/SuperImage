@@ -16,12 +16,12 @@ class AppReviewTracking(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    suspend fun shouldShowReview() = with(dataStore.data.first()) {
+    suspend fun shouldShowReviewFlow() = with(dataStore.data.first()) {
         (this[successfulUpscalingCountKey] ?: 0) >= SHOW_APP_REVIEW_THRESHOLD
     }
 
     companion object {
 
-        private const val SHOW_APP_REVIEW_THRESHOLD = 3
+        private const val SHOW_APP_REVIEW_THRESHOLD = 2
     }
 }

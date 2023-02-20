@@ -43,17 +43,17 @@ class RealESRGANWorkerManager(private val context: Context, appReviewTracking: A
                 tryEmit(workInfosLiveData.value?.let { infos -> processWorkInfo(infos, currentWorker) })
             }
             workInfosLiveData.observeForever { infos ->
-                tryEmit(
-                    currentWorkerLiveData.value?.let { currentWorker ->
-                        val progress = processWorkInfo(infos, currentWorker)
-                        if (progress?.second is RealESRGANWorker.Progress.Success) {
-                            processLifecycle.lifecycleScope.launch {
-                                appReviewTracking.trackUpscalingSuccess()
-                            }
+                currentWorkerLiveData.value?.let { currentWorker ->
+                    val progress = processWorkInfo(infos, currentWorker)
+                    if (progress?.second is RealESRGANWorker.Progress.Success) {
+                        processLifecycle.lifecycleScope.launch(Dispatchers.IO) {
+                            appReviewTracking.trackUpscalingSuccess()
+                            emit(progress)
                         }
-                        progress
+                    } else {
+                        tryEmit(progress)
                     }
-                )
+                }
             }
         }
     }

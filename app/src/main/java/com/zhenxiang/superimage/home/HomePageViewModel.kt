@@ -110,10 +110,19 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
             showChangelogFlow = MutableStateFlow(Changelog.Hide)
         }
 
-        // Setup user review flow if necessary
+        setupShowReviewTracking()
+    }
+
+    private fun setupShowReviewTracking() {
         viewModelScope.launch(Dispatchers.IO) {
-            if (appReviewTracking.shouldShowReview()) {
+            if (appReviewTracking.shouldShowReviewFlow()) {
                 inAppReviewManager.prepareReviewInfo()
+            } else {
+                workProgressFlow.collect {
+                    if (it?.second is RealESRGANWorker.Progress.Success && appReviewTracking.shouldShowReviewFlow()) {
+                        inAppReviewManager.prepareReviewInfo()
+                    }
+                }
             }
         }
     }
@@ -190,7 +199,7 @@ class HomePageViewModel(application: Application): AndroidViewModel(application)
     }
 
     fun showReviewFlowConditionally(activity: Activity) {
-        if (inAppReviewManager.readyForReview) {
+        if (inAppReviewManager.reviewFlowReady) {
             inAppReviewManager.launchReviewFlow(activity)
         }
     }
