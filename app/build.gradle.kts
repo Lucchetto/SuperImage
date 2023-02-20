@@ -26,11 +26,11 @@ android {
     // Copy changelog for app assets
     val copiedChangelogPath = File(buildDir, "generated/changelogAsset")
     val copyArtifactsTask = tasks.register<Copy>("copyChangelog") {
-            delete(copiedChangelogPath)
-            from(File(rootProject.rootDir, "fastlane/metadata/android/en-US/changelogs/${defaultConfig.versionCode}.txt"))
-            into(copiedChangelogPath)
-            rename { changelogFileName }
-        }
+        delete(copiedChangelogPath)
+        from(File(rootProject.rootDir, "fastlane/metadata/android/en-US/changelogs/${defaultConfig.versionCode}.txt"))
+        into(copiedChangelogPath)
+        rename { changelogFileName }
+    }
     tasks.preBuild {
         dependsOn(copyArtifactsTask)
     }
@@ -46,6 +46,18 @@ android {
             versionNameSuffix = "-DEBUG"
         }
     }
+
+    flavorDimensions.add("version")
+
+    productFlavors {
+        create("free") {
+            dimension = "version"
+        }
+        create("playstore") {
+            dimension = "version"
+        }
+    }
+
     sourceSets {
         getByName("main") {
             // Add changelog to assets
@@ -75,7 +87,8 @@ android {
 dependencies {
 
     implementation(project(":common"))
-    implementation(project(":playstore"))
+    "freeImplementation"(project(":playstore:no-op"))
+    "playstoreImplementation"(project(":playstore:impl"))
     implementation(project(":realesrgan"))
 
     val compose_version = "1.3.3"

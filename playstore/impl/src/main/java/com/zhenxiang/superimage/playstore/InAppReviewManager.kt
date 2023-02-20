@@ -5,10 +5,11 @@ import android.content.Context
 import androidx.annotation.VisibleForTesting
 import com.google.android.play.core.review.ReviewInfo
 import com.google.android.play.core.review.ReviewManagerFactory
+import com.zhenxiang.superimage.playstore.base.BaseInAppReviewManager
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
-class InAppReviewManager(context: Context) {
+class InAppReviewManager(context: Context): BaseInAppReviewManager(context) {
 
     private val manager = ReviewManagerFactory.create(context)
 
@@ -17,10 +18,10 @@ class InAppReviewManager(context: Context) {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     var reviewInfo: ReviewInfo? = null
 
-    val readyForReview: Boolean
+    override val readyForReview: Boolean
         get() = reviewInfo != null
 
-    fun prepareReviewInfo() {
+    override fun prepareReviewInfo() {
         if (busy) {
             return
         }
@@ -31,7 +32,7 @@ class InAppReviewManager(context: Context) {
         }
     }
 
-    fun launchReviewFlow(activity: Activity) {
+    override fun launchReviewFlow(activity: Activity) {
         reviewInfo?.let { info ->
             reviewInfo = null
             manager.launchReviewFlow(activity, info)

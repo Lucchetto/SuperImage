@@ -13,6 +13,9 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/common" />
             <option value="$PROJECT_DIR$/playstore" />
+            <option value="$PROJECT_DIR$/playstore/base" />
+            <option value="$PROJECT_DIR$/playstore/impl" />
+            <option value="$PROJECT_DIR$/playstore/no-op" />
             <option value="$PROJECT_DIR$/realesrgan" />
           </set>
         </option>
