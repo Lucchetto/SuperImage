@@ -1,0 +1,4 @@
+Reduced memory consumption
+Fixed receiving input image shared from other apps
+Add suffix to output image's filename
+Fixed crash when device is not compatible
