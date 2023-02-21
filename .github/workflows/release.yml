@@ -8,7 +8,7 @@ on:
 jobs:
   release:
     name: Release APK
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -17,13 +17,27 @@ jobs:
       - name: Checkout submodules
         run: git submodule update --init --recursive
 
-      - name: Build signed APK
-        uses: victorbnl/build-signed-apk@468e42e6202df7657edb32bad92261c10e24f582
+      - name: Install JDK
+        uses: actions/setup-java@v3
         with:
-          keystore_b64: ${{ secrets.keystore }}
-          keystore_password: ${{ secrets.keystore_password }}
-          key_alias: ${{ secrets.key_alias }}
-          key_password: ${{ secrets.key_password }}
+          distribution: temurin
+          java-version: 11
+
+      - name: Prepare signing keystore
+        run: echo "${{ secrets.keystore }}" | base64 -d > ${{ github.workspace }}/signing-key.jks
+
+      - name: Build signed APK
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: |
+            assembleFreeRelease
+            -Pandroid.injected.signing.store.file=${{ github.workspace }}/signing-key.jks
+            -Pandroid.injected.signing.store.password=${{ secrets.keystore_password }}
+            -Pandroid.injected.signing.key.alias=${{ secrets.key_alias }}
+            -Pandroid.injected.signing.key.password=${{ secrets.key_password }}
+
+      - name: Cleanup signing keystore
+        run: rm $GITHUB_WORKSPACE/signing-key.jks
 
       - name: Release APK
         uses: softprops/action-gh-release@v1
@@ -32,4 +46,4 @@ jobs:
         with:
           draft: true
           files: |
-            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/apk/free/release/app-free-release.apk
