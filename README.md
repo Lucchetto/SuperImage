@@ -1,9 +1,13 @@
 # SuperImage
 **Sharpen your low-resolution pictures with the power of AI upscaling**<br/><br/>
 SuperImage is a neural network based image upscaling application for Android built with the [MNN deep learning framework](https://github.com/alibaba/MNN) and [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN).<br/><br/>
-<a href='https://play.google.com/store/apps/details?id=com.zhenxiang.superimage&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img height="100" alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'/></a>
 
 The input image is processed in tiles on the device GPU, using a pre-trained Real-ESRGAN model. The tiles are then merged into the final high-resolution image. This application requires Vulkan or OpenCL support and Android 7 or above
+
+<a href='https://play.google.com/store/apps/details?id=com.zhenxiang.superimage'><img height="80" alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'/></a>
+<a href='https://f-droid.org/packages/com.zhenxiang.superimage/'><img height="80" alt='Get it on F-Droid' src='https://fdroid.gitlab.io/artwork/badge/get-it-on.png'/></a>
+
+Or get the latest APK from the [Releases Section](https://github.com/Lucchetto/SuperImage/releases/latest).
 
 ## 🖼 Samples
 <div>
