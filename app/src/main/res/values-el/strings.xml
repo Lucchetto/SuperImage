@@ -1,0 +1,68 @@
+<resources>
+    <string name="app_name">SuperImage</string>
+
+    <string name="time_unit_space">\u0020</string>
+    <string name="word_space">\u0020</string>
+    <plurals name="hour">
+        <item quantity="one">ώρα</item>
+        <item quantity="other">ώρες</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="one">λεπτό</item>
+        <item quantity="other">λεπτά</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="one">δευτ.</item>
+        <item quantity="other">δευτ.</item>
+    </plurals>
+
+    <string name="progress_template">%d%%</string>
+    <string name="progress_and_estimated_time_template">%1$d%% (περίπου %2$s απομένουν)</string>
+    <string name="progress_indeterminate">Αρχικοποίηση…</string>
+    <string name="open">Άνοιγμα</string>
+    <string name="retry">Επανάληψη</string>
+    <string name="close">Κλείσιμο</string>
+    <string name="cancel">Άκυρο</string>
+    <string name="settings">Ρυθμίσεις</string>
+    <string name="back">Πίσω</string>
+
+    <string name="original_image_resolution_label">Αρχική ανάλυση: %1$sx%2$s</string>
+    <string name="output_image_resolution_label">Τελική ανάλυση: %1$sx%2$s</string>
+    <string name="select_image_wizard_hint">Ξεκινήστε, επιλέγοντας μια εικόνα για μεγέθυνση</string>
+    <string name="select_image_label">Επιλογή εικόνας</string>
+    <string name="change_image_label">Αλλαγή εικόνας</string>
+    <string name="upscale_label">Μεγέθυνση</string>
+    <string name="selected_mode_label">Λειτουργία</string>
+    <string name="upscaling_options_title">Επιλογές μεγέθυνσης</string>
+    <string name="output_format_title">Αρχείο εξόδου</string>
+    <string name="execution_time_template">Χρόνος εκτέλεσης: %1$s</string>
+    <string name="changelog_dialog_title">Τι νέο υπάρχει</string>
+    <string name="version_template">Έκδοση %1$s</string>
+    <string name="changelog_item_template">- %1$s</string>
+
+    <string name="permission_denied_title">Η άδεια απορρίφθηκε</string>
+    <string name="storage_permission_denied_desc">Παρακαλούμε χορηγήστε άδεια εγγραφής αρχείων στη συσκευή</string>
+    <string name="storage_permission_denied_forever_desc">Παρακαλούμε δώστε άδεια εγγραφής αρχείων στη συσκευή, στις ρυθμίσεις</string>
+    <string name="open_settings_label">Άνοιγμα ρυθμίσεων</string>
+    <string name="grant_permission_label">Χορήγηση άδειας</string>
+
+    <string name="theme_title">Θέμα</string>
+    <string name="auto_label">Συστήματος</string>
+    <string name="light_label">Φωτεινό</string>
+    <string name="dark_label">Σκοτεινό</string>
+    <string name="project_page_title">Σελίδα έργου</string>
+    <string name="project_page_desc">Κάντε ερωτήσεις ή συνεισφέρετε στο GitHub</string>
+    <string name="telegram_group_title">Ομάδα Telegram</string>
+    <string name="telegram_group_desc">Γίνετε μέλος της ομάδας για υποστήριξη, συζητήσεις σχετικά με την επεξεργασία εικόνας AI και πράγματα εκτός θέματος</string>
+    <string name="version_title">Έκδοση</string>
+
+    <string name="upscaling_worker_notification_title">Μεγέθυνση %1$s</string>
+    <string name="upscaling_worker_notification_desc">Η συσκευή σας ενδέχεται να επιβραδυνθεί κατά τη διάρκεια της διαδικασίας</string>
+    <string name="upscaling_worker_error_notification_title">Παρουσιάστηκε σφάλμα κατά τη μεγέθυνση της %1$s</string>
+    <string name="upscaling_worker_error_no_backend_title">Μη υποστηριζόμενη συσκευή</string>
+    <string name="upscaling_worker_error_no_backend_desc">Η συσκευή σας δεν υποστηρίζει Vulkan ή OpenCL που απαιτούνται για τη μεγέθυνση των εικόνων</string>
+    <string name="upscaling_worker_success_notification_title">%1$s μεγεθύνθηκε επιτυχώς!</string>
+    <string name="upscaling_worker_success_notification_desc">Κάντε κλικ εδώ για να ανοίξετε την εικόνα</string>
+    <string name="upscaling_worker_progress_notification_channel_name">Πρόοδος μεγέθυνσης</string>
+    <string name="upscaling_worker_result_notification_channel_name">Αποτέλεσμα μεγέθυνσης</string>
+</resources>
