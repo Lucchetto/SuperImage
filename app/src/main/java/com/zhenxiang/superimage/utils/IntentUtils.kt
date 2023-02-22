@@ -46,3 +46,11 @@ inline fun <reified T : Parcelable> Intent.getParcelableExtraCompat(
 } else {
     getParcelableExtra(name)
 }
+
+fun Intent.removeFlagsCompat(flags: Int) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        removeFlags(flags)
+    } else {
+        this.flags = this.flags and flags.inv()
+    }
+}
