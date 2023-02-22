@@ -1,4 +1,4 @@
-package com.zhenxiang.superimage.model
+package com.zhenxiang.superimage.shared.model
 
 import java.io.File
 

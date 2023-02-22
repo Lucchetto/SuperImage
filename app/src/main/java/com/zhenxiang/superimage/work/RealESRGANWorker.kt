@@ -28,8 +28,8 @@ import com.zhenxiang.realesrgan.JNIProgressTracker
 import com.zhenxiang.realesrgan.RealESRGAN
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.R
-import com.zhenxiang.superimage.model.DataResult
-import com.zhenxiang.superimage.model.OutputFormat
+import com.zhenxiang.superimage.shared.model.DataResult
+import com.zhenxiang.superimage.shared.model.OutputFormat
 import com.zhenxiang.superimage.utils.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn

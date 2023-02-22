@@ -6,7 +6,7 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import com.zhenxiang.superimage.model.OutputFormat
+import com.zhenxiang.superimage.shared.model.OutputFormat
 import timber.log.Timber
 import java.io.OutputStream
 

@@ -38,10 +38,10 @@ import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.BuildConfig
 import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.intent.InputImageIntentManager
-import com.zhenxiang.superimage.model.Changelog
-import com.zhenxiang.superimage.model.DataState
-import com.zhenxiang.superimage.model.InputImage
-import com.zhenxiang.superimage.model.OutputFormat
+import com.zhenxiang.superimage.shared.model.Changelog
+import com.zhenxiang.superimage.shared.model.DataState
+import com.zhenxiang.superimage.shared.model.InputImage
+import com.zhenxiang.superimage.shared.model.OutputFormat
 import com.zhenxiang.superimage.navigation.RootComponent
 import com.zhenxiang.superimage.ui.form.MonoDropDownMenu
 import com.zhenxiang.superimage.ui.mono.*

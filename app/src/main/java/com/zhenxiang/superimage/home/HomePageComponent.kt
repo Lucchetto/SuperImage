@@ -15,10 +15,10 @@ import com.zhenxiang.superimage.BuildConfig
 import com.zhenxiang.superimage.datastore.SETTINGS_DATA_STORE_QUALIFIER
 import com.zhenxiang.superimage.datastore.writeIntIdentifiable
 import com.zhenxiang.superimage.intent.InputImageIntentManager
-import com.zhenxiang.superimage.model.Changelog
-import com.zhenxiang.superimage.model.DataState
-import com.zhenxiang.superimage.model.InputImage
-import com.zhenxiang.superimage.model.OutputFormat
+import com.zhenxiang.superimage.shared.model.Changelog
+import com.zhenxiang.superimage.shared.model.DataState
+import com.zhenxiang.superimage.shared.model.InputImage
+import com.zhenxiang.superimage.shared.model.OutputFormat
 import com.zhenxiang.superimage.navigation.ChildComponent
 import com.zhenxiang.superimage.navigation.RootComponent
 import com.zhenxiang.superimage.navigation.getViewModel

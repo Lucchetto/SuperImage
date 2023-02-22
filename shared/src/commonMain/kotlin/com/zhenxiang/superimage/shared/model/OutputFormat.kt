@@ -1,4 +1,4 @@
-package com.zhenxiang.superimage.model
+package com.zhenxiang.superimage.shared.model
 
 import com.zhenxiang.superimage.common.Identifiable
 
