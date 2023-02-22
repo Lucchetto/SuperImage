@@ -11,7 +11,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/common" />
+            <option value="$PROJECT_DIR$/common-models" />
             <option value="$PROJECT_DIR$/decompose" />
             <option value="$PROJECT_DIR$/playstore" />
             <option value="$PROJECT_DIR$/playstore/base" />

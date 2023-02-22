@@ -10,7 +10,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api(project(":common"))
+                api(project(":common-models"))
             }
         }
         val commonTest by getting {

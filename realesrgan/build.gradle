@@ -46,7 +46,7 @@ android {
 
 dependencies {
 
-    implementation project(path: ':common')
+    implementation project(path: ':common-models')
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
