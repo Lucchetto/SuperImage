@@ -13,7 +13,8 @@ import coil.compose.*
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.transition.CrossfadeTransition
-import com.zhenxiang.superimage.ui.toDp
+import com.zhenxiang.superimage.ui.dpToPx
+import com.zhenxiang.superimage.ui.pxToDp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -23,33 +24,34 @@ fun BlurShadowImage(
     contentDescription: String?,
     modifier: Modifier = Modifier,
     imageModifier: Modifier = Modifier,
+) = Box(
+    modifier = modifier,
+    contentAlignment = Alignment.Center
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val blurShadowProvider = remember { BlurShadowProvider(context, 250) }
+    val blurShadowProvider = remember { BlurShadowProvider(context) }
     var blurShadowBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    val blurRadius = 70.dp.dpToPx()
 
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        SubcomposeAsyncImage(
-            model = model,
-            contentDescription = contentDescription,
-            success = {
-                BlurShadow(blurShadowBitmap)
-                SubcomposeAsyncImageContent(modifier = imageModifier)
-            },
-            onLoading = { blurShadowBitmap = null },
-            onSuccess = {
-                coroutineScope.launch(Dispatchers.IO) {
-                    (it.result.drawable as? BitmapDrawable)?.bitmap?.let { bitmap ->
-                        blurShadowProvider.getBlurShadow(bitmap)?.let { blur -> blurShadowBitmap = blur }
+    SubcomposeAsyncImage(
+        model = model,
+        contentDescription = contentDescription,
+        success = {
+            BlurShadow(blurShadowBitmap)
+            SubcomposeAsyncImageContent(modifier = imageModifier)
+        },
+        onLoading = { blurShadowBitmap = null },
+        onSuccess = {
+            coroutineScope.launch(Dispatchers.IO) {
+                (it.result.drawable as? BitmapDrawable)?.bitmap?.let { bitmap ->
+                    blurShadowProvider.getBlurShadow(bitmap, blurRadius)?.let { blur ->
+                        blurShadowBitmap = blur
                     }
                 }
             }
-        )
-    }
+        }
+    )
 }
 
 @Composable
@@ -59,7 +61,7 @@ private fun SubcomposeAsyncImageScope.BlurShadow(blurBitmap: Bitmap?) = blurBitm
 
     Box(modifier = Modifier.requiredSize(0.dp)) {
         this@BlurShadow.SubcomposeAsyncImageContent(
-            modifier = Modifier.requiredSize(it.width.toDp(), it.height.toDp()),
+            modifier = Modifier.requiredSize(it.width.pxToDp(), it.height.pxToDp()),
             painter = rememberAsyncImagePainter(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(it)
