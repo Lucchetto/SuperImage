@@ -10,6 +10,8 @@ import kotlin.math.roundToLong
 
 object TimeUtils {
 
+    private const val MAX_MILLIS = 2562047788015
+
     fun periodToString(context: Context, millis: Long): String = with(context.resources) {
         val unitSpace = getString(R.string.time_unit_space)
         val wordSpace = getString(R.string.word_space)
@@ -26,7 +28,7 @@ object TimeUtils {
             .toFormatter()
 
         // Round to nearest second
-        formatter.print(Period((millis / 1000.0).roundToLong() * 1000))
+        formatter.print(Period((millis.coerceAtMost(MAX_MILLIS) / 1000.0).roundToLong() * 1000))
     }
 
     private fun PeriodFormatterBuilder.appendPluralSuffix(
