@@ -19,7 +19,7 @@ object IntentUtils {
 
     fun actionViewNewTask(uri: Uri) = Intent(Intent.ACTION_VIEW).apply {
         data = uri
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
 
     fun appSettingsIntent(context: Context) = Intent(

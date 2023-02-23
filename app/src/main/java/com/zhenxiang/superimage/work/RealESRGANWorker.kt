@@ -19,6 +19,7 @@ import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -291,7 +292,11 @@ class RealESRGANWorker(
                 val success = bitmap.compress(outputFormat, 100, it)
                 bitmap.recycle()
                 if (success) {
-                    val uri = outputFile.toUri()
+                    val uri = FileProvider.getUriForFile(
+                        applicationContext,
+                        "${applicationContext.packageName}.fileprovider",
+                        outputFile
+                    )
                     applicationContext.sendBroadcast(
                         Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri)
                     )
