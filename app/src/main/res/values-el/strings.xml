@@ -32,7 +32,7 @@
     <string name="output_image_resolution_label">Τελική ανάλυση: %1$sx%2$s</string>
     <string name="select_image_wizard_hint">Ξεκινήστε, επιλέγοντας μια εικόνα για μεγέθυνση</string>
     <string name="select_image_label">Επιλογή εικόνας</string>
-    <string name="change_image_label">Αλλαγή εικόνας</string>
+    <string name="change_image_label">Αλλαγή</string>
     <string name="upscale_label">Μεγέθυνση</string>
     <string name="selected_mode_label">Λειτουργία</string>
     <string name="upscaling_options_title">Επιλογές μεγέθυνσης</string>
