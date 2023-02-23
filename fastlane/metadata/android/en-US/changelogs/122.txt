@@ -1,0 +1,4 @@
+Added Greek translations
+Added Material You themed icon
+Fixed incorrect output filename suffix
+User interface fixes
