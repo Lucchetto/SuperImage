@@ -1,4 +1,7 @@
 <resources>
+    <!-- Indicates the font to use for the locale -->
+    <string name="font_family">@string/default_font</string>
+
     <string name="app_name">SuperImage</string>
 
     <string name="time_unit_space">\u0020</string>

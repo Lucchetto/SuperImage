@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_font" translatable="false">crimson</string>
+    <string name="source_serif_pro_font" translatable="false">source</string>
+</resources>
