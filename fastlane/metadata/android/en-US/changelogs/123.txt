@@ -1,0 +1,4 @@
+Use Source Serif Pro font for Greek language
+Fixed crash when opening output image below Android 10
+Fixed crash when Vulkan compute not supported
+Fixed crash when estimated time is invalid
