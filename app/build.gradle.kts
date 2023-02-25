@@ -86,7 +86,7 @@ dependencies {
     implementation(project(":decompose"))
     "freeImplementation"(project(":playstore:no-op"))
     "playstoreImplementation"(project(":playstore:impl"))
-    implementation(project(":realesrgan"))
+    implementation(project(":realesrgan:android"))
     implementation(project(":shared"))
 
     val koin_android_version= "3.3.2"

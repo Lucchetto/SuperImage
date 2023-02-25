@@ -1,9 +1,9 @@
-[submodule "realesrgan/src/main/cpp/MNN"]
-	path = realesrgan/src/main/cpp/MNN
+[submodule "realesrgan/core/MNN"]
+	path = realesrgan/core/MNN
 	url = https://github.com/Lucchetto/MNN
-[submodule "realesrgan/src/main/cpp/eigen"]
-	path = realesrgan/src/main/cpp/eigen
+[submodule "realesrgan/core/eigen"]
+	path = realesrgan/core/eigen
 	url = https://gitlab.com/libeigen/eigen
-[submodule "app/src/main/assets"]
-	path = realesrgan/src/main/assets
-	url = https://github.com/Lucchetto/Real-ESRGAN-models/
+[submodule "realesrgan/android/src/main/assets"]
+	path = realesrgan/android/src/main/assets
+	url = https://github.com/Lucchetto/Real-ESRGAN-models
