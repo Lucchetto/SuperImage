@@ -13,8 +13,28 @@ set(EIGEN_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/eigen")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++17")
 set(CMAKE_CXX_STANDARD 17)
 
-# Reproducible builds
-add_link_options("LINKER:--hash-style=gnu,--build-id=none")
+set(
+        REALERSGAN_SOURCES
+
+        jni_common/coroutine_utils.cpp
+        jni_common/mnn_model.cpp
+        jni_common/progress_tracker.cpp
+        image_tile_interpreter.cpp
+        upscaling.cpp
+)
+
+if(ANDROID)
+    # Reproducible builds
+    add_link_options("LINKER:--hash-style=gnu,--build-id=none")
+
+    list(APPEND REALERSGAN_SOURCES android/realesrgan_jni.cpp android/bitmap_utils.cpp)
+
+    find_library(jnigraphics-lib jnigraphics)
+else()
+
+    find_package(JNI REQUIRED)
+    include_directories(${JNI_INCLUDE_DIRS})
+endif()
 
 option(MNN_VULKAN "" ON)
 option(MNN_OPENCL "" ON)
@@ -34,28 +54,13 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        bitmap_utils.cpp
-        coroutine_utils.cpp
-        image_tile_interpreter.cpp
-        mnn_model.cpp
-        progress_tracker.cpp
-        realesrgan_jni.cpp
-        upscaling.cpp)
+        ${REALERSGAN_SOURCES})
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
 # default, you only need to specify the name of the public NDK library
 # you want to add. CMake verifies that the library exists before
 # completing its build.
-
-find_library( # Sets the name of the path variable.
-        log-lib
-
-        # Specifies the name of the NDK library that
-        # you want CMake to locate.
-        log)
-
-find_library(jnigraphics-lib jnigraphics)
 
 include_directories(${EIGEN_INCLUDE})
 
@@ -66,8 +71,5 @@ include_directories(${EIGEN_INCLUDE})
 target_link_libraries( # Specifies the target library.
         realesrgan
 
-        # Links the target library to the log library
-        # included in the NDK.
-        ${log-lib}
         ${jnigraphics-lib}
         MNN)

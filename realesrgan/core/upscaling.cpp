@@ -7,9 +7,9 @@
 #include <chrono>
 #include "unsupported/Eigen/CXX11/Tensor"
 
-#include "coroutine_utils.h"
+#include "jni_common/coroutine_utils.h"
+#include "jni_common/progress_tracker.h"
 #include "image_tile_interpreter.h"
-#include "progress_tracker.h"
 
 void pixels_matrix_to_float_array(const Eigen::MatrixXi& tile, float* float_buffer) {
 

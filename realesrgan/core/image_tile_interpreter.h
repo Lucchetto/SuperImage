@@ -7,7 +7,7 @@
 
 #include "MNN/Interpreter.hpp"
 
-#include "mnn_model.h"
+#include "jni_common/mnn_model.h"
 
 #define REALESRGAN_IMAGE_CHANNELS 3
 

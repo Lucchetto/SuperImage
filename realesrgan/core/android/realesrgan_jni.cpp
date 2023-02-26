@@ -3,9 +3,9 @@
 #include <string>
 
 #include "bitmap_utils.h"
-#include "image_tile_interpreter.h"
-#include "mnn_model.h"
-#include "upscaling.h"
+#include "../image_tile_interpreter.h"
+#include "../jni_common/mnn_model.h"
+#include "../upscaling.h"
 
 extern "C" JNIEXPORT jint JNICALL
 Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(

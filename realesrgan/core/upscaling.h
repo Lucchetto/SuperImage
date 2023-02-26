@@ -5,12 +5,11 @@
 #ifndef SUPERIMAGE_UPSCALING_H
 #define SUPERIMAGE_UPSCALING_H
 
-#include <android/log.h>
 #include "jni.h"
 
 #include "Eigen/Core"
 
-#include "mnn_model.h"
+#include "jni_common/mnn_model.h"
 
 #define REALESRGAN_INPUT_TILE_SIZE 84
 #define REALESRGAN_INPUT_TILE_PADDING 10
