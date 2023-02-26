@@ -1,0 +1,2 @@
+Updated Greek translations
+Fixed crash when required Vulkan features not supported
