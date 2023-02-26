@@ -31,6 +31,7 @@ if(ANDROID)
 
     find_library(jnigraphics-lib jnigraphics)
 else()
+    list(APPEND REALERSGAN_SOURCES desktop/realesrgan_jni.cpp desktop/image_utils.cpp)
 
     find_package(JNI REQUIRED)
     include_directories(${JNI_INCLUDE_DIRS})
