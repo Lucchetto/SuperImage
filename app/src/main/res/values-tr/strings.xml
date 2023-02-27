@@ -1,0 +1,71 @@
+<resources>
+    <!-- Indicates the font to use for the locale -->
+    <string name="font_family">@string/default_font</string>
+
+    <string name="app_name">SuperImage</string>
+
+    <string name="time_unit_space">\u0020</string>
+    <string name="word_space">\u0020</string>
+    <plurals name="hour">
+        <item quantity="one">saat</item>
+        <item quantity="other">saat</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="one">dakika</item>
+        <item quantity="other">dakika</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="one">saniye</item>
+        <item quantity="other">saniye</item>
+    </plurals>
+
+    <string name="progress_template">%d%%</string>
+    <string name="progress_and_estimated_time_template">%1$d%% (yaklaşık. %2$s kaldı)</string>
+    <string name="progress_indeterminate">Başlatılıyor…</string>
+    <string name="open">Aç</string>
+    <string name="retry">Yeniden Dene</string>
+    <string name="close">Kapa</string>
+    <string name="cancel">İptal</string>
+    <string name="settings">Ayarlar</string>
+    <string name="back">Geri</string>
+
+    <string name="original_image_resolution_label">Orijinal çözünürlük: %1$sx%2$s</string>
+    <string name="output_image_resolution_label">Çıkan çözünürlük: %1$sx%2$s</string>
+    <string name="select_image_wizard_hint">Başlamak için, çözünürlüğü yükseltilecek bir resim seçin</string>
+    <string name="select_image_label">Resim seç</string>
+    <string name="change_image_label">Resim değiştir</string>
+    <string name="upscale_label">Çözünürlüğü yükselt</string>
+    <string name="selected_mode_label">Seçili mod</string>
+    <string name="upscaling_options_title">Çözünürlük yükseltme ayarları</string>
+    <string name="output_format_title">Çıktı formatı</string>
+    <string name="execution_time_template">Uygulanma süresi: %1$s</string>
+    <string name="changelog_dialog_title">Yeni</string>
+    <string name="version_template">Sürüm %1$s</string>
+    <string name="changelog_item_template">- %1$s</string>
+
+    <string name="permission_denied_title">İzin reddedildi</string>
+    <string name="storage_permission_denied_desc">Lütfen cihazda dosya yazma izni verin</string>
+    <string name="storage_permission_denied_forever_desc">Lütfen ayarlardan cihazda dosya yazma izni verin</string>
+    <string name="open_settings_label">Ayarları aç</string>
+    <string name="grant_permission_label">İzin ver</string>
+
+    <string name="theme_title">Tema</string>
+    <string name="auto_label">Sistem</string>
+    <string name="light_label">Aydınlık</string>
+    <string name="dark_label">Karanlık</string>
+    <string name="project_page_title">Proje sayfası</string>
+    <string name="project_page_desc">GitHub\'da soru sorun veya katılım yapın</string>
+    <string name="telegram_group_title">Telegram grubu</string>
+    <string name="telegram_group_desc">Destek, yapay zeka resim işleme hakkında konuşma, ve konu-dışı şeyler için gruba katılın</string>
+    <string name="version_title">Sürüm</string>
+
+    <string name="upscaling_worker_notification_title">%1$s Çözünürlüğü Yükseltilyor</string>
+    <string name="upscaling_worker_notification_desc">Cihazınız süreç boyunca yavaşlıyabilir</string>
+    <string name="upscaling_worker_error_notification_title">Çözünürlük yükseltilirken bir hata oluştu %1$s</string>
+    <string name="upscaling_worker_error_no_backend_title">Desteklenmeyen cihaz</string>
+    <string name="upscaling_worker_error_no_backend_desc">Cihazınız resimlerin çözünürlüğünü yükseltmek için gereken Vulkan compute veya OpenCL\'i desteklemiyor</string>
+    <string name="upscaling_worker_success_notification_title">%1$s başarıyla çözünürlüğü yükseltildi !</string>
+    <string name="upscaling_worker_success_notification_desc">Resmi açmak için buraya basın</string>
+    <string name="upscaling_worker_progress_notification_channel_name">Çözünürlük yükseltme ilerlemesi</string>
+    <string name="upscaling_worker_result_notification_channel_name">Çözünürlük yükseltme sonucu</string>
+</resources>
