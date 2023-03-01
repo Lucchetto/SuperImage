@@ -97,14 +97,20 @@ void process_tiles(
 
     const auto start = std::chrono::high_resolution_clock::now();
 
-    const int tile_size = interpreter.tile_size;
-    const int height = input_image_matrix.rows();
-    const int width = input_image_matrix.cols();
-
     int y = 0;
     int last_row_height = 0;
     int processed_pixels = 0;
     set_progress_percentage(jni_env, progress_tracker, 0);
+
+    const int tile_size = interpreter.tile_size;
+    const int height = input_image_matrix.rows();
+    const int width = input_image_matrix.cols();
+
+    const Eigen::TensorMap<Eigen::Tensor<float, 3, Eigen::RowMajor>> output_tile(
+            interpreter.output_buffer,
+            REALESRGAN_IMAGE_CHANNELS,
+            tile_size * scale,
+            tile_size * scale);
 
     while (is_coroutine_scope_active(jni_env, coroutine_scope)) {
         int x = 0;
@@ -122,14 +128,6 @@ void process_tiles(
 
             // Run inference on the model
             interpreter.inference();
-
-            // Read MNN tensor as Eigen tensor
-            const int output_tile_size = tile_size * scale;
-            const Eigen::TensorMap<Eigen::Tensor<float, 3, Eigen::RowMajor>> output_tile(
-                    interpreter.output_buffer,
-                    REALESRGAN_IMAGE_CHANNELS,
-                    output_tile_size,
-                    output_tile_size);
 
             const Eigen::Tensor<float, 3, Eigen::RowMajor> cropped_output_tile = trim_tensor_padding(
                     scale,
