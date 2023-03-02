@@ -6,11 +6,7 @@
 #define SUPERIMAGE_IMAGE_UTILS_H
 
 #include <jni.h>
-
-struct image_dimensions {
-    int width;
-    int height;
-};
+#include "../image_dimensions.h"
 
 extern "C" JNIEXPORT image_dimensions JNICALL
 get_image_dimensions(JNIEnv* env, jobject buffered_image);

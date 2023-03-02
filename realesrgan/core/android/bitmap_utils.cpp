@@ -4,7 +4,7 @@
 
 #include "bitmap_utils.h"
 
-extern "C" JNIEXPORT bitmap_dimensions JNICALL
+extern "C" JNIEXPORT image_dimensions JNICALL
 get_bitmap_dimensions(JNIEnv* env, jobject bitmap) {
     jclass clazz = env->GetObjectClass(bitmap);
     return {

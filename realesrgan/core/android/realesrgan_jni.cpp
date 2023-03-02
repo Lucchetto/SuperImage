@@ -24,7 +24,7 @@ Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
     AndroidBitmap_lockPixels(env, input_bitmap, &input_bitmap_buffer);
     AndroidBitmap_lockPixels(env, output_bitmap, &output_bitmap_buffer);
 
-    const bitmap_dimensions input_dimens = get_bitmap_dimensions(env, input_bitmap);
+    const image_dimensions input_dimens = get_bitmap_dimensions(env, input_bitmap);
 
     const Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> input_image_matrix(
             (int*) input_bitmap_buffer,
