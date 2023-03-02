@@ -9,6 +9,8 @@
 
 #include "jni_common/mnn_model.h"
 
+#include "image_dimensions.h"
+
 #define REALESRGAN_IMAGE_CHANNELS 3
 
 
@@ -38,10 +40,10 @@ public:
 class ImageTileInterpreter {
 
 public:
-    ImageTileInterpreter(const mnn_model* model, const int tile_size);
+    ImageTileInterpreter(const mnn_model* model, const image_dimensions tile_dimensions);
     ~ImageTileInterpreter();
 
-    const int tile_size;
+    const image_dimensions tile_dimensions;
 
     float* input_buffer;
     float* output_buffer;

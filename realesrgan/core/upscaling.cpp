@@ -73,7 +73,10 @@ Eigen::Tensor<float, 3, Eigen::RowMajor> trim_tensor_padding(
 }
 
 std::pair<int, int> calculate_axis_padding(const int position, const int axis_size, const int tile_size, const int padding) {
-    if (position == 0) {
+    if (axis_size == tile_size) {
+        // No padding needed if there a single tile for given axis
+        return std::pair<int, int> {0, 0};
+    } else if (position == 0) {
         // First tile
         return std::pair<int, int> {0, padding};
     } else if (axis_size - position <= tile_size - padding) {
@@ -102,26 +105,30 @@ void process_tiles(
     int processed_pixels = 0;
     set_progress_percentage(jni_env, progress_tracker, 0);
 
-    const int tile_size = interpreter.tile_size;
+    const image_dimensions* tile_dimensions = &interpreter.tile_dimensions;
     const int height = input_image_matrix.rows();
     const int width = input_image_matrix.cols();
 
     const Eigen::TensorMap<Eigen::Tensor<float, 3, Eigen::RowMajor>> output_tile(
             interpreter.output_buffer,
             REALESRGAN_IMAGE_CHANNELS,
-            tile_size * scale,
-            tile_size * scale);
+            tile_dimensions->width * scale,
+            tile_dimensions->height * scale);
 
     while (is_coroutine_scope_active(jni_env, coroutine_scope)) {
         int x = 0;
-        std::pair<int, int> y_padding = calculate_axis_padding(y, height, tile_size, padding);
+        std::pair<int, int> y_padding = calculate_axis_padding(y, height, tile_dimensions->height, padding);
 
         while (is_coroutine_scope_active(jni_env, coroutine_scope)) {
 
-            std::pair<int, int> x_padding = calculate_axis_padding(x, width, tile_size, padding);
+            std::pair<int, int> x_padding = calculate_axis_padding(x, width, tile_dimensions->width, padding);
 
             // Get tile of pixels to process keeping, apply left padding as offset that will be cropped later
-            Eigen::MatrixXi tile = input_image_matrix.block(y - y_padding.first, x - x_padding.first, tile_size, tile_size);
+            Eigen::MatrixXi tile = input_image_matrix.block(
+                    y - y_padding.first,
+                    x - x_padding.first,
+                    tile_dimensions->height,
+                    tile_dimensions->width);
 
             // Feed input into tensor
             pixels_matrix_to_float_array(tile, interpreter.input_buffer);
@@ -156,19 +163,17 @@ void process_tiles(
                     lround((100 - progress) * percentage_execution_millis));
 
             // Recalculate padding and position of next tile in row
-            if (x_padding.second == 0) {
-                break;
-            } else {
-                x += tile_rgb_matrix.cols() / scale;
+            x += tile_rgb_matrix.cols() / scale;
+            if (x == width) {
                 last_row_height = tile_rgb_matrix.rows() / scale;
+                break;
             }
         }
 
+        y += last_row_height;
         // Recalculate padding and position of next column's tiles
-        if (y_padding.second == 0) {
+        if (y == height) {
             break;
-        } else {
-            y += last_row_height;
         }
     }
 }
@@ -182,7 +187,13 @@ void run_inference(
         const Eigen::MatrixXi& input_image_matrix,
         Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>& output_image_matrix) {
 
-    const auto interpreter = ImageTileInterpreter(model, REALESRGAN_INPUT_TILE_SIZE);
+    const auto interpreter = ImageTileInterpreter(
+            model,
+            {
+                // Adapt tile size if image size is smaller than default tile size
+                .width = std::min<int>(REALESRGAN_INPUT_TILE_SIZE, input_image_matrix.cols()),
+                .height = std::min<int>(REALESRGAN_INPUT_TILE_SIZE, input_image_matrix.rows())
+            });
 
     process_tiles(
             jni_env,

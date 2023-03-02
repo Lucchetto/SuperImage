@@ -6,7 +6,9 @@
 
 #include "image_tile_interpreter.h"
 
-ImageTileInterpreter::ImageTileInterpreter(const mnn_model* model, const int tile_size) : tile_size(tile_size) {
+ImageTileInterpreter::ImageTileInterpreter(
+        const mnn_model* model,
+        const image_dimensions tile_dimensions) : tile_dimensions(tile_dimensions) {
     MNN::ScheduleConfig config;
     MNN::BackendConfig backendConfig;
     backendConfig.memory = MNN::BackendConfig::Memory_High;
@@ -28,7 +30,13 @@ ImageTileInterpreter::ImageTileInterpreter(const mnn_model* model, const int til
     }
 
     interpreter_input = interpreter->getSessionInput(session, nullptr);
-    interpreter->resizeTensor(interpreter_input, 1, REALESRGAN_IMAGE_CHANNELS, tile_size, tile_size);
+    // We store matrix as row major so ignore MNN default tensor orientation
+    interpreter->resizeTensor(
+            interpreter_input,
+            1,
+            REALESRGAN_IMAGE_CHANNELS,
+            tile_dimensions.width,
+            tile_dimensions.height);
     interpreter->resizeSession(session);
     interpreter_output = interpreter->getSessionOutput(session, nullptr);
 
