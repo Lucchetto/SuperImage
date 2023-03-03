@@ -62,8 +62,6 @@ class MainActivity : AppCompatActivity(), KoinComponent {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (inputImageIntentManager.notifyNewIntent(intent)) {
-            startActivity(InputImageIntentManager.markAsConsumed(intent))
-        }
+        inputImageIntentManager.notifyNewIntent(intent)
     }
 }

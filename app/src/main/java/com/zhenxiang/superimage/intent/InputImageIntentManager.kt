@@ -3,7 +3,6 @@ package com.zhenxiang.superimage.intent
 import android.content.Intent
 import android.net.Uri
 import com.zhenxiang.superimage.utils.getParcelableExtraCompat
-import com.zhenxiang.superimage.utils.removeFlagsCompat
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -32,7 +31,6 @@ class InputImageIntentManager {
         const val IMAGE_MIME_TYPE = "image/*"
 
         fun markAsConsumed(intent: Intent): Intent = intent.apply {
-            intent.removeFlagsCompat(Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
             intent.data = null
         }
     }
