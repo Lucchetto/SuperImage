@@ -142,6 +142,7 @@ class RealESRGANWorker(
                     PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                 )
             )
+            addAction(R.drawable.baseline_close_24, getString(R.string.cancel), cancelWorkIntent)
         }
     }
 
@@ -409,6 +410,9 @@ class RealESRGANWorker(
         private const val OUTPUT_FOLDER_NAME = "SuperImage"
     }
 }
+
+private val ListenableWorker.cancelWorkIntent: PendingIntent
+    get() = WorkManager.getInstance(applicationContext).createCancelPendingIntent(id)
 
 private fun NotificationCompat.Builder.setTitleAndTicker(title: String) = apply {
     setContentTitle(title)
