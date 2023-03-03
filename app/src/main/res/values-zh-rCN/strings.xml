@@ -1,0 +1,71 @@
+<resources>
+    <!-- Indicates the font to use for the locale -->
+    <string name="font_family">@string/default_font</string>
+
+    <string name="app_name">SuperImage</string>
+
+    <string name="time_unit_space">\u0020</string>
+    <string name="word_space">\u0020</string>
+    <plurals name="hour">
+        <item quantity="one">小时</item>
+        <item quantity="other">小时</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="one">分钟</item>
+        <item quantity="other">分钟</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="one">秒</item>
+        <item quantity="other">秒</item>
+    </plurals>
+
+    <string name="progress_template">%d%%</string>
+    <string name="progress_and_estimated_time_template">%1$d%% (预计剩余. %2$s)</string>
+    <string name="progress_indeterminate">初始化中…</string>
+    <string name="open">打开</string>
+    <string name="retry">重试</string>
+    <string name="close">关闭</string>
+    <string name="cancel">取消</string>
+    <string name="settings">设置</string>
+    <string name="back">返回</string>
+
+    <string name="original_image_resolution_label">原始分辨率：%1$sx%2$s</string>
+    <string name="output_image_resolution_label">输出分辨率：%1$sx%2$s</string>
+    <string name="select_image_wizard_hint">选择一张图片进行画质增强</string>
+    <string name="select_image_label">选择图片</string>
+    <string name="change_image_label">更改图片</string>
+    <string name="upscale_label">画质增强</string>
+    <string name="selected_mode_label">模式选择</string>
+    <string name="upscaling_options_title">增强选项</string>
+    <string name="output_format_title">输出格式</string>
+    <string name="execution_time_template">处理时间：%1$s</string>
+    <string name="changelog_dialog_title">新增特性</string>
+    <string name="version_template">版本 %1$s</string>
+    <string name="changelog_item_template">- %1$s</string>
+
+    <string name="permission_denied_title">没有权限</string>
+    <string name="storage_permission_denied_desc">请授予写入储存设备权限</string>
+    <string name="storage_permission_denied_forever_desc">请在设置中授予读取储存设备权限</string>
+    <string name="open_settings_label">打开设置</string>
+    <string name="grant_permission_label">授予权限</string>
+
+    <string name="theme_title">主题</string>
+    <string name="auto_label">跟随系统</string>
+    <string name="light_label">浅色</string>
+    <string name="dark_label">深色</string>
+    <string name="project_page_title">项目页面</string>
+    <string name="project_page_desc">在Github上提问或作出贡献</string>
+    <string name="telegram_group_title">电报群组</string>
+    <string name="telegram_group_desc">加入群组寻求帮助，或讨论有关AI图像处理与其它话题</string>
+    <string name="version_title">版本</string>
+
+    <string name="upscaling_worker_notification_title">画质增强中 %1$s</string>
+    <string name="upscaling_worker_notification_desc">您的设备在处理过程中可能变慢</string>
+    <string name="upscaling_worker_error_notification_title">画质增强时发生了一个错误 %1$s</string>
+    <string name="upscaling_worker_error_no_backend_title">设备不支持</string>
+    <string name="upscaling_worker_error_no_backend_desc">您的设备不支持处理图像所需的Vulkan或OpenCL功能</string>
+    <string name="upscaling_worker_success_notification_title">%1$s 画质增强成功！</string>
+    <string name="upscaling_worker_success_notification_desc">查看图片</string>
+    <string name="upscaling_worker_progress_notification_channel_name">增强过程</string>
+    <string name="upscaling_worker_result_notification_channel_name">增强结果</string>
+</resources>
