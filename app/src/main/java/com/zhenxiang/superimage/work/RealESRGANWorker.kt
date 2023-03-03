@@ -129,18 +129,19 @@ class RealESRGANWorker(
         }
     }
 
-    private fun setupProgressNotificationBuilder() {
+    private fun setupProgressNotificationBuilder() = with(applicationContext) {
         progressNotificationBuilder.apply {
-            setTitleAndTicker(applicationContext.getString(R.string.upscaling_worker_notification_title, inputImageName))
-            setContentText(applicationContext.getString(R.string.upscaling_worker_notification_desc))
+            setTitleAndTicker(getString(R.string.upscaling_worker_notification_title, inputImageName))
+            setContentText(getString(R.string.upscaling_worker_notification_desc))
             setSmallIcon(R.drawable.outline_photo_size_select_large_24)
             setOngoing(true)
             setContentIntent(
                 IntentUtils.mainActivityPendingIntent(
-                    applicationContext,
+                    this@with,
                     PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                 )
             )
+            addAction(R.drawable.baseline_close_24, getString(R.string.cancel), cancelWorkIntent)
         }
     }
 
@@ -395,3 +396,6 @@ private fun NotificationManagerCompat.notifyAutoId(notification: Notification) =
     SystemClock.elapsedRealtime().toInt(),
     notification
 )
+
+private val ListenableWorker.cancelWorkIntent: PendingIntent
+    get() = WorkManager.getInstance(applicationContext).createCancelPendingIntent(id)
