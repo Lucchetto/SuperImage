@@ -3,6 +3,9 @@
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="1.7">
       <module name="android" target="11" />
+      <module name="SuperImage.compose-desktop-preview" target="1.8" />
+      <module name="SuperImage.compose-desktop-preview.main" target="1.8" />
+      <module name="SuperImage.compose-desktop-preview.test" target="1.8" />
       <module name="SuperImage.playstore-no-op" target="11" />
       <module name="SuperImage.review" target="11" />
     </bytecodeTargetLevel>
