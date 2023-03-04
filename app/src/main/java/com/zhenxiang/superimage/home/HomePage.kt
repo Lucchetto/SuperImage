@@ -460,7 +460,7 @@ private fun UpscalingWork(
                                 id = R.string.progress_template,
                                 progress.progress.coerceAtMost(100f).roundToInt(),
                             )
-                            else ->  stringResource(
+                            else -> stringResource(
                                 id = R.string.progress_and_estimated_time_template,
                                 progress.progress.coerceAtMost(100f).roundToInt(),
                                 TimeUtils.periodToString(LocalContext.current, progress.estimatedMillisLeft)

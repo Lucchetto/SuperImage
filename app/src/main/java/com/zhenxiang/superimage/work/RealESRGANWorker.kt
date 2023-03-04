@@ -134,7 +134,6 @@ class RealESRGANWorker(
     private fun setupProgressNotificationBuilder() = with(applicationContext) {
         progressNotificationBuilder.apply {
             setTitleAndTicker(getString(R.string.upscaling_worker_notification_title, inputImageName))
-            setContentText(getString(R.string.upscaling_worker_notification_desc))
             setSmallIcon(R.drawable.outline_photo_size_select_large_24)
             setOngoing(true)
             setContentIntent(
@@ -179,15 +178,39 @@ class RealESRGANWorker(
 
         return ForegroundInfo(
             PROGRESS_NOTIFICATION_ID,
-            buildProgressNotification(JNIProgressTracker.INDETERMINATE_PROGRESS)
+            buildProgressNotification(null)
         )
     }
 
-    private fun buildProgressNotification(progress: Float): Notification = progressNotificationBuilder.apply {
-        if (progress == JNIProgressTracker.INDETERMINATE_PROGRESS) {
+    private fun buildProgressNotification(progress: JNIProgressTracker.Progress?): Notification = progressNotificationBuilder.apply {
+        val value = progress?.value ?: JNIProgressTracker.INDETERMINATE_PROGRESS
+        val estimatedMillisLeft = progress?.estimatedMillisLeft ?: JNIProgressTracker.INDETERMINATE_TIME
+
+        if (value == JNIProgressTracker.INDETERMINATE_PROGRESS) {
             setProgress(100, 0, true)
         } else {
-            setProgress(100, progress.roundToInt(), false)
+            setProgress(100, value.roundToInt(), false)
+        }
+
+        with(applicationContext) {
+            if (
+                value == JNIProgressTracker.INDETERMINATE_PROGRESS ||
+                estimatedMillisLeft == JNIProgressTracker.INDETERMINATE_TIME
+            ) {
+                setContentText(getString(R.string.upscaling_worker_notification_desc))
+            } else {
+                buildString {
+                    append(
+                        getString(
+                            R.string.progress_and_estimated_time_template,
+                            value.coerceAtMost(100f).roundToInt(),
+                            TimeUtils.periodToString(this@with, estimatedMillisLeft)
+                        )
+                    )
+                    append('\n')
+                    append(getString(R.string.upscaling_worker_notification_desc))
+                }.let { setContentText(it) }
+            }
         }
     }.build()
 
@@ -200,7 +223,7 @@ class RealESRGANWorker(
             )
         )
         if (notificationPermission) {
-            notificationManager.notify(PROGRESS_NOTIFICATION_ID, buildProgressNotification(progress.value))
+            notificationManager.notify(PROGRESS_NOTIFICATION_ID, buildProgressNotification(progress))
         }
     }
 
