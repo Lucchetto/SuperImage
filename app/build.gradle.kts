@@ -102,6 +102,7 @@ dependencies {
     implementation(compose.material3)
     implementation(compose.preview)
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.exifinterface:exifinterface:1.3.6")
 
     implementation("androidx.documentfile:documentfile:1.0.1")
     implementation("androidx.work:work-runtime-ktx:2.7.1")
@@ -111,6 +112,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.2.2")
     implementation("io.insert-koin:koin-android:$koin_android_version")
     implementation("joda-time:joda-time:2.12.2")
+    implementation("org.apache.commons:commons-imaging:1.0-alpha3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.6.4")
 
     testImplementation("junit:junit:4.13.2")

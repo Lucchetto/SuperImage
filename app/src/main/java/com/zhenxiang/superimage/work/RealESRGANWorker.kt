@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -21,6 +22,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
+import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.*
@@ -159,7 +161,7 @@ class RealESRGANWorker(
         val options = BitmapFactory.Options().apply {
             inPreferredConfig = Bitmap.Config.ARGB_8888
         }
-        BitmapFactory.decodeStream(it, null, options)
+        BitmapFactory.decodeStream(it, null, options)?.transformWithExif(ExifInterface(inputImageTempFile))
     }
 
     private fun createForegroundInfo(): ForegroundInfo {
@@ -399,3 +401,29 @@ private fun NotificationManagerCompat.notifyAutoId(notification: Notification) =
 
 private val ListenableWorker.cancelWorkIntent: PendingIntent
     get() = WorkManager.getInstance(applicationContext).createCancelPendingIntent(id)
+
+/**
+ * If EXIF contains transformations to apply return new a bitmap with the transformations and recycle original
+ * Otherwise return original bitmap
+ */
+private fun Bitmap.transformWithExif(exifInterface: ExifInterface): Bitmap {
+    val isFlipped = exifInterface.isFlipped
+    val rotationDegrees = exifInterface.rotationDegrees
+    if (!isFlipped && rotationDegrees == 0) {
+        return this
+    }
+    val centerX = width / 2f
+    val centerY = height / 2f
+    val matrix = Matrix().apply {
+        if (isFlipped) {
+            postScale(-1f, 1f, centerX, centerY)
+        }
+        if (rotationDegrees != 0) {
+            postRotate(rotationDegrees.toFloat(), centerX, centerY)
+        }
+    }
+    val transformed = Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
+    // Recycle original bitmap
+    recycle()
+    return transformed
+}
