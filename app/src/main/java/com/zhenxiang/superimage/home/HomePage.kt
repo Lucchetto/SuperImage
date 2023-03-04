@@ -25,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import coil.request.ImageRequest
@@ -264,7 +265,7 @@ private fun ImagePreview(
     val crossfadeTransition = remember { CrossfadeTransition.Factory(125) }
 
     Column(
-        modifier = modifier,
+        modifier = modifier.padding(vertical = MaterialTheme.spacing.level5),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -279,8 +280,9 @@ private fun ImagePreview(
                     modifier = Modifier.weight(1f, fill = false),
                     imageModifier = Modifier
                         .padding(
-                            horizontal = MaterialTheme.spacing.level3,
-                            vertical = MaterialTheme.spacing.level5,
+                            start = MaterialTheme.spacing.level3,
+                            end = MaterialTheme.spacing.level3,
+                            bottom = MaterialTheme.spacing.level5,
                         )
                         .clip(MaterialTheme.shapes.large)
                 )
@@ -291,13 +293,16 @@ private fun ImagePreview(
 
                 val selectedModel by selectedModelState
                 Text(
-                    modifier = Modifier.padding(bottom = MaterialTheme.spacing.level5),
                     text = stringResource(
                         id = R.string.output_image_resolution_label,
                         it.width * selectedModel.scale,
                         it.height * selectedModel.scale
                     )
                 )
+
+                if (it.mayRunOutOfMemory(selectedModel)) {
+                    OutOfMemoryWarning()
+                }
             }
             else -> StartWizard(onSelectImageClick)
         }
@@ -305,9 +310,40 @@ private fun ImagePreview(
 }
 
 @Composable
+private fun OutOfMemoryWarning() = Row(
+    verticalAlignment = Alignment.CenterVertically
+) {
+    Icon(
+        modifier = Modifier
+            .padding(end = MaterialTheme.spacing.level3)
+            .size(MaterialTheme.typography.bodyLarge.fontSize.value.dp),
+        painter = painterResource(R.drawable.ic_exclamation_octagon_24),
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.error,
+    )
+    Text(
+        text = stringResource(R.string.out_of_memory_warning_hint),
+        color = MaterialTheme.colorScheme.error
+    )
+}
+
+@Composable
+@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun OutOfMemoryWarningPreview() = MonoTheme {
+    Surface(
+        modifier = Modifier.padding(MaterialTheme.spacing.level4)
+    ) {
+        OutOfMemoryWarning()
+    }
+}
+
+@Composable
 private fun ColumnScope.StartWizard(onSelectImageClick: () -> Unit) {
     Text(
-        modifier = Modifier.padding(vertical = MaterialTheme.spacing.level5),
+        modifier = Modifier.padding(
+            bottom = MaterialTheme.spacing.level5
+        ),
         text = stringResource(id = R.string.select_image_wizard_hint),
         textAlign = TextAlign.Center,
         style = MaterialTheme.typography.labelLarge,
