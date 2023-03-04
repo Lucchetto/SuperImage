@@ -2,9 +2,9 @@
 <resources>
 
     <!-- Model scale multipliers are actually referred to each dimension
-        So pixels multiplier that we should show to the user is actually (model scale multiplier) * 2
+        So pixels multiplier that we should show to the user is actually (model scale multiplier) ^ 2
         -->
     <string name="x2_plus_model_label">x4 (generic)</string>
-    <string name="x4_plus_model_label">x8 (generic)</string>
-    <string name="x4_plus_anime_model_label">x8 (drawing)</string>
+    <string name="x4_plus_model_label">x16 (generic)</string>
+    <string name="x4_plus_anime_model_label">x16 (drawing)</string>
 </resources>
