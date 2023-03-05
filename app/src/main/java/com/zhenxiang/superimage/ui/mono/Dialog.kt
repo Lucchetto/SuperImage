@@ -5,12 +5,16 @@ package com.zhenxiang.superimage.ui.mono
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.RowScopeInstance.weight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
@@ -43,7 +47,10 @@ fun MonoAlertDialog(
     BoxWithConstraints(
         modifier = Modifier
             .padding(MaterialTheme.spacing.level5)
-            .sizeIn(minWidth = MonoAlertDialogDefaults.DialogMinWidth, maxWidth = MonoAlertDialogDefaults.DialogMaxWidth)
+            .sizeIn(
+                minWidth = MonoAlertDialogDefaults.DialogMinWidth,
+                maxWidth = MonoAlertDialogDefaults.DialogMaxWidth
+            )
             .then(Modifier.semantics { paneTitle = dialogPaneDescription }),
         propagateMinConstraints = true
     ) {
@@ -93,6 +100,7 @@ fun MonoAlertDialog(
         }
     }
 }
+
 object MonoAlertDialogDefaults {
     val DialogMinWidth = 280.dp
     val DialogMaxWidth = 560.dp
@@ -114,6 +122,10 @@ fun MonoCancelDialogButton(onClick: () -> Unit) = MonoButton(onClick = onClick) 
         contentDescription = stringResource(id = R.string.cancel)
     )
     Text(stringResource(id = R.string.cancel))
+}
+
+fun Modifier.monoDialogScrollableContent() = composed {
+    verticalScroll(rememberScrollState()).weight(1f, false)
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
