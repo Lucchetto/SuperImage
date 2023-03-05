@@ -142,7 +142,6 @@ class RealESRGANWorker(
                     PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                 )
             )
-            addAction(R.drawable.baseline_close_24, getString(R.string.cancel), cancelWorkIntent)
         }
     }
 
@@ -421,9 +420,6 @@ private fun NotificationManagerCompat.notifyAutoId(notification: Notification) =
     SystemClock.elapsedRealtime().toInt(),
     notification
 )
-
-private val ListenableWorker.cancelWorkIntent: PendingIntent
-    get() = WorkManager.getInstance(applicationContext).createCancelPendingIntent(id)
 
 /**
  * If EXIF contains transformations to apply return new a bitmap with the transformations and recycle original
