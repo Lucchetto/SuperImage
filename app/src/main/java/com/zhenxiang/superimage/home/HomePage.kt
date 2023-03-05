@@ -206,7 +206,7 @@ private fun ChangelogDialog(
                 usePlatformDefaultWidth = false
             ),
             title = { Text(stringResource(id = R.string.changelog_dialog_title)) },
-            content = { padding ->
+            content = { padding, _ ->
                 LazyColumn(modifier = Modifier.padding(padding)) {
                     item { Text(
                         stringResource(id = R.string.version_template, BuildConfig.VERSION_NAME),
@@ -431,10 +431,10 @@ private fun UpscalingWork(
     } else {
         null
     },
-    content = {
+    content = { padding, _ ->
         when (progress) {
             is RealESRGANWorker.Progress.Failed -> Text(
-                modifier = Modifier.padding(it),
+                modifier = Modifier.padding(padding),
                 text = if (progress.error == InterpreterError.CREATE_SESSION) {
                     stringResource(id = R.string.upscaling_worker_error_no_backend_desc)
                 } else {
@@ -444,7 +444,7 @@ private fun UpscalingWork(
             is RealESRGANWorker.Progress.Running -> {
                 Column(
                     modifier = Modifier
-                        .padding(it)
+                        .padding(padding)
                         .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -475,7 +475,7 @@ private fun UpscalingWork(
                     )
                 }
             }
-            is RealESRGANWorker.Progress.Success -> Column(modifier = Modifier.padding(it)) {
+            is RealESRGANWorker.Progress.Success -> Column(modifier = Modifier.padding(padding)) {
                 Text(stringResource(id = R.string.upscaling_worker_success_notification_title, inputData.originalFileName))
                 Text(
                     stringResource(

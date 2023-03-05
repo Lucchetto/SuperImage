@@ -151,7 +151,7 @@ private fun <T: Identifiable<Int>> SelectionPreferenceDialog(
     MonoAlertDialog(
         onDismissRequest = onDismissRequest,
         title = title,
-        content = { padding ->
+        content = { padding, _ ->
             LazyColumn(
                 modifier = Modifier.padding(padding)
             ) {

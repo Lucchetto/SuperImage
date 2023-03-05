@@ -23,6 +23,7 @@ import com.zhenxiang.superimage.ui.theme.MonoTheme
 import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.elevation
 import com.zhenxiang.superimage.ui.theme.spacing
+import com.zhenxiang.superimage.ui.utils.isLandscape
 
 @Composable
 fun MonoAlertDialog(
@@ -32,14 +33,14 @@ fun MonoAlertDialog(
         usePlatformDefaultWidth = false
     ),
     title: @Composable (() -> Unit)? = null,
-    content: @Composable ColumnScope.(PaddingValues) -> Unit,
+    content: @Composable ColumnScope.(padding: PaddingValues, isLandscape: Boolean) -> Unit,
     buttons: @Composable RowScope.() -> Unit = { },
 ) = Dialog(
     onDismissRequest = onDismissRequest,
     properties = properties
 ) {
     val dialogPaneDescription = getString(Strings.Dialog)
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .padding(MaterialTheme.spacing.level5)
             .sizeIn(minWidth = MonoAlertDialogDefaults.DialogMinWidth, maxWidth = MonoAlertDialogDefaults.DialogMaxWidth)
@@ -69,13 +70,15 @@ fun MonoAlertDialog(
                         )
                     }
                 }
+
                 ProvideTextStyle(value = MaterialTheme.typography.labelLarge) {
                     content(
                         PaddingValues(
                             start = MaterialTheme.spacing.level5,
                             end = MaterialTheme.spacing.level5,
                             top = MaterialTheme.spacing.level5
-                        )
+                        ),
+                        this@BoxWithConstraints.constraints.isLandscape
                     )
                 }
                 Row(
@@ -121,9 +124,9 @@ private fun MonoAlertDialogPreview() = MonoTheme {
     MonoAlertDialog(
         onDismissRequest = { },
         title = { Text("Dialog title") },
-        content = {
+        content = { padding, _ ->
             Box(
-                modifier = Modifier.padding(it)
+                modifier = Modifier.padding(padding)
             ) {
                 Text("Dialog content")
             }

@@ -107,9 +107,9 @@ private fun PermissionRequestDialog(
 ) = MonoAlertDialog(
     onDismissRequest = onDismissRequest,
     title = { Text(stringResource(id = R.string.permission_denied_title)) },
-    content = {
+    content = { padding, _ ->
         Text(
-            modifier = Modifier.padding(it),
+            modifier = Modifier.padding(padding),
             text = stringResource(
                 id = if (showPermissionRationale) {
                     R.string.storage_permission_denied_desc
