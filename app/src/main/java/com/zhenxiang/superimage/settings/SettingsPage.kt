@@ -153,7 +153,8 @@ private fun <T: Identifiable<Int>> SelectionPreferenceDialog(
         title = title,
         content = { padding, _ ->
             LazyColumn(
-                modifier = Modifier.padding(padding)
+                modifier = Modifier.weight(1f, false),
+                contentPadding = padding
             ) {
                 items(values) {
                     MonoRadioButton(

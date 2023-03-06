@@ -200,7 +200,10 @@ private fun ChangelogDialog(
             ),
             title = { Text(stringResource(id = R.string.changelog_dialog_title)) },
             content = { padding, _ ->
-                LazyColumn(modifier = Modifier.padding(padding)) {
+                LazyColumn(
+                    modifier = Modifier.weight(1f, false),
+                    contentPadding = padding
+                ) {
                     item { Text(
                         stringResource(id = R.string.version_template, BuildConfig.VERSION_NAME),
                         modifier = Modifier.padding(bottom = MaterialTheme.spacing.level3)
