@@ -346,7 +346,7 @@ private fun ColumnScope.StartWizard(onSelectImageClick: () -> Unit) {
             painterResource(id = R.drawable.ic_image_24),
             contentDescription = null
         )
-        Text(
+        EllipsisText(
             stringResource(id = R.string.select_image_label)
         )
     }
@@ -470,7 +470,7 @@ private fun Options(
                         painterResource(id = R.drawable.ic_image_24),
                         contentDescription = null
                     )
-                    Text(
+                    EllipsisText(
                         stringResource(id = R.string.change_image_label)
                     )
                 }

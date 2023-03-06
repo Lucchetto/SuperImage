@@ -20,10 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.zhenxiang.superimage.R
-import com.zhenxiang.superimage.ui.mono.MonoAlertDialog
-import com.zhenxiang.superimage.ui.mono.MonoButton
-import com.zhenxiang.superimage.ui.mono.MonoButtonIcon
-import com.zhenxiang.superimage.ui.mono.MonoCancelDialogButton
+import com.zhenxiang.superimage.ui.mono.*
 import com.zhenxiang.superimage.ui.theme.MonoTheme
 import com.zhenxiang.superimage.ui.utils.RowSpacer
 import com.zhenxiang.superimage.utils.IntentUtils
@@ -62,7 +59,7 @@ internal fun UpscaleButton(enabled: Boolean, onClick: () -> Unit) {
             painterResource(id = R.drawable.outline_auto_awesome_24),
             contentDescription = null
         )
-        Text(stringResource(id = R.string.upscale_label))
+        EllipsisText(stringResource(id = R.string.upscale_label))
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -132,11 +129,7 @@ private fun PermissionRequestDialog(
                     permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
             ) {
-                Text(
-                    stringResource(id = R.string.grant_permission_label),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                EllipsisText(stringResource(id = R.string.grant_permission_label))
             }
         } else {
             val context = LocalContext.current
@@ -152,7 +145,7 @@ private fun PermissionRequestDialog(
                     painter = painterResource(id = R.drawable.ic_gear_24),
                     contentDescription = null
                 )
-                Text(stringResource(id = R.string.open_settings_label))
+                EllipsisText(stringResource(id = R.string.open_settings_label))
             }
         }
     }

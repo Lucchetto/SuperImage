@@ -110,7 +110,7 @@ internal fun UpscalingWork(
                             painterResource(id = R.drawable.ic_arrow_clockwise_24),
                             contentDescription = null
                         )
-                        Text(
+                        EllipsisText(
                             stringResource(id = R.string.retry)
                         )
                     }
@@ -135,7 +135,7 @@ internal fun UpscalingWork(
                         painterResource(id = R.drawable.outline_launch_24),
                         contentDescription = null
                     )
-                    Text(stringResource(id = R.string.open))
+                    EllipsisText(stringResource(id = R.string.open))
                 }
             }
         }

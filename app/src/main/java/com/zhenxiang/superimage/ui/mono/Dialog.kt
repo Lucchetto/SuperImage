@@ -112,7 +112,7 @@ fun MonoCloseDialogButton(onClick: () -> Unit) = MonoButton(onClick = onClick) {
         Icons.Outlined.Close,
         contentDescription = stringResource(id = R.string.close)
     )
-    Text(stringResource(id = R.string.close))
+    EllipsisText(stringResource(id = R.string.close))
 }
 
 @Composable
@@ -121,7 +121,7 @@ fun MonoCancelDialogButton(onClick: () -> Unit) = MonoButton(onClick = onClick) 
         Icons.Outlined.Close,
         contentDescription = stringResource(id = R.string.cancel)
     )
-    Text(stringResource(id = R.string.cancel))
+    EllipsisText(stringResource(id = R.string.cancel))
 }
 
 fun Modifier.monoDialogScrollableContent() = composed {
@@ -145,7 +145,7 @@ private fun MonoAlertDialogPreview() = MonoTheme {
         },
         buttons = {
             MonoButton(onClick = {}) {
-                Text("Confirm")
+                EllipsisText("Confirm")
             }
         }
     )
