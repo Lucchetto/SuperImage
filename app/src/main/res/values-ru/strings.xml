@@ -1,0 +1,72 @@
+<resources>
+    <!-- Indicates the font to use for the locale -->
+    <string name="font_family">@string/default_font</string>
+
+    <string name="app_name">SuperImage</string>
+
+    <string name="time_unit_space">\u0020</string>
+    <string name="word_space">\u0020</string>
+    <plurals name="hour">
+        <item quantity="one">Час</item>
+        <item quantity="other">Часов</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="one">Мин</item>
+        <item quantity="other">Минут</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="one">Сек</item>
+        <item quantity="other">Секунд</item>
+    </plurals>
+
+    <string name="progress_template">%d%%</string>
+    <string name="progress_and_estimated_time_template">%1$d%% (осталось примерно %2$s)</string>
+    <string name="progress_indeterminate">Инициализация…</string>
+    <string name="open">Открыть</string>
+    <string name="retry">Повторить</string>
+    <string name="close">Закрыть</string>
+    <string name="cancel">Отмена</string>
+    <string name="settings">Настройки</string>
+    <string name="back">Назад</string>
+
+    <string name="out_of_memory_warning_hint">Системной памяти может быть недостаточно для этой операции</string>
+    <string name="original_image_resolution_label">Оригинальное разрешение: %1$sx%2$s</string>
+    <string name="output_image_resolution_label">Выходное разрешение: %1$sx%2$s</string>
+    <string name="select_image_wizard_hint">Чтобы начать, выберите изображение для увеличения</string>
+    <string name="select_image_label">Выбрать изображение</string>
+    <string name="change_image_label">Изменить изображение</string>
+    <string name="upscale_label">Увеличить</string>
+    <string name="selected_mode_label">Выбранный режим</string>
+    <string name="upscaling_options_title">Опции увеличения</string>
+    <string name="output_format_title">Выходной формат</string>
+    <string name="execution_time_template">Время выполнения: %1$s</string>
+    <string name="changelog_dialog_title">Что нового?</string>
+    <string name="version_template">Версия %1$s</string>
+    <string name="changelog_item_template">- %1$s</string>
+
+    <string name="permission_denied_title">Разрешение отклонено</string>
+    <string name="storage_permission_denied_desc">Пожалуйста, выдайте разрешение, чтобы сохранить изображение</string>
+    <string name="storage_permission_denied_forever_desc">Пожалуйста, выдайте разрешение в настройках устройства, чтобы сохранить изображение</string>
+    <string name="open_settings_label">Открыть настройки</string>
+    <string name="grant_permission_label">Выдать разрешение</string>
+
+    <string name="theme_title">Тема</string>
+    <string name="auto_label">Системная</string>
+    <string name="light_label">Светлая</string>
+    <string name="dark_label">Тёмная</string>
+    <string name="project_page_title">Страница проекта</string>
+    <string name="project_page_desc">Задавайте вопросы или вносите вклад на GitHub</string>
+    <string name="telegram_group_title">Сообщетсво в Telegram</string>
+    <string name="telegram_group_desc">Вступите в группу для обсуждения тем ИИ или остальных разговоров</string>
+    <string name="version_title">Версия</string>
+
+    <string name="upscaling_worker_notification_title">Увеличение %1$s</string>
+    <string name="upscaling_worker_notification_desc">Ваше устройство может тормозить в процессе увеличения</string>
+    <string name="upscaling_worker_error_notification_title">Ошибка произошла во время увеличения %1$s</string>
+    <string name="upscaling_worker_error_no_backend_title">Неподдерживаемое устройство</string>
+    <string name="upscaling_worker_error_no_backend_desc">Ваше устройсто не поддерживает возможности Vulkan или OpenCL, которые необходимы для увеличения изображений</string>
+    <string name="upscaling_worker_success_notification_title">%1$s успешно увеличено!</string>
+    <string name="upscaling_worker_success_notification_desc">Нажмите сюда, чтобы открыть изображение</string>
+    <string name="upscaling_worker_progress_notification_channel_name">Прогресс увеличения</string>
+    <string name="upscaling_worker_result_notification_channel_name">Результат увеличения</string>
+</resources>
