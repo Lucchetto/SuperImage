@@ -1,0 +1,8 @@
+FIXED LABEL FOR 8X MODE, THE ACTUAL UPSCALING IS 16X
+Added Chinese and Russian translations
+Added warning when system memory may be insufficient
+Added estimated completion time to progress notification
+Fixed output orientation when upscaling some images
+Fixed receiving input image shared from other apps
+Fixed crash when input image has one side smaller than 84px
+User interface fixes
