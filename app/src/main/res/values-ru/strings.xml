@@ -1,6 +1,6 @@
 <resources>
     <!-- Indicates the font to use for the locale -->
-    <string name="font_family">@string/default_font</string>
+    <string name="font_family">@string/source_serif_pro_font</string>
 
     <string name="app_name">SuperImage</string>
 
