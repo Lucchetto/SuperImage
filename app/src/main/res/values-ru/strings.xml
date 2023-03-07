@@ -34,7 +34,7 @@
     <string name="output_image_resolution_label">Выходное разрешение: %1$sx%2$s</string>
     <string name="select_image_wizard_hint">Чтобы начать, выберите изображение для увеличения</string>
     <string name="select_image_label">Выбрать изображение</string>
-    <string name="change_image_label">Изменить изображение</string>
+    <string name="change_image_label">Изменить</string>
     <string name="upscale_label">Увеличить</string>
     <string name="selected_mode_label">Выбранный режим</string>
     <string name="upscaling_options_title">Опции увеличения</string>
