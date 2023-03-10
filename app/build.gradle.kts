@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.compose")
     id("kotlin-parcelize")
+    id("android-build-flavours")
 }
 
 android {
@@ -46,17 +47,6 @@ android {
         getByName("debug") {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-DEBUG"
-        }
-    }
-
-    flavorDimensions.add("version")
-
-    productFlavors {
-        create("free") {
-            dimension = "version"
-        }
-        create("playstore") {
-            dimension = "version"
         }
     }
 
