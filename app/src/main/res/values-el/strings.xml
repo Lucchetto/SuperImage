@@ -28,6 +28,7 @@
     <string name="settings">Ρυθμίσεις</string>
     <string name="back">Πίσω</string>
 
+    <string name="out_of_memory_warning_hint">Η μνήμη του συστήματος μπορεί να είναι ανεπαρκής για αυτή τη λειτουργία</string>
     <string name="original_image_resolution_label">Αρχική ανάλυση: %1$sx%2$s</string>
     <string name="output_image_resolution_label">Τελική ανάλυση: %1$sx%2$s</string>
     <string name="select_image_wizard_hint">Ξεκινήστε, επιλέγοντας μια εικόνα για μεγέθυνση</string>
