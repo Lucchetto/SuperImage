@@ -19,10 +19,10 @@ Or get the latest APK from the [Releases Section](https://github.com/Lucchetto/S
 ## 📊 Benchmarks
 Results on Qualcomm Snapdragon 855 (Vulkan)
 | Mode          | Input resolution | Output resolution | Execution time    |
-|---------------|------------------|-------------------|-------------------|
+| ------------- | ---------------- | ----------------- | ----------------- |
 | 4x (generic)  | 1920x1080        | 3840x2160         | 3 minutes         |
-| 8x (generic)  | 1920x1080        | 7680x4320         | 11 minutes        |
-| 8x (drawing)  | 1920x1080        | 7680x4320         | 3 mins 42 seconds |
+| 16x (generic) | 1920x1080        | 7680x4320         | 11 minutes        |
+| 16x (drawing) | 1920x1080        | 7680x4320         | 3 mins 42 seconds |
 
 ## 📱 Screenshots
 <p>
