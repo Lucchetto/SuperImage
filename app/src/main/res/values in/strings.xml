@@ -1,0 +1,72 @@
+<resources>
+    <!-- Indicates the font to use for the locale -->
+    <string name="font_family">@string/default_font</string>
+
+    <string name="app_name">SuperImage</string>
+
+    <string name="time_unit_space">\u0020</string>
+    <string name="word_space">\u0020</string>
+    <plurals name="hour">
+        <item quantity="one">jam</item>
+        <item quantity="other">jam</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="one">menit</item>
+        <item quantity="other">menit</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="one">detik</item>
+        <item quantity="other">detik</item>
+    </plurals>
+
+    <string name="progress_template">%d%%</string>
+    <string name="progress_and_estimated_time_template">%1$d%% (perkiraan %2$s tersisa)</string>
+    <string name="progress_indeterminate">Memulai</string>
+    <string name="open">Buka</string>
+    <string name="retry">Coba lagi</string>
+    <string name="close">Tutup</string>
+    <string name="cancel">Batalkan</string>
+    <string name="settings">Pengaturan</string>
+    <string name="back">Kembali</string>
+
+    <string name="out_of_memory_warning_hint">Memori sistem mungkin tidak cukup untuk operasi ini</string>
+    <string name="original_image_resolution_label">Resolusi original: %1$sx%2$s</string>
+    <string name="output_image_resolution_label">Resolusi output: %1$sx%2$s</string>
+    <string name="select_image_wizard_hint">Untuk memulai, pilih gambar yang ingin diperbesar</string>
+    <string name="select_image_label">Pilih gambar</string>
+    <string name="change_image_label">Ganti gambar</string>
+    <string name="upscale_label">Perbesar</string>
+    <string name="selected_mode_label">Mode yang dipilih</string>
+    <string name="upscaling_options_title">Opsi pembesaran</string>
+    <string name="output_format_title">Format output</string>
+    <string name="execution_time_template">Durasi eksekusi: %1$s</string>
+    <string name="changelog_dialog_title">Apa saja yang baru</string>
+    <string name="version_template">Versi %1$s</string>
+    <string name="changelog_item_template">- %1$s</string>
+
+    <string name="permission_denied_title">Aksi tidak diizinkan</string>
+    <string name="storage_permission_denied_desc">Izinkan akses menulis pada perangkat</string>
+    <string name="storage_permission_denied_forever_desc">Silahkan memberi izin menulis pada pengatiran perangkat agar aplikasi dapat berjalan.</string>
+    <string name="open_settings_label">Buka pengaturan</string>
+    <string name="grant_permission_label">Beri izin</string>
+
+    <string name="theme_title">Tema</string>
+    <string name="auto_label">Gunakan tema sistem</string>
+    <string name="light_label">Terang</string>
+    <string name="dark_label">Gelap</string>
+    <string name="project_page_title">Halaman proyek</string>
+    <string name="project_page_desc">Bertanya dan kontirbusi di GitHub</string>
+    <string name="telegram_group_title">Grup Telegram</string>
+    <string name="telegram_group_desc">Gabung grup untuk diskusi, bertanya, dan berkontribusi seputar pemrosesan gambar dengan AI.</string>
+    <string name="version_title">Versi</string>
+
+    <string name="upscaling_worker_notification_title">Memperbesar %1$s</string>
+    <string name="upscaling_worker_notification_desc">Perangkat anda mungkin akan sedikit lambat selama proses berjalan</string>
+    <string name="upscaling_worker_error_notification_title">Terjadi kesalahan dalam proses %1$s</string>
+    <string name="upscaling_worker_error_no_backend_title">Perangkat tidak didukung</string>
+    <string name="upscaling_worker_error_no_backend_desc">Perangkat anda tidak memiliki dukungan terhadap Vulkan ataupun OpenGL yang dibutuhkan untuk memproses gambar.</string>
+    <string name="upscaling_worker_success_notification_title">%1$s Berhasil diperbesar!</string>
+    <string name="upscaling_worker_success_notification_desc">Tekan disini untuk membuka gambar</string>
+    <string name="upscaling_worker_progress_notification_channel_name">Proses pembesaran</string>
+    <string name="upscaling_worker_result_notification_channel_name">Hasil pembesaran</string>
+</resources>
