@@ -12,13 +12,13 @@ import com.zhenxiang.superimage.MainActivity
 
 object IntentUtils {
 
-    fun actionViewNewTask(string: String) = Intent(Intent.ACTION_VIEW).apply {
+    fun openStringUriIntent(string: String) = Intent(Intent.ACTION_VIEW).apply {
         data = string.toUri()
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
 
-    fun actionViewNewTask(uri: Uri) = Intent(Intent.ACTION_VIEW).apply {
-        data = uri
+    fun viewImageIntent(uri: Uri) = Intent(Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, MimeType.IMAGE)
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
 

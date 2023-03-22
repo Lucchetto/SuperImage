@@ -28,7 +28,6 @@ class InputImageIntentManager {
     }
 
     companion object {
-        const val IMAGE_MIME_TYPE = "image/*"
 
         fun markAsConsumed(intent: Intent): Intent = intent.apply {
             intent.data = null

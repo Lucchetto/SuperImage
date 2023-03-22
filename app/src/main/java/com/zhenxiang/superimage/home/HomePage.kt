@@ -34,7 +34,6 @@ import com.arkivanov.essenty.lifecycle.ext.collectAsStateWithLifecycle
 import com.zhenxiang.realesrgan.UpscalingModel
 import com.zhenxiang.superimage.BuildConfig
 import com.zhenxiang.superimage.R
-import com.zhenxiang.superimage.intent.InputImageIntentManager
 import com.zhenxiang.superimage.shared.model.Changelog
 import com.zhenxiang.superimage.shared.model.DataState
 import com.zhenxiang.superimage.shared.model.InputImage
@@ -45,6 +44,7 @@ import com.zhenxiang.superimage.ui.mono.*
 import com.zhenxiang.superimage.ui.theme.*
 import com.zhenxiang.superimage.ui.utils.RowSpacer
 import com.zhenxiang.superimage.ui.utils.isLandscape
+import com.zhenxiang.superimage.utils.MimeType
 import com.zhenxiang.superimage.work.RealESRGANWorker
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
@@ -101,7 +101,7 @@ fun HomePage(component: HomePageComponent) = component.viewModel.let { viewModel
                         ),
                         selectedImageState = selectedImageState,
                         selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
-                    ) { imagePicker.launch(InputImageIntentManager.IMAGE_MIME_TYPE) }
+                    ) { imagePicker.launch(MimeType.IMAGE) }
 
                     Box(
                         modifier = Modifier
@@ -122,7 +122,7 @@ fun HomePage(component: HomePageComponent) = component.viewModel.let { viewModel
                             upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
                             outputFormatFlow = viewModel.selectedOutputFormatFlow,
                             selectedImageState = selectedImageState,
-                            onSelectImageClick = { imagePicker.launch(InputImageIntentManager.IMAGE_MIME_TYPE) },
+                            onSelectImageClick = { imagePicker.launch(MimeType.IMAGE) },
                             onUpscaleClick = {
                                 viewModel.upscale()
                                 viewModel.showReviewFlowConditionally(activity)
@@ -146,14 +146,14 @@ fun HomePage(component: HomePageComponent) = component.viewModel.let { viewModel
                             .fillMaxWidth(),
                         selectedImageState = selectedImageState,
                         selectedModelState = viewModel.selectedUpscalingModelFlow.collectAsStateWithLifecycle(),
-                    ) { imagePicker.launch(InputImageIntentManager.IMAGE_MIME_TYPE) }
+                    ) { imagePicker.launch(MimeType.IMAGE) }
 
                     Options(
                         modifier = Modifier.drawTopBorder(MaterialTheme.border.regular),
                         upscalingModelFlow = viewModel.selectedUpscalingModelFlow,
                         outputFormatFlow = viewModel.selectedOutputFormatFlow,
                         selectedImageState = selectedImageState,
-                        onSelectImageClick = { imagePicker.launch(InputImageIntentManager.IMAGE_MIME_TYPE) },
+                        onSelectImageClick = { imagePicker.launch(MimeType.IMAGE) },
                         onUpscaleClick = {
                             viewModel.upscale()
                             viewModel.showReviewFlowConditionally(activity)

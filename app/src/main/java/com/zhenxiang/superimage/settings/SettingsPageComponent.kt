@@ -33,11 +33,11 @@ class SettingsPageComponent(
         const val GITHUB_PAGE_URL = "github.com/Lucchetto/SuperImage"
 
         fun openGithubPage(context: Context) {
-            context.startActivity(IntentUtils.actionViewNewTask("https://$GITHUB_PAGE_URL"))
+            context.startActivity(IntentUtils.openStringUriIntent("https://$GITHUB_PAGE_URL"))
         }
 
         fun openTelegramGroup(context: Context) {
-            context.startActivity(IntentUtils.actionViewNewTask("https://t.me/super_image"))
+            context.startActivity(IntentUtils.openStringUriIntent("https://t.me/super_image"))
         }
     }
 }

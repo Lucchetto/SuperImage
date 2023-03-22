@@ -249,7 +249,7 @@ class RealESRGANWorker(
                 setContentIntent(
                     IntentUtils.notificationPendingIntent(
                         this@with,
-                        IntentUtils.actionViewNewTask(dataResult.data)
+                        IntentUtils.viewImageIntent(dataResult.data)
                     )
                 )
             }.build()

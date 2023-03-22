@@ -127,7 +127,7 @@ internal fun UpscalingWork(
                 RowSpacer()
                 MonoButton(
                     onClick = {
-                        onOpenOutputImageClicked(IntentUtils.actionViewNewTask(progress.outputFileUri))
+                        onOpenOutputImageClicked(IntentUtils.viewImageIntent(progress.outputFileUri))
                         onDismissRequest()
                     }
                 ) {
