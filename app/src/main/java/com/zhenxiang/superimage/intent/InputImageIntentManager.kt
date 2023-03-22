@@ -26,11 +26,4 @@ class InputImageIntentManager {
         }
         return false
     }
-
-    companion object {
-
-        fun markAsConsumed(intent: Intent): Intent = intent.apply {
-            intent.data = null
-        }
-    }
 }

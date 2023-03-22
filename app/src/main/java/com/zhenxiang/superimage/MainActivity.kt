@@ -1,6 +1,5 @@
 package com.zhenxiang.superimage
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -12,20 +11,17 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import com.arkivanov.decompose.defaultComponentContext
-import com.zhenxiang.superimage.intent.InputImageIntentManager
 import com.zhenxiang.superimage.navigation.RootComponent
 import com.zhenxiang.superimage.navigation.RootNavigation
 import com.zhenxiang.superimage.ui.daynight.DayNightManager
 import com.zhenxiang.superimage.ui.daynight.DayNightMode
 import com.zhenxiang.superimage.ui.theme.MonoTheme
 import kotlinx.coroutines.launch
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import org.koin.android.ext.android.inject
 
-class MainActivity : AppCompatActivity(), KoinComponent {
+class MainActivity : AppCompatActivity() {
 
     private val dayNightManager by inject<DayNightManager>()
-    private val inputImageIntentManager by inject<InputImageIntentManager>()
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,11 +30,6 @@ class MainActivity : AppCompatActivity(), KoinComponent {
         lifecycleScope.launch {
             dayNightManager.themeModeFlow.collect {
                 delegate.localNightMode = it.delegateNightMode
-            }
-        }
-        intent?.let {
-            if (inputImageIntentManager.notifyNewIntent(it)) {
-                startActivity(InputImageIntentManager.markAsConsumed(intent))
             }
         }
         // Handle the splash screen transition.
@@ -58,10 +49,5 @@ class MainActivity : AppCompatActivity(), KoinComponent {
                 RootNavigation(rootComponent)
             }
         }
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        inputImageIntentManager.notifyNewIntent(intent)
     }
 }
