@@ -86,6 +86,9 @@ internal fun UpscalingWork(
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium
                     )
+                    DesktopVersionBanner(
+                        Modifier.padding(top = MaterialTheme.spacing.level5)
+                    )
                 }
             }
             is RealESRGANWorker.Progress.Success -> Column(modifier = Modifier.padding(padding)) {
@@ -95,6 +98,11 @@ internal fun UpscalingWork(
                         id = R.string.execution_time_template,
                         TimeUtils.periodToString(LocalContext.current, progress.executionTime)
                     )
+                )
+                DesktopVersionBanner(
+                    Modifier
+                        .padding(top = MaterialTheme.spacing.level5)
+                        .align(Alignment.CenterHorizontally)
                 )
             }
         }
