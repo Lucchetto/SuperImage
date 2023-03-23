@@ -1,0 +1,7 @@
+The desktop version is just around the corner, stay tuned !
+Added Indonesian translations
+Added cancel button to progress notification
+Fixed open output image button not working in some cases
+Fixed receiving input image shared from other apps
+Fixed progress details not visible in notification below Android 12
+Fixed duplicated file extension in output image on some Android versions
