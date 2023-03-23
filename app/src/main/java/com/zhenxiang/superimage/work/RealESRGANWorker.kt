@@ -197,7 +197,7 @@ class RealESRGANWorker(
                 value == JNIProgressTracker.INDETERMINATE_PROGRESS ||
                 estimatedMillisLeft == JNIProgressTracker.INDETERMINATE_TIME
             ) {
-                setContentText(getString(R.string.upscaling_worker_notification_desc))
+                setBigContentText(getString(R.string.upscaling_worker_notification_desc))
             } else {
                 buildString {
                     append(
@@ -209,7 +209,7 @@ class RealESRGANWorker(
                     )
                     append('\n')
                     append(getString(R.string.upscaling_worker_notification_desc))
-                }.let { setContentText(it) }
+                }.let { setBigContentText(it) }
             }
         }
     }.build()
@@ -418,6 +418,11 @@ private val ListenableWorker.cancelWorkIntent: PendingIntent
 private fun NotificationCompat.Builder.setTitleAndTicker(title: String) = apply {
     setContentTitle(title)
     setTicker(title)
+}
+
+private fun NotificationCompat.Builder.setBigContentText(text: String) = apply {
+    setContentText(text)
+    setStyle(NotificationCompat.BigTextStyle().bigText(text))
 }
 
 @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
