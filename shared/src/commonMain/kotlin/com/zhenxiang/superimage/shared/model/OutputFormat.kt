@@ -6,10 +6,11 @@ enum class OutputFormat(
     override val id: Int,
     val formatExtension: String,
     val formatName: String,
+    val mimeType: String
 ): Identifiable<Int> {
 
-    JPEG(0, "jpg", "JPEG"),
-    PNG(1, "png", "PNG");
+    JPEG(0, "jpg", "JPEG", "image/jpeg"),
+    PNG(1, "png", "PNG", "image/png");
 
     companion object: Identifiable.EnumCompanion<OutputFormat> {
 

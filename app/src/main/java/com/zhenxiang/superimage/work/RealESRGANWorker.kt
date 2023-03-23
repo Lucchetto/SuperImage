@@ -298,6 +298,7 @@ class RealESRGANWorker(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val contentValues = ContentValues().apply {
                 put(MediaStore.Images.Media.DISPLAY_NAME, outputFileName)
+                put(MediaStore.Images.Media.MIME_TYPE, outputFormat.mimeType)
                 put(
                     MediaStore.Images.Media.RELATIVE_PATH,
                     "${Environment.DIRECTORY_PICTURES}${File.separatorChar}$OUTPUT_FOLDER_NAME"
