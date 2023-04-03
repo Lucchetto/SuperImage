@@ -1,0 +1,74 @@
+<resources>
+    <!-- Indicates the font to use for the locale -->
+    <string name="font_family">@string/default_font</string>
+
+    <string name="app_name">SuperImage</string>
+
+    <string name="time_unit_space">\u0020</string>
+    <string name="word_space">\u0020</string>
+    <plurals name="hour">
+        <item quantity="one">ساعت</item>
+        <item quantity="other">ساعت</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="one">دقیقه</item>
+        <item quantity="other">دقیقه</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="one">ثانیه</item>
+        <item quantity="other">ثانیه</item>
+    </plurals>
+
+    <string name="progress_template">%d%%</string>
+    <string name="progress_and_estimated_time_template">%1$d%% (حدود. %2$s مانده)</string>
+    <string name="progress_indeterminate">شروع...</string>
+    <string name="open">بازکردن</string>
+    <string name="retry">تکرار</string>
+    <string name="close">بستن</string>
+    <string name="cancel">لغو</string>
+    <string name="settings">تنظیمات</string>
+    <string name="back">برگشت</string>
+
+    <string name="out_of_memory_warning_hint">حافظه دستگاه ممکن است برای این کار کافی نباشد </string>
+    <string name="original_image_resolution_label">رزولوشن اصلی: %1$sx%2$s</string>
+    <string name="output_image_resolution_label">رزولوشن خروجی: %1$sx%2$s</string>
+    <string name="select_image_wizard_hint">برای شروع، یک عکس انتخاب کن</string>
+    <string name="select_image_label">انتخاب عکس</string>
+    <string name="change_image_label">تغییر عکس</string>
+    <string name="upscale_label">ارتقا کیفیت</string>
+    <string name="selected_mode_label">حالت انتخابی</string>
+    <string name="upscaling_options_title">تنظیمات ارتقا</string>
+    <string name="output_format_title">فرمت خروجی</string>
+    <string name="execution_time_template">زمان اجرا: %1$s</string>
+    <string name="changelog_dialog_title">چیزهای جدید</string>
+    <string name="version_template">نسخه %1$s</string>
+    <string name="changelog_item_template">- %1$s</string>
+
+    <string name="permission_denied_title">دسترسی داده نشد</string>
+    <string name="storage_permission_denied_desc">لطفا برای ذخیره فایل دسترسی دهید</string>
+    <string name="storage_permission_denied_forever_desc">لطفا برای ذخیره فایل از تنظیمات دسترسی دهید</string>
+    <string name="open_settings_label">بازکردن تنظیمات</string>
+    <string name="grant_permission_label">دادن دسترسی‌ها</string>
+
+    <string name="desktop_version_banner_text">نسخه دسکتاپ بزودی، آماده باشید !</string>
+
+    <string name="theme_title">تم</string>
+    <string name="auto_label">مانند سیستم</string>
+    <string name="light_label">روشن</string>
+    <string name="dark_label">تاریک</string>
+    <string name="project_page_title">صفحه پروژه</string>
+    <string name="project_page_desc">در گیت‌هاب سوال بپرسید یا کمک کنید</string>
+    <string name="telegram_group_title">گروه تلگرام</string>
+    <string name="telegram_group_desc">برای پشتیبانی، صحبت درباره کارکرد برنامه و چیزهای دیگر به گروه تلگرام ملحق شوید</string>
+    <string name="version_title">نسخه</string>
+
+    <string name="upscaling_worker_notification_title">درحال ارتقای کیفیت %1$s</string>
+    <string name="upscaling_worker_notification_desc">ممکن است دستگاه شما هنگام انجام کار کندتر شود</string>
+    <string name="upscaling_worker_error_notification_title">خطایی هنگام ارتقای کیفیت رخ داد %1$s</string>
+    <string name="upscaling_worker_error_no_backend_title">دستگاه پشتیبانی نمی‌شود</string>
+    <string name="upscaling_worker_error_no_backend_desc">دستگاه شما از ویژگی‌های Vulkan و OpenCL پشتیبانی نمی‌کند</string>
+    <string name="upscaling_worker_success_notification_title">%1$s ارتقا موفقیت آمیز !</string>
+    <string name="upscaling_worker_success_notification_desc">برای بازکردن عکس کلیک کنید</string>
+    <string name="upscaling_worker_progress_notification_channel_name">فرایند ارتقای کیفیت</string>
+    <string name="upscaling_worker_result_notification_channel_name">نتیجه ارتقای کیفیت</string>
+</resources>
