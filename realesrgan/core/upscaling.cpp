@@ -19,7 +19,7 @@ void pixels_matrix_to_float_array(const Eigen::Block<const PixelMatrix>& tile,
     for (int y = 0; y < tile.rows(); y++) {
         for (int x = 0; x < tile.cols(); x++) {
             // Alpha is ignored
-            const int pixel = tile(y, x);
+            const int32_t pixel = tile(y, x);
             tensor(0, x, y) = (float)(pixel & 0xff) / 255.0;
             tensor(1, x, y) = (float)((pixel >> 8) & 0xff) / 255.0;
             tensor(2, x, y) = (float)((pixel >> 16) & 0xff) / 255.0;
@@ -155,7 +155,7 @@ void process_tiles(
                     jni_env,
                     progress_tracker,
                     progress,
-                    lround((100 - progress) * percentage_execution_millis));
+                    static_cast<int64_t>(round((100 - progress) * percentage_execution_millis)));
 
             // Recalculate padding and position of next input_tile in row
             x += output_dest_block.cols() / scale;
