@@ -11,47 +11,36 @@
 #include "jni_common/progress_tracker.h"
 #include "image_tile_interpreter.h"
 
-void pixels_matrix_to_float_array(const Eigen::MatrixXi& tile, float* float_buffer) {
+void pixels_matrix_to_float_array(const Eigen::Block<const Eigen::MatrixXi>& tile,
+                                  const Eigen::TensorMap<Eigen::Tensor<float, 3, Eigen::RowMajor>>& tensor) {
 
     // Convert input image RGB int array to float array
     // with tensor shape [1, REALESRGAN_IMAGE_CHANNELS, tile height, tile width]
-    const int tile_size = tile.size();
-    const int* tile_data = tile.data();
-    const int green_start_index = tile_size;
-    const int blue_start_index = tile_size * 2;
-    for (int i = 0; i < tile_size; i++) {
-        // Alpha is ignored
-        float_buffer[i] = (float)((tile_data[i]) & 0xff) / 255.0;
-        float_buffer[i + green_start_index] = (float)((tile_data[i] >> 8) & 0xff) / 255.0;
-        float_buffer[i + blue_start_index] = (float)((tile_data[i] >> 16) & 0xff) / 255.0;;
+    for (int y = 0; y < tile.rows(); y++) {
+        for (int x = 0; x < tile.cols(); x++) {
+            // Alpha is ignored
+            const int pixel = tile(y, x);
+            tensor(0, x, y) = (float)(pixel & 0xff) / 255.0;
+            tensor(1, x, y) = (float)((pixel >> 8) & 0xff) / 255.0;
+            tensor(2, x, y) = (float)((pixel >> 16) & 0xff) / 255.0;
+        }
     }
 }
 
-Eigen::MatrixXi output_tensor_to_pixels_matrix(const Eigen::Tensor<float, 3, Eigen::RowMajor>* tensor) {
+void output_tensor_to_pixels_matrix(
+        Eigen::Block<Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>>& matrix,
+        const Eigen::Tensor<float, 3, Eigen::RowMajor>& tensor) {
 
-    uint8_t rgba_buffer[REALESRGAN_IMAGE_CHANNELS + 1] = {};
-    // Alpha is always 255
-    rgba_buffer[0] = 255;
-
-    const float* tensor_data = tensor->data();
-    const size_t pixels_count = tensor->size() / REALESRGAN_IMAGE_CHANNELS;
-    int output_tile_rgb[pixels_count];
-    for (int i = 0; i < pixels_count; i++) {
-        for (int j = 0; j < REALESRGAN_IMAGE_CHANNELS; j++) {
-            rgba_buffer[j + 1] = std::clamp<float>(tensor_data[i + j * pixels_count] * 255, 0, 255);
+    for (int y = 0; y < tensor.dimension(2); y++) {
+        for (int x = 0; x < tensor.dimension(1); x++) {
+            // When we have RGB values, we pack them into output_tile single pixel in RGBA.
+            // Assume little endian order since this will only run on ARM and x86
+            const uint8_t r = std::clamp<float>(tensor(2, x, y) * 255, 0, 255);
+            const uint8_t g = std::clamp<float>(tensor(1, x, y) * 255, 0, 255);
+            const uint8_t b = std::clamp<float>(tensor(0, x, y) * 255, 0, 255);
+            matrix(y, x) = (255 & 0xff) << 24 | (r & 0xff) << 16 | (g & 0xff) << 8 | (b & 0xff);
         }
-
-        // When we have RGB values, we pack them into output_tile single pixel in RGBA.
-        // Assume little endian order since this will only run on ARM and x86
-        output_tile_rgb[i] = (rgba_buffer[0] & 0xff) << 24 | (rgba_buffer[3] & 0xff) << 16 |
-                             (rgba_buffer[2] & 0xff) << 8 |
-                             (rgba_buffer[1] & 0xff);
     }
-
-    return Eigen::Map<Eigen::MatrixXi>(
-            output_tile_rgb,
-            tensor->dimension(2),
-            tensor->dimension(1));
 }
 
 Eigen::Tensor<float, 3, Eigen::RowMajor> trim_tensor_padding(
@@ -109,7 +98,13 @@ void process_tiles(
     const int height = input_image_matrix.rows();
     const int width = input_image_matrix.cols();
 
-    const Eigen::TensorMap<Eigen::Tensor<float, 3, Eigen::RowMajor>> output_tile(
+    const Eigen::TensorMap<Eigen::Tensor<float, 3, Eigen::RowMajor>> input_tensor(
+            interpreter.input_buffer,
+            REALESRGAN_IMAGE_CHANNELS,
+            tile_dimensions->width,
+            tile_dimensions->height);
+
+    const Eigen::TensorMap<Eigen::Tensor<float, 3, Eigen::RowMajor>> output_tensor(
             interpreter.output_buffer,
             REALESRGAN_IMAGE_CHANNELS,
             tile_dimensions->width * scale,
@@ -123,35 +118,35 @@ void process_tiles(
 
             std::pair<int, int> x_padding = calculate_axis_padding(x, width, tile_dimensions->width, padding);
 
-            // Get tile of pixels to process keeping, apply left padding as offset that will be cropped later
-            Eigen::MatrixXi tile = input_image_matrix.block(
+            // Get input_tile of pixels to process keeping, apply left padding as offset that will be cropped later
+            const Eigen::Block input_tile = input_image_matrix.block(
                     y - y_padding.first,
                     x - x_padding.first,
                     tile_dimensions->height,
                     tile_dimensions->width);
 
             // Feed input into tensor
-            pixels_matrix_to_float_array(tile, interpreter.input_buffer);
+            pixels_matrix_to_float_array(input_tile, input_tensor);
 
             // Run inference on the model
             interpreter.inference();
 
-            const Eigen::Tensor<float, 3, Eigen::RowMajor> cropped_output_tile = trim_tensor_padding(
+            const Eigen::Tensor<float, 3, Eigen::RowMajor> cropped_output_tensor = trim_tensor_padding(
                     scale,
                     x_padding,
                     y_padding,
-                    &output_tile);
+                    &output_tensor);
 
-            const Eigen::MatrixXi tile_rgb_matrix = output_tensor_to_pixels_matrix(&cropped_output_tile);
-
-            output_image_matrix.block(
+            Eigen::Block<Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>> output_dest_block = output_image_matrix.block(
                     y * scale,
                     x * scale,
-                    tile_rgb_matrix.rows(),
-                    tile_rgb_matrix.cols()) = tile_rgb_matrix;
+                    cropped_output_tensor.dimension(2),
+                    cropped_output_tensor.dimension(1));
+
+            output_tensor_to_pixels_matrix(output_dest_block, cropped_output_tensor);
 
             // Update progress
-            processed_pixels += tile_rgb_matrix.size();
+            processed_pixels += output_dest_block.size();
             const float progress = 100 * ((float)processed_pixels / output_image_matrix.size());
             // Calculate execution time per 1%
             const double percentage_execution_millis = std::chrono::duration<double, std::milli>(
@@ -162,10 +157,10 @@ void process_tiles(
                     progress,
                     lround((100 - progress) * percentage_execution_millis));
 
-            // Recalculate padding and position of next tile in row
-            x += tile_rgb_matrix.cols() / scale;
+            // Recalculate padding and position of next input_tile in row
+            x += output_dest_block.cols() / scale;
             if (x == width) {
-                last_row_height = tile_rgb_matrix.rows() / scale;
+                last_row_height = output_dest_block.rows() / scale;
                 break;
             }
         }
