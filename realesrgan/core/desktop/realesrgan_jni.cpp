@@ -25,12 +25,12 @@ Java_com_zhenxiang_realesrgan_RealESRGAN_runUpscaling(
     const image_dimensions input_dimens = get_image_dimensions(env, input_image);
     const jintArray input_image_array = get_rgb(env, input_image, input_dimens);
 
-    Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> input_image_matrix(
+    PixelMatrix input_image_matrix(
             env->GetIntArrayElements(input_image_array, nullptr),
             input_dimens.height,
             input_dimens.width);
 
-    Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> output_image_matrix(
+    PixelMatrix output_image_matrix(
             env->GetIntArrayElements(output_image_array, nullptr),
             input_image_matrix.rows() * scale,
             input_image_matrix.cols() * scale);

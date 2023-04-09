@@ -11,7 +11,7 @@
 #include "jni_common/progress_tracker.h"
 #include "image_tile_interpreter.h"
 
-void pixels_matrix_to_float_array(const Eigen::Block<const Eigen::MatrixXi>& tile,
+void pixels_matrix_to_float_array(const Eigen::Block<const PixelMatrix>& tile,
                                   const Eigen::TensorMap<Eigen::Tensor<float, 3, Eigen::RowMajor>>& tensor) {
 
     // Convert input image RGB int array to float array
@@ -28,7 +28,7 @@ void pixels_matrix_to_float_array(const Eigen::Block<const Eigen::MatrixXi>& til
 }
 
 void output_tensor_to_pixels_matrix(
-        Eigen::Block<Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>>& matrix,
+        Eigen::Block<PixelMatrix>& matrix,
         const Eigen::Tensor<float, 3, Eigen::RowMajor>& tensor) {
 
     for (int y = 0; y < tensor.dimension(2); y++) {
@@ -82,8 +82,8 @@ void process_tiles(
         jobject progress_tracker,
         jobject coroutine_scope,
         const ImageTileInterpreter& interpreter,
-        const Eigen::MatrixXi& input_image_matrix,
-        Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>& output_image_matrix,
+        const PixelMatrix& input_image_matrix,
+        PixelMatrix& output_image_matrix,
         const int scale,
         const int padding) {
 
@@ -137,7 +137,7 @@ void process_tiles(
                     y_padding,
                     &output_tensor);
 
-            Eigen::Block<Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>> output_dest_block = output_image_matrix.block(
+            Eigen::Block<PixelMatrix> output_dest_block = output_image_matrix.block(
                     y * scale,
                     x * scale,
                     cropped_output_tensor.dimension(2),
@@ -179,8 +179,8 @@ void run_inference(
         jobject coroutine_scope,
         const mnn_model* model,
         int scale,
-        const Eigen::MatrixXi& input_image_matrix,
-        Eigen::Map<Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>& output_image_matrix) {
+        const PixelMatrix& input_image_matrix,
+        PixelMatrix& output_image_matrix) {
 
     const auto interpreter = ImageTileInterpreter(
             model,
