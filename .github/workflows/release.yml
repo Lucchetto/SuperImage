@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    name: Release and Post
+    name: Release
     runs-on: ubuntu-latest
 
     steps:
@@ -47,12 +47,3 @@ jobs:
           draft: true
           files: |
             app/build/outputs/apk/free/release/app-free-release.apk
-
-      - name: Telegram Bot
-        run: |
-          echo "TG_API_ID = '${{ secrets.TG_API_ID }}'" > tgconfig.py
-          echo "TG_API_HASH = '${{ secrets.TG_API_HASH }}'" >> tgconfig.py
-          echo "TG_TOKEN = '${{ secrets.TG_TOKEN }}'" >> tgconfig.py
-          pip install pyrogram TgCrypto requests
-          mv .github/telegram.py .
-          python telegram.py

@@ -1,0 +1,20 @@
+name: Release APK
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  post:
+    name: Post
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Telegram Bot
+        run: |
+          echo "TG_API_ID = '${{ secrets.TG_API_ID }}'" > tgconfig.py
+          echo "TG_API_HASH = '${{ secrets.TG_API_HASH }}'" >> tgconfig.py
+          echo "TG_TOKEN = '${{ secrets.TG_TOKEN }}'" >> tgconfig.py
+          pip install pyrogram TgCrypto requests
+          mv .github/telegram.py .
+          python telegram.py
