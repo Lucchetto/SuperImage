@@ -74,6 +74,18 @@ fun SettingsPage(component: SettingsPageComponent) = Scaffold(
             val context = LocalContext.current
             ListItem(
                 leadingIcon = {
+                    Icon(painterResource(id = R.drawable.ic_patreon_24), contentDescription = null)
+                },
+                label = { Text(stringResource(id = R.string.patreon_title)) },
+                content = { Text(stringResource(id = R.string.patreon_desc)) }
+            ) {
+                SettingsPageComponent.openPatreonPage(context)
+            }
+        }
+        item {
+            val context = LocalContext.current
+            ListItem(
+                leadingIcon = {
                     Icon(painterResource(id = R.drawable.ic_github_24), contentDescription = null)
                 },
                 label = { Text(stringResource(id = R.string.project_page_title)) },
