@@ -39,9 +39,5 @@ class SettingsPageComponent(
         fun openTelegramGroup(context: Context) {
             context.startActivity(IntentUtils.openStringUriIntent("https://t.me/super_image"))
         }
-
-        fun openPatreonPage(context: Context) {
-            context.startActivity(IntentUtils.openStringUriIntent("https://patreon.com/SuperImage"))
-        }
     }
 }

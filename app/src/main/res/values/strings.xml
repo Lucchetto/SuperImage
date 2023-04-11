@@ -50,8 +50,7 @@
     <string name="open_settings_label">Open settings</string>
     <string name="grant_permission_label">Grant permission</string>
 
-    <string name="desktop_version_banner_text">The experimental desktop version of SuperImage is now available on Patreon</string>
-    <string name="join_patreon_label">Become a Patron</string>
+    <string name="desktop_version_banner_text">The desktop version is just around the corner, stay tuned !</string>
 
     <string name="theme_title">Theme</string>
     <string name="auto_label">Follow system</string>
@@ -61,8 +60,6 @@
     <string name="project_page_desc">Ask questions or contribute on GitHub</string>
     <string name="telegram_group_title">Telegram group</string>
     <string name="telegram_group_desc">Join the group for support, discussions about AI image processing, and off-topic stuff</string>
-    <string name="patreon_title">Support the project on Patreon</string>
-    <string name="patreon_desc">Get access to experimental features, receive priority support, and help shape the future of SuperImage</string>
     <string name="version_title">Version</string>
 
     <string name="upscaling_worker_notification_title">Upscaling %1$s</string>
