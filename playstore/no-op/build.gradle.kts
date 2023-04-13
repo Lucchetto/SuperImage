@@ -36,4 +36,6 @@ android {
 dependencies {
 
     api(project(":playstore:base"))
+
+    implementation("com.github.matomo-org:matomo-sdk-android:4.1.4")
 }

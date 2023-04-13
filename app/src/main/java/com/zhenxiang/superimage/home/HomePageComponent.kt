@@ -22,6 +22,7 @@ import com.zhenxiang.superimage.shared.model.OutputFormat
 import com.zhenxiang.superimage.navigation.ChildComponent
 import com.zhenxiang.superimage.navigation.RootComponent
 import com.zhenxiang.superimage.navigation.getViewModel
+import com.zhenxiang.superimage.playstore.AppTracker
 import com.zhenxiang.superimage.playstore.InAppReviewManager
 import com.zhenxiang.superimage.tracking.AppReviewTracking
 import com.zhenxiang.superimage.tracking.AppVersionTracking
@@ -52,6 +53,7 @@ class HomePageComponent(
         private val context by inject<Context>()
         private val appReviewTracking by inject<AppReviewTracking>()
         private val inAppReviewManager = InAppReviewManager(context)
+        private val appTracker by inject<AppTracker>()
 
         private val realESRGANWorkerManager = get<RealESRGANWorkerManager>()
         private val inputImageIntentManager by inject<InputImageIntentManager>()
@@ -121,6 +123,8 @@ class HomePageComponent(
             }
 
             setupShowReviewTracking()
+
+            appTracker.trackViewScreen("home_page")
         }
 
         private fun setupShowReviewTracking() {
