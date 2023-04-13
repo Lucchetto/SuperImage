@@ -18,8 +18,8 @@ android {
         applicationId = "com.zhenxiang.superimage"
         minSdk = 24
         targetSdk = 33
-        versionCode = 133
-        versionName = "1.3.3"
+        versionCode = 134
+        versionName = "1.3.4"
 
         buildConfigField("String", "CHANGELOG_ASSET_NAME", "\"$changelogFileName\"")
 
