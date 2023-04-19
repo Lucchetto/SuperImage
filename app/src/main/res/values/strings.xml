@@ -1,11 +1,11 @@
 <resources>
     <!-- Indicates the font to use for the locale -->
-    <string name="font_family">@string/default_font</string>
+    <string name="font_family" translatable="false">@string/default_font</string>
 
     <string name="app_name">SuperImage</string>
 
-    <string name="time_unit_space">\u0020</string>
-    <string name="word_space">\u0020</string>
+    <string name="time_unit_space" translatable="false">\u0020</string>
+    <string name="word_space" translatable="false">\u0020</string>
     <plurals name="hour">
         <item quantity="one">hour</item>
         <item quantity="other">hours</item>
@@ -42,7 +42,7 @@
     <string name="execution_time_template">Execution time: %1$s</string>
     <string name="changelog_dialog_title">What\'s new</string>
     <string name="version_template">Version %1$s</string>
-    <string name="changelog_item_template">- %1$s</string>
+    <string name="changelog_item_template" translatable="false">- %1$s</string>
 
     <string name="permission_denied_title">Permission denied</string>
     <string name="storage_permission_denied_desc">Please grant permission to write files on the device</string>
