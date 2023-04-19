@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SuperImage</string>
+    <string name="progress_template">%d%%</string>
+    <string name="progress_and_estimated_time_template">%1$d%% (aprox. %2$s queda)</string>
+    <plurals name="hour">
+        <item quantity="one">hora</item>
+        <item quantity="other">horas</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="one">min</item>
+        <item quantity="other">mins</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="one">sec</item>
+        <item quantity="other">secs</item>
+    </plurals>
+    <string name="progress_indeterminate">Inicializando…</string>
+    <string name="open">Abrir</string>
+    <string name="retry">Reintentar</string>
+    <string name="close">Cerrar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="settings">Configuraciones</string>
+    <string name="back">Atrás</string>
+    <string name="out_of_memory_warning_hint">La memoria del sistema puede ser insuficiente para esta operación.</string>
+    <string name="original_image_resolution_label">Resolución original: %1$sx%2$s</string>
+    <string name="output_image_resolution_label">Resolución de salida: %1$sx%2$s</string>
+    <string name="select_image_wizard_hint">Para comenzar, seleccione una imagen para aumentar la escala</string>
+    <string name="select_image_label">Seleccionar imagen</string>
+    <string name="change_image_label">Cambiar imagen</string>
+    <string name="upscale_label">Mejorar</string>
+    <string name="selected_mode_label">Modo seleccionado</string>
+    <string name="upscaling_options_title">Opciones de mejora</string>
+    <string name="output_format_title">Formato de salida</string>
+    <string name="execution_time_template">Tiempo de ejecución: %1$s</string>
+    <string name="changelog_dialog_title">¿Qué hay de nuevo?</string>
+    <string name="version_template">Versión %1$</string>
+    <string name="permission_denied_title">Permiso denegado</string>
+    <string name="storage_permission_denied_desc">Conceda permiso para escribir archivos en el dispositivo.</string>
+    <string name="storage_permission_denied_forever_desc">Conceda permiso para escribir archivos en el dispositivo en la configuración</string>
+    <string name="open_settings_label">Abrir Configuraciones</string>
+    <string name="grant_permission_label">Conceder permiso</string>
+    <string name="desktop_version_banner_text">La versión de escritorio experimental de SuperImage ya está disponible en Patreon</string>
+    <string name="join_patreon_label">Conviértete en un patrocinador</string>
+    <string name="theme_title">Tema</string>
+    <string name="auto_label">Seguir sistema</string>
+    <string name="light_label">Claro</string>
+    <string name="dark_label">Oscuro</string>
+    <string name="project_page_title">Página del proyecto</string>
+    <string name="project_page_desc">Haga preguntas o contribuya en GitHub</string>
+    <string name="telegram_group_title">Grupo de telegramas</string>
+    <string name="telegram_group_desc">Únase al grupo para obtener apoyo, debates sobre el procesamiento de imágenes de IA y cosas fuera de tema</string>
+    <string name="patreon_title">Apoya el proyecto en Patreon</string>
+    <string name="patreon_desc">Obtenga acceso a funciones experimentales, reciba soporte prioritario y ayude a dar forma al futuro de SuperImage</string>
+    <string name="version_title">Versión</string>
+    <string name="upscaling_worker_notification_title">Mejorando %1$s</string>
+    <string name="upscaling_worker_notification_desc">Su dispositivo puede ralentizarse durante el proceso</string>
+    <string name="upscaling_worker_error_notification_title">Ocurrió un error al mejorar  %1$s</string>
+    <string name="upscaling_worker_error_no_backend_title">Dispositivo no compatible</string>
+    <string name="upscaling_worker_error_no_backend_desc">Su dispositivo no es compatible con las funciones de Vulkan o OpenCL necesarios para la ampliación de imagen</string>
+    <string name="upscaling_worker_success_notification_title">¡ %1$s mejorado con éxito!</string>
+    <string name="upscaling_worker_success_notification_desc">Click aquí para abrir la imagen</string>
+    <string name="upscaling_worker_progress_notification_channel_name">"Proceso de mejora "</string>
+    <string name="upscaling_worker_result_notification_channel_name">Resultado de mejora</string>
+</resources>
