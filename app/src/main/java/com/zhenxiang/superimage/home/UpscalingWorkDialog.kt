@@ -2,14 +2,13 @@ package com.zhenxiang.superimage.home
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -22,12 +21,22 @@ import com.zhenxiang.superimage.R
 import com.zhenxiang.superimage.shared.model.OutputFormat
 import com.zhenxiang.superimage.ui.mono.*
 import com.zhenxiang.superimage.ui.theme.MonoTheme
+import com.zhenxiang.superimage.ui.theme.border
 import com.zhenxiang.superimage.ui.theme.spacing
 import com.zhenxiang.superimage.ui.utils.RowSpacer
+import com.zhenxiang.superimage.ui.utils.ignoreHorizontalPadding
 import com.zhenxiang.superimage.utils.IntentUtils
 import com.zhenxiang.superimage.utils.TimeUtils
 import com.zhenxiang.superimage.work.RealESRGANWorker
 import kotlin.math.roundToInt
+
+private fun Modifier.desktopVersionBannerModifier(padding: PaddingValues) = composed {
+    ignoreHorizontalPadding(padding)
+        .padding(top = MaterialTheme.spacing.level5)
+        .drawTopBorder(MaterialTheme.border.regular)
+        .drawBottomBorder(MaterialTheme.border.regular)
+        .padding(MaterialTheme.spacing.level5)
+}
 
 @Composable
 internal fun UpscalingWork(
@@ -87,7 +96,7 @@ internal fun UpscalingWork(
                         style = MaterialTheme.typography.bodyMedium
                     )
                     DesktopVersionBanner(
-                        Modifier.padding(top = MaterialTheme.spacing.level5)
+                        modifier = Modifier.desktopVersionBannerModifier(padding)
                     )
                 }
             }
@@ -100,9 +109,7 @@ internal fun UpscalingWork(
                     )
                 )
                 DesktopVersionBanner(
-                    Modifier
-                        .padding(top = MaterialTheme.spacing.level5)
-                        .align(Alignment.CenterHorizontally)
+                    modifier = Modifier.desktopVersionBannerModifier(padding)
                 )
             }
         }

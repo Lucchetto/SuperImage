@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.work.*
+import com.zhenxiang.superimage.playstore.AppTracker
 import com.zhenxiang.superimage.tracking.AppReviewTracking
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -19,7 +20,11 @@ import java.util.*
 
 private typealias InputAndProgress = Pair<RealESRGANWorker.InputData, RealESRGANWorker.Progress>
 
-class RealESRGANWorkerManager(private val context: Context, appReviewTracking: AppReviewTracking) {
+class RealESRGANWorkerManager(
+    private val context: Context,
+    private val appTracker: AppTracker,
+    appReviewTracking: AppReviewTracking
+) {
 
     private var queueWorkJob: Job? = null
 
@@ -87,6 +92,7 @@ class RealESRGANWorkerManager(private val context: Context, appReviewTracking: A
                     withContext(Dispatchers.Main) {
                         currentWorkerLiveData.value = Pair(request.id, input)
                     }
+                    appTracker.trackAction("upscale_image")
                 }
                 queueWorkJob = null
             }
@@ -94,6 +100,7 @@ class RealESRGANWorkerManager(private val context: Context, appReviewTracking: A
     }
 
     fun cancelWork() {
+        appTracker.trackAction("cancel_upscale_image")
         workManager.cancelUniqueWork(UNIQUE_WORK_ID)
     }
 
