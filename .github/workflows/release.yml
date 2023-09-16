@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    name: Release APK
+    name: Release
     runs-on: ubuntu-latest
 
     steps:
